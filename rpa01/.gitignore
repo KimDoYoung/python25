@@ -1,0 +1,9 @@
+*.exe
+data/
+torrent*.*
+search*.*
+kis*.txt
+ls*.txt
+*.bak
+lsdoc*.html
+env/
