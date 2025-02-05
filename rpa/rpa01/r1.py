@@ -1,15 +1,68 @@
 '''
-1.UAC 관리자 권한으로 프로그램 실행하기
-2.이미지는 한글로 하면 잘 안된다. 영어로!
+1. 한국투자증권HTS 프로그램을 실행하고 공인인증서로 로그인 한 후에 종료
+2. 팝업처리는 안함.
 '''
 import os
 import subprocess
 import sys
+from typing import Optional, Tuple
 import pyautogui
 import time
 import ctypes
 import psutil
 from dotenv import load_dotenv
+from enum import Enum
+
+class RegionName(Enum):
+    LEFT_ONE_THIRD = 1
+    RIGHT_ONE_THIRD = 2
+    TOP_ONE_THIRD = 3
+    BOTTOM_ONE_THIRD = 4
+    LEFT_TOP = 5
+    RIGHT_TOP = 6
+    RIGHT_BOTTOM = 7
+    LEFT_BOTTOM = 8
+    CENTER = 9
+
+def get_region(region_name: RegionName, base_region: Optional[Tuple[int, int, int, int]] = None) -> Tuple[int, int, int, int]:
+    """
+    지정된 영역 이름과 기준 영역에 따라 영역을 계산해 반환합니다.
+
+    :param region_name: 계산할 영역의 이름 (RegionName 열거형)
+    :param base_region: 기준 영역 (left, top, width, height). None인 경우 전체 화면을 기준으로 함.
+    :return: 계산된 영역 (left, top, width, height)
+    """
+
+    # base_region이 None인 경우 전체 화면을 기준으로 설정
+    if base_region is None:
+        screen_width, screen_height = pyautogui.size()
+        base_region = (0, 0, screen_width, screen_height)
+
+    left, top, width, height = base_region
+
+    # 영역 계산
+    if region_name == RegionName.LEFT_ONE_THIRD:
+        return (left, top, width // 3, height)
+    elif region_name == RegionName.RIGHT_ONE_THIRD:
+        return (left + 2 * (width // 3), top, width // 3, height)
+    elif region_name == RegionName.TOP_ONE_THIRD:
+        return (left, top, width, height // 3)
+    elif region_name == RegionName.BOTTOM_ONE_THIRD:
+        return (left, top + 2 * (height // 3), width, height // 3)
+    elif region_name == RegionName.LEFT_TOP:
+        return (left, top, width // 2, height // 2)
+    elif region_name == RegionName.RIGHT_TOP:
+        return (left + width // 2, top, width // 2, height // 2)
+    elif region_name == RegionName.RIGHT_BOTTOM:
+        return (left + width // 2, top + height // 2, width // 2, height // 2)
+    elif region_name == RegionName.LEFT_BOTTOM:
+        return (left, top + height // 2, width // 2, height // 2)
+    elif region_name == RegionName.CENTER:
+        center_left = left + width // 3
+        center_top = top + height // 3
+        return (center_left, center_top, width // 3, height // 3)
+    else:
+        raise ValueError("잘못된 RegionName 값입니다.")
 
 def is_admin():
     """
@@ -36,7 +89,7 @@ def run_as_admin(executable_path):
     except Exception as e:
         print(f"예외 발생: {e}")
 
-def wait_for_image(image_path, timeout=60, confidence=0.8):
+def wait_for_image(image_path, timeout=60, confidence=0.8, region=None):
     """
     주어진 이미지가 화면에 나타날 때까지 최대 timeout(초) 동안 대기합니다.
     이미지를 찾으면 해당 영역(Box 객체)를 반환하고, timeout 이내에 찾지 못하면 None을 반환합니다.
@@ -44,7 +97,7 @@ def wait_for_image(image_path, timeout=60, confidence=0.8):
     start_time = time.time()
     while time.time() - start_time < timeout:
         try:
-            location = pyautogui.locateOnScreen(image_path, confidence=confidence)
+            location = pyautogui.locateOnScreen(image_path, confidence=confidence, region=region)
             if location:
                 return location
         except pyautogui.ImageNotFoundException:
@@ -53,7 +106,7 @@ def wait_for_image(image_path, timeout=60, confidence=0.8):
         time.sleep(1)
     return None
 
-def find_for_image(image_path, confidence=0.8):
+def find_for_image(image_path, confidence=0.8, region = None):
     """
     주어진 이미지가 화면에 존재하면 해당 영역(Box 객체)를 반환하고,
     존재하지 않으면 None을 반환합니다.
@@ -63,7 +116,7 @@ def find_for_image(image_path, confidence=0.8):
     :return: 이미지 영역(Box 객체) 또는 None
     """
     try:
-        location = pyautogui.locateOnScreen(image_path, confidence=confidence)
+        location = pyautogui.locateOnScreen(image_path, confidence=confidence, region=region)
         return location  # 이미지가 발견되면 해당 영역을 반환합니다.
     except pyautogui.ImageNotFoundException:
         # 이미지가 없으면 예외가 발생하므로, None을 반환합니다.
