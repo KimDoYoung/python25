@@ -2,12 +2,14 @@
 1.UAC 관리자 권한으로 프로그램 실행하기
 2.이미지는 한글로 하면 잘 안된다. 영어로!
 '''
+import os
 import subprocess
 import sys
 import pyautogui
 import time
 import ctypes
 import psutil
+from dotenv import load_dotenv
 
 def is_admin():
     """
@@ -78,6 +80,9 @@ def is_hts_running(process_name="HTS.exe"):
     return False
 
 if __name__ == "__main__":
+    load_dotenv()
+    KIS_CERTI_PW = os.getenv("KIS_CERTI_PW")
+    
     if not is_admin():
         print("관리자 권한으로 실행 중이 아닙니다. HTS는 관리자권한이 필요합니다.")
         sys.exit(0)
@@ -93,7 +98,7 @@ if __name__ == "__main__":
     # 예시: 10초 대기 후 종료
     time.sleep(10)
     print("로그인 화면 대기 중...")
-    login_button = wait_for_image('login_button.png')
+    login_button = wait_for_image('./images/login_button.png')
     if login_button is None:
         print("로그인 화면이 나타나지 않았습니다.")
         sys.exit(0)
@@ -106,22 +111,22 @@ if __name__ == "__main__":
     print("로그인 버튼 클릭 완료!")        
 
     print("공인인증서 선택 창 대기 중...")
-    certificate_window = wait_for_image('signkorea.png')
+    certificate_window = wait_for_image('./images/signkorea.png')
     if certificate_window is None:
         print("공인인증서 선택 창이 나타나지 않았습니다.")
         sys.exit(0)
 
     print("공인인증서 선택 창이 나타났습니다.")
     
-    user = wait_for_image('user.png')
+    user = wait_for_image('./images/user.png')
     if user is None:
         print("사용자 입력창이 나타나지 않았습니다.")
         sys.exit(0)
     user_center = pyautogui.center(user)
     pyautogui.moveTo(user_center.x, user_center.y, duration=0.5)
     pyautogui.click()
-    pyautogui.write("1111")
-    certify_button = find_for_image('certify_click1.png')
+    pyautogui.write(KIS_CERTI_PW)
+    certify_button = find_for_image('./images/certify_click1.png')
     if certify_button is None:
         print("인증 버튼이 나타나지 않았습니다.")
         sys.exit(0)
@@ -131,7 +136,7 @@ if __name__ == "__main__":
     pyautogui.click()
     print("인증 버튼 클릭 완료! 메인이 나올 때까지 대기")
     
-    efriendplus = wait_for_image('efriend_plus.png')
+    efriendplus = wait_for_image('./images/efriend_plus.png')
     if efriendplus is None:
         print("HTS  메인 화면이 나타나지 않았습니다.")
         sys.exit(0)
@@ -139,7 +144,7 @@ if __name__ == "__main__":
     # 10초 대기
     time.sleep(10)
     
-    setting_button = find_for_image('menu_setting.png')
+    setting_button = find_for_image('./images/menu_setting.png')
     if setting_button is None:
         print("설정 버튼이 나타나지 않았습니다.")
         sys.exit(0)
@@ -148,7 +153,7 @@ if __name__ == "__main__":
     pyautogui.click()
     print("설정 버튼 클릭 완료!")
     time.sleep(2)
-    quit_button = find_for_image('menu_quit.png')
+    quit_button = find_for_image('./images/menu_quit.png')
     if quit_button is None:
         print("종료 버튼이 나타나지 않았습니다.")
         sys.exit(0)
@@ -157,7 +162,7 @@ if __name__ == "__main__":
     pyautogui.click()
     
     time.sleep(1)
-    confirm_quit_button = find_for_image('confirm_quit.png')
+    confirm_quit_button = find_for_image('./images/confirm_quit.png')
     if confirm_quit_button is None:
         print("종료 확인 버튼이 나타나지 않았습니다.")
         sys.exit(0)
