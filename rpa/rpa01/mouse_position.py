@@ -1,3 +1,6 @@
+'''
+마우스 포지션 표시
+'''
 import pyautogui
 import time
 
