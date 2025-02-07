@@ -9,6 +9,7 @@
     - is_process_running: 프로그램이 실행 중인지 확인합니다.
     - wait_for_image: 지정된 이미지가 화면에 나타날 때까지 대기합니다.
     - find_for_image: 화면에서 이미지를 찾으면 반환, 없으면 None
+    - get_point_in_region: 찾은 영역(location) 내에서 특정 좌표로 이동한 위치를 반환하는 함수.
 
 작성자: 김도영
 작성일: 2025-02-06
@@ -34,6 +35,10 @@ class RegionName(Enum):
     RIGHT_BOTTOM = 7
     LEFT_BOTTOM = 8
     CENTER = 9
+    LEFT = 10
+    RIGHT = 11
+    TOP = 12
+    BOTTOM = 13
 
 class Direction(Enum):
     RIGHT = "Right"
@@ -90,6 +95,14 @@ def get_region(region_name: RegionName, base_region: Optional[Tuple[int, int, in
         return (left, top + height // 2, width // 2, height // 2)
     elif region_name == RegionName.CENTER:
         return (left + width // 3, top + height // 3, width // 3, height // 3)
+    elif region_name == RegionName.LEFT:
+        return (left, top, width // 2, height)
+    elif region_name == RegionName.RIGHT:
+        return (left + width // 2, top, width // 2, height)
+    elif region_name == RegionName.TOP:
+        return (left, top, width, height // 2)
+    elif region_name == RegionName.BOTTOM:
+        return (left, top + height // 2, width, height // 2)
     else:
         raise ValueError("잘못된 RegionName 값입니다.")
 
@@ -127,3 +140,18 @@ def find_for_image(image_path, confidence=0.8, region=None, grayscale=False):
         return pyautogui.locateOnScreen(image_path, confidence=confidence, region=region, grayscale=grayscale)
     except pyautogui.ImageNotFoundException:
         return None
+
+def get_point_in_region(location: Optional[Tuple[int, int, int, int]], offset_x: int, offset_y: int) -> Optional[Tuple[int, int]]:
+    """
+    찾은 영역(location) 내에서 특정 좌표로 이동한 위치를 반환하는 함수.
+
+    :param location: (x, y, width, height) 형태의 튜플 (pyautogui.locateOnScreen의 반환값)
+    :param offset_x: location의 좌측 상단 (0,0) 기준 x축 이동 거리
+    :param offset_y: location의 좌측 상단 (0,0) 기준 y축 이동 거리
+    :return: 이동한 (absolute_x, absolute_y) 좌표 튜플, location이 None이면 None 반환
+    """
+    if location is None:
+        return None  # 이미지 찾기 실패 시 None 반환
+
+    x, y, _, _ = location  # (left, top, width, height) 중 x, y만 사용
+    return (x + offset_x, y + offset_y)
