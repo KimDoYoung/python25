@@ -1,6 +1,3 @@
-'''
-이미 실행 중인지 확인
-'''
 import psutil
 import win32gui
 import win32process
@@ -13,7 +10,7 @@ def list_running_programs() -> list:
         process_info.append(proc.info)
     return process_info
         
-def is_program_running(program_name) -> bool:
+def is_process_running(program_name) -> bool:
     ''' 주어진 프로그램 이름이 실행 중인지 확인합니다. '''
     for proc in psutil.process_iter(['pid', 'name']):
         try:
@@ -24,16 +21,16 @@ def is_program_running(program_name) -> bool:
             pass
     return False
 
-def kill_program(program_name) -> bool:
+def kill_process(process_name) -> bool:
     ''' 주어진 프로그램 이름을 가진 프로세스를 종료합니다. 정상종료시 True, 그렇지 않으면 False를 반환합니다. '''
     for proc in psutil.process_iter(['pid', 'name']):
         try:
-            if proc.info['name'] == program_name:
+            if proc.info['name'] == process_name:
                 pid = proc.info['pid']
                 process = psutil.Process(pid)
                 process.terminate()  # 종료 시도
                 process.wait(timeout=3)  # 프로세스가 종료될 때까지 대기
-                print(f"{program_name} (PID: {pid}) has been terminated.")
+                print(f"{process_name} (PID: {pid}) has been terminated.")
                 return True
         except (psutil.NoSuchProcess, psutil.AccessDenied, psutil.ZombieProcess):
             continue
@@ -96,31 +93,9 @@ def get_main_window_handle(process_name, title_keyword=None):
             return main_window
 
     return None  # 프로세스를 찾지 못한 경우
+
 def maximize_window(process_name, title):
     ''' 주어진 창을 최대화합니다. '''
     result = get_main_window_handle(process_name, title)
     hwnd, title = result
     win32gui.ShowWindow(hwnd, win32con.SW_MAXIMIZE)  # ✅ 창 최대화
-
-# 확인하려는 프로그램 이름 (예: notepad.exe)
-process_name = "KSD.ApplicationBrowser.Shell.exe"
-
-#list_running_programs()
-
-titles = get_window_title_by_process(process_name)
-
-if titles:
-    print(f"{process_name}의 창 제목:", titles)
-else:
-    print(f"{process_name}의 창을 찾을 수 없습니다.")
-
-maximize_window(process_name, "e-SAFE")
-
-if is_program_running(process_name):
-    print(f"{process_name} is running.")
-    #kill_program(process_name)
-else:
-    print(f"{process_name} is not running.")
-
-
-# 프로그램 종료 시도

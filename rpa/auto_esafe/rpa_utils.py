@@ -155,3 +155,77 @@ def get_point_in_region(location: Optional[Tuple[int, int, int, int]], offset_x:
 
     x, y, _, _ = location  # (left, top, width, height) 중 x, y만 사용
     return (x + offset_x, y + offset_y)
+
+def find_and_click(image_path, region=None, grayscale=True, confidence=0.8,wait_seconds=1):
+    """ 이미지를 찾아 클릭하는 함수. 실패 시 Exception 발생 """
+    element = wait_for_image(image_path, region=region, grayscale=grayscale, confidence=confidence)
+    if not element:
+        raise Exception(f"이미지 찾기 실패: {image_path}")
+    
+    center = pyautogui.center(element)
+    pyautogui.moveTo(center.x, center.y, duration=0.5)
+    pyautogui.click()
+    time.sleep(wait_seconds)
+    return center
+
+def find_and_press_key(image_path: str, key: str, region: Optional[tuple] = None, grayscale: bool = True, confidence: float = 0.8) -> None :
+    """
+    특정 이미지를 찾으면 해당 키를 누르는 함수.
+
+    :param image_path: 찾을 이미지 경로
+    :param key: 찾았을 때 누를 키 (예: 'space', 'enter')
+    :param region: 검색할 화면 영역 (기본값: 전체 화면)
+    :param grayscale: 흑백 모드 사용 여부 (기본값: True)
+    :param confidence: 이미지 유사도 임계값 (기본값: 0.8)
+    :return: 이미지 찾으면 True, 못 찾으면 False
+    """
+    element = wait_for_image(image_path, region=region, grayscale=grayscale, confidence=confidence)
+    if not element:
+        raise Exception(f"이미지 찾기 실패: {image_path}") 
+    pyautogui.press(key)
+
+def move_and_click(image_path: str, region: Optional[Tuple[int, int, int, int]] = None, grayscale: bool = True, confidence: float = 0.8, duration: float = 0.5, wait_seconds=1) -> bool:
+    """
+    특정 이미지를 찾아서 해당 위치로 이동한 후 클릭하는 함수.
+
+    :param image_path: 찾을 이미지 경로
+    :param region: 검색할 화면 영역 (기본값: 전체 화면)
+    :param grayscale: 흑백 모드 사용 여부 (기본값: True)
+    :param confidence: 이미지 유사도 임계값 (기본값: 0.8)
+    :param duration: 마우스 이동 시간 (기본값: 0.5초)
+    :return: 성공적으로 클릭하면 True, 찾지 못하면 False
+    """
+    element = wait_for_image(image_path, region=region, grayscale=grayscale, confidence=confidence)
+    if element:
+        center = pyautogui.center(element)
+        pyautogui.moveTo(center.x, center.y, duration=duration)
+        pyautogui.click()
+        time.sleep(wait_seconds)
+    else:
+        raise Exception(f"이미지 찾기 실패: {image_path}")
+
+def mouse_move_and_click(x: int, y: int, duration: float = 0.5, wait_seconds=1) -> None:
+    """
+    지정한 좌표로 마우스를 이동한 후 클릭하는 함수.
+
+    :param x: X 좌표
+    :param y: Y 좌표
+    :param duration: 마우스 이동 시간 (기본값: 0.5초)
+    """
+    pyautogui.moveTo(x, y, duration=duration)
+    pyautogui.click()
+    time.sleep(wait_seconds)
+
+def press_keys(keys, delay=0.2, wait_seconds=1):
+    """
+    여러 개의 키를 순차적으로 입력하는 함수.
+    
+    :param keys: 입력할 키들의 리스트 (예: ['down', 'down', 'enter'])
+    :param delay: 각 키 입력 후 대기 시간 (기본값: 0.2초)
+    :param wait_seconds: 모든 키 입력 후 추가 대기 시간 (기본값: 1초)
+    """
+    for key in keys:
+        pyautogui.press(key)
+        time.sleep(delay)
+    
+    time.sleep(wait_seconds)  # 모든 키 입력 후 추가 대기

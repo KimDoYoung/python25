@@ -3,3 +3,5 @@ opencv-python
 psutil
 python-dotenv
 screeninfo
+pywin32
+requests
