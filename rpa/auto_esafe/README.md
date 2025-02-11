@@ -31,3 +31,14 @@
 3. log폴더에 auto_esafe_yyyy_mm_dd.log 생성
 4. 매일 특정시간에 동작하는 것을 기본으로 함(window자체 scheduler사용)
 5. pyinstaller를 사용하여 exe파일을 만든다.
+
+## 해야할일
+
+TODO  다음을 읽고 해결
+
+1. hts 팝업제거
+2. 나만의 스크립트 언어를 만들고 그것을 읽어들이면서 수행하는 것.
+3. spec_test 프로젝트를 만들어서 테스트 .env /images 폴더의 이미지 사용
+4. finished_chong 을 못 찾는 것 확인
+5. log를 다른 py에서도 사용하자. 
+6. debugging pytest로 테스팅을 ai에게 맡기자.
