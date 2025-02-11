@@ -16,12 +16,10 @@
 버전: 1.0
 """
 
-import os
 import time
 import ctypes
 import pyautogui
 import psutil
-from dotenv import load_dotenv
 from enum import Enum
 from typing import Optional, Tuple
 

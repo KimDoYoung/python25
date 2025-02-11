@@ -1,3 +1,4 @@
+import os
 import subprocess
 import time
 import pyautogui
@@ -412,15 +413,15 @@ def esafe_auto_work():
     work_start_main()
     log.info(">>> 프로그램 실행 및 인증서 선택 및 메인으로 진입 완료")
     
-    # log.info(">>> 500068 기준가1 시작")
-    # filename = work_500068_tab1()
-    # saved_files.append(filename)
-    # log.info(">>> 500068 기준가1 종료")
-    # #-------------------------기준가2
-    # log.info(">>> 500068 기준가2 작업 시작")
-    # files = work_500068_tab2()
-    # saved_files.extend(files)
-    # log.info(">>> 500068 기준가2 작업 종료")
+    log.info(">>> 500068 기준가1 시작")
+    filename = work_500068_tab1()
+    saved_files.append(filename)
+    log.info(">>> 500068 기준가1 종료")
+    #-------------------------기준가2
+    log.info(">>> 500068 기준가2 작업 시작")
+    files = work_500068_tab2()
+    saved_files.extend(files)
+    log.info(">>> 500068 기준가2 작업 종료")
     
     #-------------------------500038 분배금 내역통보
     log.info(">>> 500038 분배금 내역통보 작업 시작")
