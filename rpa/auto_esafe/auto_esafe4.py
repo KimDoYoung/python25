@@ -5,6 +5,7 @@ import pyautogui
 from logger import Logger
 from config import Config
 from datetime import datetime, timedelta
+from path_utils import pngimg
 from rpa_misc import get_text_from_input_field
 from rpa_utils import *
 from rpa_process import is_process_running, kill_process
@@ -89,28 +90,28 @@ def work_start_main():
     region = get_region(RegionName.CENTER)
 
     # 로그인 버튼 클릭
-    find_and_click('./images/login_button.png', region=region, wait_seconds=2)
+    find_and_click(pngimg('login_button'), region=region, wait_seconds=2)
     
     # 사용자 선택
-    find_and_click('./images/user.png', region=region)
+    find_and_click(pngimg('user'), region=region)
 
     # 비밀번호 입력
     pyautogui.write(Config.PASSWORD)
 
     # 인증서 선택 버튼 클릭
-    find_and_click('./images/certi_select_button.png', grayscale=True, wait_seconds=3)
+    find_and_click(pngimg('certi_select_button'), grayscale=True, wait_seconds=3)
 
 
     log.info("업무구분 선택")
-    find_and_click('./images/work_type.png', grayscale=True)
-    find_and_click('./images/work_type_confirm.png', grayscale=True)
+    find_and_click(pngimg('work_type'), grayscale=True)
+    find_and_click(pngimg('work_type_confirm'), grayscale=True)
 
     log.info("메인화면 로딩중...")
     time.sleep(5)
     # 메인 화면 체크
     region = get_region(RegionName.LEFT_TOP)
-    #find_and_click('./images/main_logo.png', region=region)
-    wait_for_image('./images/main_logo.png', region=region)
+    #find_and_click(pngimg('main_logo'), region=region)
+    wait_for_image(pngimg('main_logo'), region=region)
     log.info("메인화면 로딩 완료")
 
 def work_500068_tab1():
@@ -124,27 +125,27 @@ def work_500068_tab1():
     log.info("기준가1 작업시작")
     # 펀드 전체 체크박스 클릭
     region = get_region(RegionName.RIGHT_TOP)
-    find_and_click('./images/fund_all_checkbox.png', region=region, grayscale=True)
+    find_and_click(pngimg('fund_all_checkbox'), region=region, grayscale=True)
 
     # 파일 다운로드 버튼 클릭
     region = get_region(RegionName.LEFT_BOTTOM)
-    find_and_click('./images/download_combo.png', region=region, grayscale=True, wait_seconds=2)
+    find_and_click(pngimg('download_combo'), region=region, grayscale=True, wait_seconds=2)
 
     # 조회 버튼 클릭
     region = get_region(RegionName.RIGHT_TOP)
-    find_and_click('./images/query.png', region=region, wait_seconds=3)
+    find_and_click(pngimg('query'), region=region, wait_seconds=3)
 
     # 조회 완료 확인
-    query_finish_check = wait_for_image('./images/query_finish_check.png', region=region)
+    query_finish_check = wait_for_image(pngimg('query_finish_check'), region=region)
     time.sleep(3)
 
     # 다운로드 옵션 클릭
     region = get_region(RegionName.LEFT_BOTTOM) 
-    find_and_click('./images/download_combo.png', region=region, grayscale=True)
+    find_and_click(pngimg('download_combo'), region=region, grayscale=True)
     press_keys(['down','down','enter'], wait_seconds=2)
     
     # Save As 파일명 입력
-    file_name = wait_for_image('./images/file_name.png', grayscale=True)
+    file_name = wait_for_image(pngimg('file_name'), grayscale=True)
     if not file_name:
         raise Exception("파일 이름 입력창을 찾을 수 없습니다.")
     
@@ -160,7 +161,7 @@ def work_500068_tab1():
     log.info(f"파일 저장 경로(기준가1): {saved_file_path}")
     time.sleep(5)
     region = get_region(RegionName.CENTER)
-    find_and_press_key('./images/alert_icon.png', 'space', region=region)
+    find_and_press_key(pngimg('alert_icon'), 'space', region=region)
     return saved_file_path
 
 def work_500068_tab2() -> list:
@@ -174,32 +175,32 @@ def work_500068_tab2() -> list:
     mouse_move_and_click(443, 275, 5)
     # 펀드전체 클릭
     region = get_region(RegionName.RIGHT_TOP)
-    move_and_click('./images/fund_all_checkbox.png', region=region, grayscale=True)
+    move_and_click(pngimg('fund_all_checkbox'), region=region, grayscale=True)
     # 파일다운로드 클릭
     region = get_region(RegionName.LEFT_BOTTOM)
-    move_and_click('./images/download_combo.png',  region=region, grayscale=True)
+    move_and_click(pngimg('download_combo'),  region=region, grayscale=True)
     
     # 조회버튼 클릭
     region = get_region(RegionName.RIGHT_TOP)
-    move_and_click('./images/query.png', region=region, wait_seconds=3)
+    move_and_click(pngimg('query'), region=region, wait_seconds=3)
     # 기준가 조회 체크까지 기다림
-    query_finish_check = wait_for_image('./images/query_finish_check.png', region=region, timeout=120)
+    query_finish_check = wait_for_image(pngimg('query_finish_check'), region=region, timeout=120)
     time.sleep(3)
-    found_image = find_and_press_key('./images/error_icon.png', 'space', region=region, ignoreNotFound=True, timeout=5)
+    found_image = find_and_press_key(pngimg('error_icon'), 'space', region=region, ignoreNotFound=True, timeout=5)
     if found_image:
         log.error("기준가 tab2 조회 오류 발생")
         return []
     # 파일 다운로드 클릭
     region = get_region(RegionName.LEFT_BOTTOM)
-    move_and_click('./images/download_combo.png', region=region, grayscale=True)
+    move_and_click(pngimg('download_combo'), region=region, grayscale=True)
     # 다운로드 옵션 클릭
     press_keys(['down','down','enter'], wait_seconds=2)
-    found_image = find_and_press_key('./images/error_icon.png', 'space', region=region, ignoreNotFound=True, timeout=5)
+    found_image = find_and_press_key(pngimg('error_icon'), 'space', region=region, ignoreNotFound=True, timeout=5)
     if found_image:
         log.error("기준가 tab2 저장시 오류")
         return []    
     # 파일명 입력
-    file_name = wait_for_image('./images/file_name.png', grayscale=True)
+    file_name = wait_for_image(pngimg('file_name'), grayscale=True)
     if not file_name:
         raise Exception("파일 이름 입력창을 찾을 수 없습니다.")
     
@@ -218,14 +219,14 @@ def work_500068_tab2() -> list:
     time.sleep(5)
     # 종료 확인 버튼 클릭
     region = get_region(RegionName.CENTER)
-    find_and_press_key('./images/alert_icon.png', 'space', region=region)
+    find_and_press_key(pngimg('alert_icon'), 'space', region=region)
     # excel 저장
     region = get_region(RegionName.LEFT_BOTTOM)
-    move_and_click('./images/download_combo.png', region=region, grayscale=True)
+    move_and_click(pngimg('download_combo'), region=region, grayscale=True)
     # 다운로드 옵션 클릭
     press_keys(['down','down','down', 'enter'], wait_seconds=2)
     # 파일명 입력
-    file_name = wait_for_image('./images/file_name.png', grayscale=True)
+    file_name = wait_for_image(pngimg('file_name'), grayscale=True)
     if not file_name:
         raise Exception("파일 이름 입력창을 찾을 수 없습니다.")
     
@@ -245,7 +246,7 @@ def work_500068_tab2() -> list:
         
     # 종료 확인 버튼 클릭
     region = get_region(RegionName.CENTER)
-    find_and_press_key('./images/alert_icon.png', 'space', region=region)
+    find_and_press_key(pngimg('alert_icon'), 'space', region=region)
     return filenames
 
 def work_500038(prev_working_day: str) -> str:
@@ -270,25 +271,25 @@ def work_500038(prev_working_day: str) -> str:
     
     # 펀드전체 체크
     region = get_region(RegionName.RIGHT_TOP)
-    find_and_click('./images/fund_all_checkbox.png', region=region, grayscale=True)
+    find_and_click(pngimg('fund_all_checkbox'), region=region, grayscale=True)
     # 파일 다운로드 버튼 클릭
     region = get_region(RegionName.LEFT_BOTTOM)
-    find_and_click('./images/download_combo.png', region=region, grayscale=True, wait_seconds=2)
+    find_and_click(pngimg('download_combo'), region=region, grayscale=True, wait_seconds=2)
 
     # 조회 버튼 클릭
     region = get_region(RegionName.RIGHT_TOP)
-    find_and_click('./images/query.png', region=region, wait_seconds=3)    
+    find_and_click(pngimg('query'), region=region, wait_seconds=3)    
     
     # 조회 완료 확인
     region = get_region(RegionName.CENTER)
-    find_and_press_key('./images/alert_icon.png', 'space', region=region)
+    find_and_press_key(pngimg('alert_icon'), 'space', region=region)
     # 다운로드 옵션 클릭
     region = get_region(RegionName.LEFT_BOTTOM)
-    find_and_click('./images/download_combo.png', region=region, grayscale=True)
+    find_and_click(pngimg('download_combo'), region=region, grayscale=True)
     press_keys(['down','down','down','enter'], wait_seconds=2)
     
     # Save As 파일명 입력
-    file_name = wait_for_image('./images/file_name.png', grayscale=True)
+    file_name = wait_for_image(pngimg('file_name'), grayscale=True)
     if not file_name:
         raise Exception("파일 이름 입력창을 찾을 수 없습니다.")
     
@@ -304,7 +305,7 @@ def work_500038(prev_working_day: str) -> str:
     log.info(f"파일 저장 경로(기준가1): {saved_file_path}")
     time.sleep(5)
     region = get_region(RegionName.CENTER)
-    find_and_press_key('./images/alert_icon.png', 'space', region=region)
+    find_and_press_key(pngimg('alert_icon'), 'space', region=region)
     return saved_file_path
 
 def work_800008(prev_working_day: str) -> str:
@@ -332,21 +333,21 @@ def work_800008(prev_working_day: str) -> str:
     pyautogui.write(today_ymd)         
     # 파일 다운로드 버튼 클릭
     region = get_region(RegionName.LEFT_BOTTOM)
-    find_and_click('./images/download_combo.png', region=region, grayscale=True, wait_seconds=2)
+    find_and_click(pngimg('download_combo'), region=region, grayscale=True, wait_seconds=2)
 
     # 조회 버튼 클릭
     region = get_region(RegionName.RIGHT_TOP)
-    find_and_click('./images/query.png', region=region, wait_seconds=3)    
+    find_and_click(pngimg('query'), region=region, wait_seconds=3)    
 
     # 조회 완료 확인
     region = get_region(RegionName.CENTER)
-    find_and_press_key('./images/alert_icon.png', 'space', region=region)
+    find_and_press_key(pngimg('alert_icon'), 'space', region=region)
     # 다운로드 옵션 클릭
     region = get_region(RegionName.LEFT_BOTTOM)
-    find_and_click('./images/download_combo.png', region=region, grayscale=True)
+    find_and_click(pngimg('download_combo'), region=region, grayscale=True)
     press_keys(['down','enter'], wait_seconds=2)    
     # Save As 파일명 입력
-    file_name = wait_for_image('./images/file_name.png', grayscale=True)
+    file_name = wait_for_image(pngimg('file_name'), grayscale=True)
     if not file_name:
         raise Exception("파일 이름 입력창을 찾을 수 없습니다.")
     
@@ -360,11 +361,11 @@ def work_800008(prev_working_day: str) -> str:
     time.sleep(1)
     pyautogui.press('enter')
     region = get_region(RegionName.CENTER)
-    find_and_press_key('./images/warning_icon.png', 'space', region=region, ignoreNotFound=True, timeout=5)
+    find_and_press_key(pngimg('warning_icon'), 'space', region=region, ignoreNotFound=True, timeout=5)
     log.info(f"파일 저장 경로(8): {saved_file_path}")
     time.sleep(5)
     region = get_region(RegionName.CENTER)
-    find_and_press_key('./images/alert_icon.png', 'space', region=region, ignoreNotFound=True, timeout=10)
+    find_and_press_key(pngimg('alert_icon'), 'space', region=region, ignoreNotFound=True, timeout=10)
     return saved_file_path
 
 def work_800100() -> str:
@@ -380,21 +381,21 @@ def work_800100() -> str:
     # 조회 버튼 클릭
     region = get_region(RegionName.RIGHT_TOP)
     log.info('3')
-    find_and_click('./images/query.png', region=region, wait_seconds=5)
+    find_and_click(pngimg('query'), region=region, wait_seconds=5)
     log.info('4')
     region = get_region(RegionName.RIGHT_BOTTOM)
     log.info('5')
-    wait_for_image('./images/query_finish_chong.png', region=region)
+    wait_for_image(pngimg('query_finish_chong'), region=region)
     log.info('6')
     
 # 다운로드 옵션 클릭
     region = get_region(RegionName.LEFT_BOTTOM)
-    find_and_click('./images/download_combo.png', region=region, grayscale=True)
+    find_and_click(pngimg('download_combo'), region=region, grayscale=True)
     log.info('7')
     press_keys(['down','down','enter'], wait_seconds=2)    
     log.info('8')
     # Save As 파일명 입력
-    file_name = wait_for_image('./images/file_name.png', grayscale=True)
+    file_name = wait_for_image(pngimg('file_name'), grayscale=True)
     log.info('9')
     if not file_name:
         raise Exception("파일 이름 입력창을 찾을 수 없습니다.")
@@ -413,11 +414,11 @@ def work_800100() -> str:
     log.info('13')
     pyautogui.press('enter')
     region = get_region(RegionName.CENTER)
-    find_and_press_key('./images/warning_icon.png', 'space', region=region, ignoreNotFound=True, timeout=5)
+    find_and_press_key(pngimg('warning_icon'), 'space', region=region, ignoreNotFound=True, timeout=5)
     log.info('14')
     log.info(f"파일 저장 경로(8): {saved_file_path}")
     region = get_region(RegionName.CENTER)
-    find_and_press_key('./images/alert_icon.png', 'space', region=region, ignoreNotFound=True)
+    find_and_press_key(pngimg('alert_icon'), 'space', region=region, ignoreNotFound=True)
     log.info('15')
     time.sleep(3)
     return saved_file_path    
@@ -450,7 +451,7 @@ def esafe_auto_work():
     #-------------------------500038 분배금 내역통보
     log.info(">>> 500038 분배금 내역통보 작업 시작")
     log.info("탭닫기 시작")
-    close_all_tabs_via_context_menu((460,85), './images/context_menu.png', './images/all_tab_close.png')
+    close_all_tabs_via_context_menu((460,85), pngimg('context_menu'), pngimg('all_tab_close'))
     log.info("탭닫기 종료")
     prev_working_day = get_prev_working_day(*get_today())
     log.info("이전 영업일: " + prev_working_day)
@@ -459,14 +460,14 @@ def esafe_auto_work():
     log.info(">>> 500038 분배금 내역통보 작업 종료")
     #-------------------------800008종목발행현황
     log.info(">>> 800008 종목발행현황 작업 시작")
-    close_all_tabs_via_context_menu((460,85), './images/context_menu.png', './images/all_tab_close.png')
+    close_all_tabs_via_context_menu((460,85), pngimg('context_menu'), pngimg('all_tab_close'))
     filename = work_800008(prev_working_day)
     saved_files.append(filename)
     log.info(">>> 800008 분배금 내역통보 작업 종료")
     #-------------------------800100 일자별 일정현황
     log.info(">>> 800100 일자별 일정현황 시작")
     log.info("탭닫기 시작")
-    close_all_tabs_via_context_menu((460,85), './images/context_menu.png', './images/all_tab_close.png')
+    close_all_tabs_via_context_menu((460,85), pngimg('context_menu'), pngimg('all_tab_close'))
     log.info("탭닫기 종료")
     filename = work_800100()
     saved_files.append(filename)

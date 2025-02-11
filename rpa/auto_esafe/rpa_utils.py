@@ -22,6 +22,9 @@ import pyautogui
 import psutil
 from enum import Enum
 from typing import Optional, Tuple
+# from logger import Logger
+
+# log = Logger()
 
 class RegionName(Enum):
     LEFT_ONE_THIRD = 1
@@ -126,8 +129,10 @@ def wait_for_image(image_path, timeout=60, confidence=0.8, region=None, grayscal
         try:
             location = pyautogui.locateOnScreen(image_path, confidence=confidence, region=region, grayscale=grayscale)
             if location:
+                # log.info(f"wait_for_image: 이미지 찾음: {image_path}")
                 return location
         except pyautogui.ImageNotFoundException:
+            # log.warning(f"wait_for_image: 이미지 찾기 실패: {image_path}")
             pass
         time.sleep(1)
     return None
@@ -166,7 +171,7 @@ def find_and_click(image_path, region=None, grayscale=True, confidence=0.8,wait_
     time.sleep(wait_seconds)
     return center
 
-def find_and_press_key(image_path: str, key: str, region: Optional[tuple] = None, grayscale: bool = True, confidence: float = 0.8, ignoreNotFound=False, timeout=60) -> None :
+def find_and_press_key(image_path: str, key: str, region: Optional[tuple] = None, grayscale: bool = True, confidence: float = 0.8, ignoreNotFound=False, timeout=60) -> bool :
     """
     특정 이미지를 찾으면 해당 키를 누르는 함수.
 
@@ -180,10 +185,11 @@ def find_and_press_key(image_path: str, key: str, region: Optional[tuple] = None
     element = wait_for_image(image_path, region=region, grayscale=grayscale, confidence=confidence, timeout=timeout)
     if not element:
         if ignoreNotFound:
-            return
+            return False
         else:
             raise Exception(f"이미지 찾기 실패: {image_path}") 
     pyautogui.press(key)
+    return True
 
 def move_and_click(image_path: str, region: Optional[Tuple[int, int, int, int]] = None, grayscale: bool = True, confidence: float = 0.8, duration: float = 0.5, wait_seconds=1) -> bool:
     """

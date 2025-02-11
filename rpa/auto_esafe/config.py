@@ -2,8 +2,10 @@ import os
 from dotenv import load_dotenv
 from datetime import datetime
 
+from path_utils import env_path, log_path
+
 # .env 파일 로드
-load_dotenv()
+load_dotenv(env_path())
 
 class Config:
     """환경 설정 및 상수 관리"""
@@ -13,8 +15,7 @@ class Config:
     PROCESS_NAME = os.getenv("PROCESS_NAME")
     WINDOWN_TITLE = os.getenv("WINDOWN_TITLE")
     # 로그 설정
-    BASE_DIR = os.path.dirname(os.path.abspath(__file__))  # 실행 파일 위치
-    LOG_DIR = os.path.join(BASE_DIR, "log")  # log 폴더
+    LOG_DIR = log_path()
     LOG_FILE_FORMAT = "auto_esafe_%Y_%m_%d.log"
     SAVE_AS_PATH1 = os.getenv("SAVE_AS_PATH1")
 
