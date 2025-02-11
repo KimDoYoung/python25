@@ -168,7 +168,7 @@ def find_and_click(image_path, region=None, grayscale=True, confidence=0.8,wait_
     time.sleep(wait_seconds)
     return center
 
-def find_and_press_key(image_path: str, key: str, region: Optional[tuple] = None, grayscale: bool = True, confidence: float = 0.8) -> None :
+def find_and_press_key(image_path: str, key: str, region: Optional[tuple] = None, grayscale: bool = True, confidence: float = 0.8, ignoreNotFound=False, timeout=60) -> None :
     """
     특정 이미지를 찾으면 해당 키를 누르는 함수.
 
@@ -179,9 +179,12 @@ def find_and_press_key(image_path: str, key: str, region: Optional[tuple] = None
     :param confidence: 이미지 유사도 임계값 (기본값: 0.8)
     :return: 이미지 찾으면 True, 못 찾으면 False
     """
-    element = wait_for_image(image_path, region=region, grayscale=grayscale, confidence=confidence)
+    element = wait_for_image(image_path, region=region, grayscale=grayscale, confidence=confidence, timeout=timeout)
     if not element:
-        raise Exception(f"이미지 찾기 실패: {image_path}") 
+        if ignoreNotFound:
+            return
+        else:
+            raise Exception(f"이미지 찾기 실패: {image_path}") 
     pyautogui.press(key)
 
 def move_and_click(image_path: str, region: Optional[Tuple[int, int, int, int]] = None, grayscale: bool = True, confidence: float = 0.8, duration: float = 0.5, wait_seconds=1) -> bool:
