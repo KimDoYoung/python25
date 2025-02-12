@@ -8,6 +8,7 @@
 4. 파일 다운로드
 5. eSAFE2019 종료
 6. 다운로드 받은 파일을 ftp서버에 put
+7. 조회 조건에서 [공공데이터](https://www.data.go.kr/)의 open api를 사용
 
 ## 동작
 
@@ -29,8 +30,10 @@
 1. .env를 사용함. password저장
 2. config에 상수 보관
 3. log폴더에 auto_esafe_yyyy_mm_dd.log 생성
-4. 매일 특정시간에 동작하는 것을 기본으로 함(window자체 scheduler사용)
-5. pyinstaller를 사용하여 exe파일을 만든다.
+4. log폴더는 exe파일이 있는 폴더 하위에 log라는 이름으로 만들어짐
+5. 매일 특정시간에 동작하는 것을 기본으로 함(window자체 scheduler사용)
+6. pyinstaller를 사용하여 exe파일을 만든다.
+7. 다운로드 받은 excel은 csv로 변환되어 ftp 서버에 upload된다.
 
 ## 해야할일
 
@@ -40,5 +43,6 @@ TODO  다음을 읽고 해결
 2. 나만의 스크립트 언어를 만들고 그것을 읽어들이면서 수행하는 것.
 3. spec_test 프로젝트를 만들어서 테스트 .env /images 폴더의 이미지 사용
 4. finished_chong 을 못 찾는 것 확인
-5. log를 다른 py에서도 사용하자. 
+5. log를 다른 py에서도 사용하자.
 6. debugging pytest로 테스팅을 ai에게 맡기자.
+7. .env에 LOG_LEVEL=DEBUG 로

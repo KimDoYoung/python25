@@ -500,7 +500,7 @@ if __name__ == "__main__":
     pre_check()
     version = Config.VERSION
     log.info("------------------------------------------------------")
-    log.info(f"auto_esafe 프로그램 시작 ver : {version}, Debug Mode = {Config.DEBUG}")
+    log.info(f"auto_esafe 프로그램 시작 ver : {version}")
     log.info("------------------------------------------------------")
     try:
         # esafe화면작업

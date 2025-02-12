@@ -1,3 +1,13 @@
+# config.py
+"""
+모듈 설명: 
+    - Config 클래스: 환경 설정 및 상수 관리
+
+작성자: 김도영
+작성일: 2025-02-12
+버전: 1.0
+"""
+import logging
 import os
 from dotenv import load_dotenv
 from datetime import datetime
@@ -9,13 +19,16 @@ load_dotenv(env_path())
 
 class Config:
     """환경 설정 및 상수 관리"""
-    DEBUG = os.getenv('DEBUG', 'False').lower() in ('true', '1', 'yes')
     VERSION = os.getenv("VERSION")
+
     # 프로그램 실행 경로
     PROGRAM_PATH = os.getenv("PROGRAM_PATH")
     PROCESS_NAME = os.getenv("PROCESS_NAME")
     WINDOWN_TITLE = os.getenv("WINDOWN_TITLE")
+
     # 로그 설정
+    LOG_LEVEL_ENV = os.getenv("LOG_LEVEL", "INFO").upper()
+    LOG_LEVEL = getattr(logging, LOG_LEVEL_ENV, logging.INFO)  # 기본값 INFO
     LOG_DIR = log_path()
     LOG_FILE_FORMAT = "auto_esafe_%Y_%m_%d.log"
     SAVE_AS_PATH1 = os.getenv("SAVE_AS_PATH1")

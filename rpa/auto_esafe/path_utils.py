@@ -3,10 +3,10 @@
 모듈 설명: 
     - pyinstaller를 사용하기 위한 경로 설정 및 이미지 파일 경로 참조 함수
 주요 기능:
-    - get_base_path: PyInstaller 실행 시에도 올바른 경로 반환
+    - get_base_path: PyInstaller 실행 시, git bash에서도 올바른 경로 반환
     - pngimg: 이미지 파일 경로를 간단히 참조하는 함수
-    - env_path: .env 파일의 경로를 반환
-    - log_path: 로그 파일 경로 반환
+    - env_path: .env 파일의 경로를 반환 (현재 폴더)
+    - log_path: 로그 파일 경로 반환 (pyinstaller 실행 시도, git bash에도 실행파일이 있는 폴더하위에 log폴더 )
 
 작성자: 김도영
 작성일: 2025-02-11
@@ -29,10 +29,6 @@ BASE_PATH = get_base_path()
 def pngimg(filename):
     """이미지 파일 경로를 간단히 참조하는 함수"""
     return os.path.join(BASE_PATH, "images", filename + ".png")
-
-# def env_path():
-#     """.env 파일의 경로 반환"""
-#     return os.path.join(os.path.dirname(sys.executable), ".env")
 
 def env_path():
     """PyInstaller 실행 환경에서도 올바른 .env 경로 반환"""
