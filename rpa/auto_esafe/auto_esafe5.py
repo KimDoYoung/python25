@@ -138,7 +138,7 @@ def work_500068_tab1():
     find_and_click(pngimg('query'), region=region, wait_seconds=3)
 
     # 조회 완료 확인
-    query_finish_check = wait_for_image(pngimg('query_finish_gun'), region=(1818,955,84,30))
+    query_finish_check = wait_for_image(pngimg('query_finish_check'), region=region)
     time.sleep(3)
 
     # 다운로드 옵션 클릭
@@ -186,8 +186,7 @@ def work_500068_tab2() -> list:
     region = get_region(RegionName.RIGHT_TOP)
     move_and_click(pngimg('query'), region=region, wait_seconds=3)
     # 기준가 조회 체크까지 기다림
-    # query_finish_check = wait_for_image(pngimg('query_finish_check'), region=region, timeout=120)
-    query_finish_check = wait_for_image(pngimg('query_finish_gun'), region=(1818,955,84,30), timeout=120)
+    query_finish_check = wait_for_image(pngimg('query_finish_check'), region=region, timeout=120)
     time.sleep(3)
     found_image = find_and_press_key(pngimg('error_icon'), 'space', region=region, ignoreNotFound=True, timeout=5)
     if found_image:
@@ -374,29 +373,40 @@ def work_800008(prev_working_day: str) -> str:
 def work_800100() -> str:
     '''800100 일자별 일정현황 시작'''
     log.info("화면번호 입력 800100 입력 후 엔터")
+    log.info('1')
     mouse_move_and_click(1760, 50, wait_seconds=1)
+    log.info('2')
     pyautogui.hotkey('ctrl', 'a')  # 전체 선택
     pyautogui.write("800100")
     pyautogui.press('enter')
+    time.sleep(5)    
     # 조회 버튼 클릭
     region = get_region(RegionName.RIGHT_TOP)
+    log.info('3')
     find_and_click(pngimg('query'), region=region, wait_seconds=5)
+    log.info('4')
     region = get_region(RegionName.RIGHT_BOTTOM)
-    # wait_for_image(pngimg('query_finish_chong'), region=region)
-    wait_for_image(pngimg('query_finish_gun'), region=(1818,955,84,30))
-    time.sleep(3)
+    log.info('5')
+    wait_for_image(pngimg('query_finish_chong'), region=region)
+    log.info('6')
     
 # 다운로드 옵션 클릭
     region = get_region(RegionName.LEFT_BOTTOM)
     find_and_click(pngimg('download_combo'), region=region, grayscale=True)
+    log.info('7')
     press_keys(['down','down','enter'], wait_seconds=2)    
+    log.info('8')
     # Save As 파일명 입력
     file_name = wait_for_image(pngimg('file_name'), grayscale=True)
+    log.info('9')
     if not file_name:
         raise Exception("파일 이름 입력창을 찾을 수 없습니다.")
     
+    log.info('10')
     x, y = get_point_with_location(file_name, Direction.RIGHT, 100)
+    log.info('11')
     mouse_move_and_click(x, y, wait_seconds=1)
+    log.info('12')
 
     # 저장 경로 입력
     pyautogui.press('home')
@@ -435,35 +445,35 @@ def esafe_auto_work():
     saved_files.append(filename)
     log.info(">>> 500068 기준가1 종료")
     # #-------------------------기준가2
-    log.info(">>> 500068 기준가2 작업 시작")
-    files = work_500068_tab2()
-    saved_files.extend(files)
-    log.info(">>> 500068 기준가2 작업 종료")
+    # log.info(">>> 500068 기준가2 작업 시작")
+    # files = work_500068_tab2()
+    # saved_files.extend(files)
+    # log.info(">>> 500068 기준가2 작업 종료")
     
     # #-------------------------500038 분배금 내역통보
-    log.info(">>> 500038 분배금 내역통보 작업 시작")
-    log.info("탭닫기 시작")
-    close_all_tabs_via_context_menu((460,85), pngimg('context_menu'), pngimg('all_tab_close'))
-    log.info("탭닫기 종료")
-    prev_working_day = get_prev_working_day(*get_today())
-    log.info("이전 영업일: " + prev_working_day)
-    filename = work_500038(prev_working_day)
-    saved_files.append(filename)
-    log.info(">>> 500038 분배금 내역통보 작업 종료")
+    # log.info(">>> 500038 분배금 내역통보 작업 시작")
+    # log.info("탭닫기 시작")
+    # close_all_tabs_via_context_menu((460,85), pngimg('context_menu'), pngimg('all_tab_close'))
+    # log.info("탭닫기 종료")
+    # prev_working_day = get_prev_working_day(*get_today())
+    # log.info("이전 영업일: " + prev_working_day)
+    # filename = work_500038(prev_working_day)
+    # saved_files.append(filename)
+    # log.info(">>> 500038 분배금 내역통보 작업 종료")
     # #-------------------------800008종목발행현황
-    log.info(">>> 800008 종목발행현황 작업 시작")
-    close_all_tabs_via_context_menu((460,85), pngimg('context_menu'), pngimg('all_tab_close'))
-    filename = work_800008(prev_working_day)
-    saved_files.append(filename)
-    log.info(">>> 800008 분배금 내역통보 작업 종료")
+    # log.info(">>> 800008 종목발행현황 작업 시작")
+    # close_all_tabs_via_context_menu((460,85), pngimg('context_menu'), pngimg('all_tab_close'))
+    # filename = work_800008(prev_working_day)
+    # saved_files.append(filename)
+    # log.info(">>> 800008 분배금 내역통보 작업 종료")
     # #-------------------------800100 일자별 일정현황
-    log.info(">>> 800100 일자별 일정현황 시작")
-    log.info("탭닫기 시작")
-    close_all_tabs_via_context_menu((460,85), pngimg('context_menu'), pngimg('all_tab_close'))
-    log.info("탭닫기 종료")
-    filename = work_800100()
-    saved_files.append(filename)
-    log.info(">>> 800100 일자별 일정현황 종료")
+    # log.info(">>> 800100 일자별 일정현황 시작")
+    # log.info("탭닫기 시작")
+    # close_all_tabs_via_context_menu((460,85), pngimg('context_menu'), pngimg('all_tab_close'))
+    # log.info("탭닫기 종료")
+    # filename = work_800100()
+    # saved_files.append(filename)
+    # log.info(">>> 800100 일자별 일정현황 종료")
     
     # 프로그램 종료
     mouse_move_and_click(1901, 16, wait_seconds=1)
@@ -502,11 +512,14 @@ if __name__ == "__main__":
     log.info("------------------------------------------------------")
     log.info(f"auto_esafe 프로그램 시작 ver : {version}, Debug Mode = {Config.DEBUG}")
     log.info("------------------------------------------------------")
+    if Config.DEBUG:
+        log.info(">>> 디버그 모드로 실행합니다.")
+        exit(1)
     try:
         # esafe화면작업
         filenames = esafe_auto_work()
         
-        log.info(">>> CSV 변환 시작") 
+        # filenames의 항목중 space가 있으면 제거
         for idx, filename in enumerate(filenames, start=1):
             # 확장자가 xls인 파일을 csv로 변환
             if filename.endswith('.xls') or filename.endswith('.xlsx'):
@@ -516,7 +529,6 @@ if __name__ == "__main__":
                 log.info(f"{idx}. CSV 변환 완료: {csv_file}")
             else:
                 log.info(f"{idx}. 저장된 파일 경로: {filename}")
-        log.info(">>> CSV 변환 시작") 
         # FTP 업로드
         log.info(">>> FTP 업로드 시작")
         ftp_upload_files(filenames)

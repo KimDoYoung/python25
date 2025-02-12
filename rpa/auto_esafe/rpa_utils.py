@@ -22,9 +22,10 @@ import pyautogui
 import psutil
 from enum import Enum
 from typing import Optional, Tuple
-# from logger import Logger
+from config import Config
+from logger import Logger
 
-# log = Logger()
+log = Logger()
 
 class RegionName(Enum):
     LEFT_ONE_THIRD = 1
@@ -129,10 +130,12 @@ def wait_for_image(image_path, timeout=60, confidence=0.8, region=None, grayscal
         try:
             location = pyautogui.locateOnScreen(image_path, confidence=confidence, region=region, grayscale=grayscale)
             if location:
-                # log.info(f"wait_for_image: 이미지 찾음: {image_path}")
+                if Config.DEBUG:
+                    log.debug(f"wait_for_image: 이미지 찾음: {image_path}")
                 return location
         except pyautogui.ImageNotFoundException:
-            # log.warning(f"wait_for_image: 이미지 찾기 실패: {image_path}")
+            if Config.DEBUG:
+                log.warning(f"wait_for_image: 이미지 찾기 실패: {image_path}")
             pass
         time.sleep(1)
     return None

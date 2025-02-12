@@ -2,8 +2,8 @@
     "configurations": 
     [
         {"name":"Python Debugger: Current File","type":"debugpy","request":"launch","program":"${file}",
-        //"console":"integratedTerminal",
-        "console":"externalTerminal",
+        "console":"integratedTerminal",
+        // "console":"externalTerminal",
         "cwd" : "${fileDirname}",
         "env": {"PYTHONPATH": "${workspaceFolder}"},
         "args": []

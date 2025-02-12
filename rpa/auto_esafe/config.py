@@ -9,7 +9,8 @@ load_dotenv(env_path())
 
 class Config:
     """환경 설정 및 상수 관리"""
-
+    DEBUG = os.getenv('DEBUG', 'False').lower() in ('true', '1', 'yes')
+    VERSION = os.getenv("VERSION")
     # 프로그램 실행 경로
     PROGRAM_PATH = os.getenv("PROGRAM_PATH")
     PROCESS_NAME = os.getenv("PROCESS_NAME")
