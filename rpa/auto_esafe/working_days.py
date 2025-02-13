@@ -62,3 +62,28 @@ def todayYmd():
     """오늘 날짜를 yyyymmdd 형식으로 반환"""
     today = datetime.now()
     return today.strftime("%Y%m%d")
+
+def isTodayAHoliday() -> bool:
+    """오늘 날짜가 공휴일인지 여부를 반환"""
+    today = datetime.now()
+    # today 가 토요일이거나 일요일이면 공휴일
+    if today.weekday() in [5, 6]:
+        return True
+    # 오늘이 공휴일 목록에 있는지 확인
+    listHoliday = get_holiday_list(today.year, today.month)
+    return today.strftime("%Y%m%d") in listHoliday
+
+def isHoliday(ymd: str) -> bool:
+    """주어진 날짜(YYYYMMDD 형식)가 공휴일인지 여부를 반환"""
+    try:
+        date_obj = datetime.strptime(ymd, "%Y%m%d")
+    except ValueError:
+        raise ValueError("날짜 형식이 잘못되었습니다. YYYYMMDD 형식으로 입력하세요.")
+
+    # 해당 날짜가 주말(토요일 or 일요일)인지 확인
+    if date_obj.weekday() in [5, 6]:  # 5: 토요일, 6: 일요일
+        return True
+
+    # 해당 날짜가 공휴일 목록에 있는지 확인
+    listHoliday = get_holiday_list(date_obj.year, date_obj.month)
+    return ymd in listHoliday

@@ -6,12 +6,13 @@ from logger import Logger
 from config import Config
 from datetime import datetime, timedelta
 from path_utils import env_path, pngimg
+from rpa_exceptions import HolidayError
 from rpa_misc import get_text_from_input_field
 from rpa_utils import *
 from rpa_process import is_process_running, kill_process
 from ftplib import FTP
 
-from working_days import get_prev_working_day, get_today, todayYmd
+from working_days import get_prev_working_day, get_today, isHoliday, isTodayAHoliday, todayYmd
 from excel_utils import excel_to_csv
 
 # Logger 인스턴스 생성
@@ -549,6 +550,10 @@ if __name__ == "__main__":
     log.info(f"auto_esafe 프로그램 시작 ver : {version}")
     log.info("------------------------------------------------------")
     try:
+        # 오늘이 휴일이면 그냥 종료한다.
+        today_ymd = datetime.now().strftime("%Y%m%d")
+        if isHoliday(today_ymd):
+            raise HolidayError(f"오늘({today_ymd})은 공휴일입니다.")
         # esafe화면작업
         filenames = esafe_auto_work()
         
@@ -567,6 +572,8 @@ if __name__ == "__main__":
         log.info(">>> FTP 업로드 시작")
         ftp_upload_files(filenames)
         log.info(">>> FTP 업로드 종료")
+    except HolidayError as e:
+        log.info(f"에러메세지: {e}")    
     except Exception as e:
         exception_handler(str(e))
         process_name = Config.PROCESS_NAME
