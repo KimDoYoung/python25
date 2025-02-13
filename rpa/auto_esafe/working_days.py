@@ -57,3 +57,8 @@ def prev_day():
     today = datetime.now()
     yesterday = today - timedelta(days=1)
     return yesterday.year, yesterday.month, yesterday.day
+
+def todayYmd():
+    """오늘 날짜를 yyyymmdd 형식으로 반환"""
+    today = datetime.now()
+    return today.strftime("%Y%m%d")

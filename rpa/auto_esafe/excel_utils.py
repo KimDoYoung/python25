@@ -2,6 +2,10 @@ import xlrd
 import openpyxl
 import csv
 
+from logger import Logger
+
+log = Logger()
+
 def xlsx_to_csv(xlsx_file, csv_file, sheet_name=0):
     """
     pandas 없이 openpyxl을 사용하여 .xlsx 파일을 .csv로 변환하는 함수
@@ -21,17 +25,18 @@ def xlsx_to_csv(xlsx_file, csv_file, sheet_name=0):
             sheet = workbook[sheet_name]  # 이름으로 시트 선택
 
         # 🔹 CSV 파일로 저장
-        with open(csv_file, "w", newline="", encoding="utf-8-sig") as csvfile:
+        # with open(csv_file, "w", newline="", encoding="utf-8-sig") as csvfile:
+        with open(csv_file, "w", newline="", encoding='cp949') as csvfile:
             writer = csv.writer(csvfile)
 
             # 🔹 모든 행을 CSV로 변환
             for row in sheet.iter_rows(values_only=True):
                 writer.writerow(row)
 
-        print(f"✅ 변환 완료: {csv_file}")
+        log.info(f"✅ 변환 완료: {csv_file}")
 
     except Exception as e:
-        print(f"❌ 변환 실패: {e}")
+        log.info(f"❌ 변환 실패: {e}")
 
 def xls_to_csv(xls_file, csv_file):
     """
@@ -46,17 +51,18 @@ def xls_to_csv(xls_file, csv_file):
         sheet = workbook.sheet_by_index(0)  # 첫 번째 시트 선택
 
         # 🔹 CSV 파일로 저장
-        with open(csv_file, "w", newline="", encoding="utf-8-sig") as csvfile:
+        # with open(csv_file, "w", newline="", encoding="utf-8-sig") as csvfile:
+        with open(csv_file, "w", newline="", encoding='cp949') as csvfile:
             writer = csv.writer(csvfile)
 
             # 🔹 시트의 모든 행을 CSV로 변환
             for row_idx in range(sheet.nrows):
                 writer.writerow(sheet.row_values(row_idx))
 
-        print(f"✅ 변환 완료: {csv_file}")
+        log.info(f"✅ 변환 완료: {csv_file}")
 
     except Exception as e:
-        print(f"❌ 변환 실패: {e}")
+        log.info(f"❌ 변환 실패: {e}")
 
 def excel_to_csv(excel_file, csv_file, sheet_name=0, encoding="utf-8-sig"):
     """

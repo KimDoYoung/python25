@@ -27,3 +27,4 @@ def get_text_from_input_field():
     pyautogui.hotkey('ctrl', 'c')  # 복사
     time.sleep(0.2)  # 복사될 시간을 확보
     return pyperclip.paste().strip()  # 클립보드에서 텍스트 가져오기
+

@@ -11,7 +11,7 @@ from rpa_utils import *
 from rpa_process import is_process_running, kill_process
 from ftplib import FTP
 
-from working_days import get_prev_working_day, get_today
+from working_days import get_prev_working_day, get_today, todayYmd
 from excel_utils import excel_to_csv
 
 # Logger 인스턴스 생성
@@ -43,7 +43,7 @@ def ftp_upload_files(filenames):
         log.error(f"❌ 업로드 실패: {e}")
 
     
-def close_all_tabs_via_context_menu(tab_head_point, context_menu_image, close_all_image):
+def close_all_tabs_via_context_menu(tab_head_point, context_menu_image, close_all_image)->bool:
     """
     탭 헤드에서 우클릭하여 컨텍스트 메뉴가 나타나면 '전체 닫기' 버튼을 클릭하는 함수.
     
@@ -56,7 +56,9 @@ def close_all_tabs_via_context_menu(tab_head_point, context_menu_image, close_al
     # 🔹 1. 특정 위치에서 우클릭 (탭 헤드 영역)
     pyautogui.moveTo(x, y, duration=0.5)
     pyautogui.rightClick()
-    time.sleep(1)  # 컨텍스트 메뉴가 뜰 시간을 줌
+    log.info("✅ 탭 헤드에서 우클릭 완료.")
+    time.sleep(3)  # 컨텍스트 메뉴가 뜰 시간을 줌
+    
 
     # 🔹 2. 컨텍스트 메뉴 확인
     context_menu = None
@@ -64,10 +66,11 @@ def close_all_tabs_via_context_menu(tab_head_point, context_menu_image, close_al
         context_menu = pyautogui.locateOnScreen(context_menu_image, confidence=0.8, grayscale=True)
     except Exception as e:
         log.warning(f"🚨 탭은 Home밖에 없음: {e}")
+        return False
 
     if context_menu is None:
         log.info("🚫 컨텍스트 메뉴가 나타나지 않았습니다. (탭이 없는 상태)")
-        return  # 탭이 없으므로 종료
+        return False # 탭이 없으므로 종료
 
     log.info("✅ 컨텍스트 메뉴 감지 완료.")
 
@@ -79,9 +82,10 @@ def close_all_tabs_via_context_menu(tab_head_point, context_menu_image, close_al
         pyautogui.click()
         log.info("✅ '전체 닫기' 버튼 클릭 완료.")
         time.sleep(1)  # 탭이 닫힐 시간을 줌
+        return True
     else:
         log.warning("❌ '전체 닫기' 버튼을 찾을 수 없습니다.")
-            
+        return False    
             
 def work_start_main():
     global hts_process  # finally에서 접근하기 위해 전역 변수 사용
@@ -139,7 +143,7 @@ def work_500068_tab1():
 
     # 조회 완료 확인
     query_finish_check = wait_for_image(pngimg('query_finish_gun'), region=(1818,955,84,30))
-    time.sleep(3)
+    time.sleep(10)
 
     # 다운로드 옵션 클릭
     region = get_region(RegionName.LEFT_BOTTOM) 
@@ -155,15 +159,21 @@ def work_500068_tab1():
     mouse_move_and_click(x, y, wait_seconds=1)
 
     # 저장 경로 입력
-    pyautogui.press('home')
-    pyautogui.write(Config.SAVE_AS_PATH1 + "\\")
-    saved_file_path = get_text_from_input_field()
-    time.sleep(1)
+    #-------- Rename file------------
+    default_filename = get_text_from_input_field()
+    screen_no = "500068_T1"
+    saved_file_path = os.path.join(Config.SAVE_AS_PATH1, f"{todayYmd()}_{screen_no}.{default_filename.rsplit('.', 1)[-1]}")
+    
+    pyautogui.hotkey('ctrl','a')
+    pyautogui.write(saved_file_path)
+    #--------------------------------
     pyautogui.press('enter')
+    time.sleep(10)
     log.info(f"파일 저장 경로(기준가1): {saved_file_path}")
+    # warning과 alert체크
+    warning_and_alert_check()
     time.sleep(5)
-    region = get_region(RegionName.CENTER)
-    find_and_press_key(pngimg('alert_icon'), 'space', region=region)
+
     return saved_file_path
 
 def work_500068_tab2() -> list:
@@ -188,7 +198,7 @@ def work_500068_tab2() -> list:
     # 기준가 조회 체크까지 기다림
     # query_finish_check = wait_for_image(pngimg('query_finish_check'), region=region, timeout=120)
     query_finish_check = wait_for_image(pngimg('query_finish_gun'), region=(1818,955,84,30), timeout=120)
-    time.sleep(3)
+    time.sleep(10)
     found_image = find_and_press_key(pngimg('error_icon'), 'space', region=region, ignoreNotFound=True, timeout=5)
     if found_image:
         log.error("기준가 tab2 조회 오류 발생")
@@ -210,19 +220,25 @@ def work_500068_tab2() -> list:
     x, y = get_point_with_location(file_name, Direction.RIGHT, 100)
     mouse_move_and_click(x, y, wait_seconds=1)
 
-    # 저장 경로 입력
-    pyautogui.press('home')
-    pyautogui.write(Config.SAVE_AS_PATH1 + "\\")
-    saved_file_path = get_text_from_input_field()
-    time.sleep(1)
+    #-------- Rename file------------
+    default_filename = get_text_from_input_field()
+    screen_no = "500068_T2"
+    saved_file_path = os.path.join(Config.SAVE_AS_PATH1, f"{todayYmd()}_{screen_no}.{default_filename.rsplit('.', 1)[-1]}")
+    
+    pyautogui.hotkey('ctrl','a')
+    pyautogui.write(saved_file_path)
+    #--------------------------------
     pyautogui.press('enter')
     log.info(f"CSV 파일 저장 경로(기준가2) : {saved_file_path}")
     filenames.append(saved_file_path)
-    
-    time.sleep(5)
-    # 종료 확인 버튼 클릭
+
+    # warning과 alert체크
+    warning_and_alert_check()
+    time.sleep(30)
     region = get_region(RegionName.CENTER)
-    find_and_press_key(pngimg('alert_icon'), 'space', region=region)
+    find_and_press_key(pngimg('alert_icon'), 'space', region=region, ignoreNotFound=True, timeout=5)    
+    time.sleep(3)
+
     # excel 저장
     region = get_region(RegionName.LEFT_BOTTOM)
     move_and_click(pngimg('download_combo'), region=region, grayscale=True)
@@ -236,20 +252,27 @@ def work_500068_tab2() -> list:
     x, y = get_point_with_location(file_name, Direction.RIGHT, 100)
     mouse_move_and_click(x, y, wait_seconds=1)
 
-    # 저장 경로 입력
-    pyautogui.press('home')
-    pyautogui.write(Config.SAVE_AS_PATH1 + "\\")
-    saved_file_path = get_text_from_input_field()
-    filenames.append(saved_file_path)
-    time.sleep(1)
+    #-------- Rename file------------
+    default_filename = get_text_from_input_field()
+    screen_no = "500068_T2"
+    saved_file_path = os.path.join(Config.SAVE_AS_PATH1, f"{todayYmd()}_{screen_no}.{default_filename.rsplit('.', 1)[-1]}")
+    
+    pyautogui.hotkey('ctrl','a')
+    pyautogui.write(saved_file_path)
+    #--------------------------------
     pyautogui.press('enter')
+    filenames.append(saved_file_path)
     log.info(f"Excel 파일 저장 경로(기준가2) : {saved_file_path}")
-
-    time.sleep(5)
-        
-    # 종료 확인 버튼 클릭
+    
+    # warning과 alert체크
+    warning_and_alert_check()
+    time.sleep(30)
+    
     region = get_region(RegionName.CENTER)
-    find_and_press_key(pngimg('alert_icon'), 'space', region=region)
+    find_and_press_key(pngimg('alert_icon'), 'space', region=region, ignoreNotFound=True, timeout=5)
+    
+    
+    
     return filenames
 
 def work_500038(prev_working_day: str) -> str:
@@ -300,15 +323,19 @@ def work_500038(prev_working_day: str) -> str:
     mouse_move_and_click(x, y, wait_seconds=1)
 
     # 저장 경로 입력
-    pyautogui.press('home')
-    pyautogui.write(Config.SAVE_AS_PATH1 + "\\")
-    saved_file_path = get_text_from_input_field()
-    time.sleep(1)
+    #-------- Rename file------------
+    default_filename = get_text_from_input_field()
+    screen_no = "500038"
+    saved_file_path = os.path.join(Config.SAVE_AS_PATH1, f"{todayYmd()}_{screen_no}.{default_filename.rsplit('.', 1)[-1]}")
+    
+    pyautogui.hotkey('ctrl','a')
+    pyautogui.write(saved_file_path)
+    #--------------------------------    time.sleep(1)
     pyautogui.press('enter')
-    log.info(f"파일 저장 경로(기준가1): {saved_file_path}")
     time.sleep(5)
-    region = get_region(RegionName.CENTER)
-    find_and_press_key(pngimg('alert_icon'), 'space', region=region)
+    log.info(f"파일 저장 경로 : {saved_file_path}")
+    warning_and_alert_check()
+    
     return saved_file_path
 
 def work_800008(prev_working_day: str) -> str:
@@ -358,17 +385,25 @@ def work_800008(prev_working_day: str) -> str:
     mouse_move_and_click(x, y, wait_seconds=1)
 
     # 저장 경로 입력
-    pyautogui.press('home')
-    pyautogui.write(Config.SAVE_AS_PATH1 + "\\")
-    saved_file_path = get_text_from_input_field()
-    time.sleep(1)
+    #-------- Rename file------------
+    default_filename = get_text_from_input_field()
+    screen_no = "800008"
+    saved_file_path = os.path.join(Config.SAVE_AS_PATH1, f"{todayYmd()}_{screen_no}.{default_filename.rsplit('.', 1)[-1]}")
+    
+    pyautogui.hotkey('ctrl','a')
+    pyautogui.write(saved_file_path)
+    #--------------------------------
     pyautogui.press('enter')
-    region = get_region(RegionName.CENTER)
-    find_and_press_key(pngimg('warning_icon'), 'space', region=region, ignoreNotFound=True, timeout=5)
-    log.info(f"파일 저장 경로(8): {saved_file_path}")
     time.sleep(5)
-    region = get_region(RegionName.CENTER)
-    find_and_press_key(pngimg('alert_icon'), 'space', region=region, ignoreNotFound=True, timeout=10)
+    log.info(f"파일 저장 경로(8): {saved_file_path}")
+    warning_and_alert_check()
+    time.sleep(3)
+    
+    # region = get_region(RegionName.CENTER)
+    # find_and_press_key(pngimg('warning_icon'), 'space', region=region, ignoreNotFound=True, timeout=5)
+    # time.sleep(5)
+    # region = get_region(RegionName.CENTER)
+    # find_and_press_key(pngimg('alert_icon'), 'space', region=region, ignoreNotFound=True, timeout=10)
     return saved_file_path
 
 def work_800100() -> str:
@@ -378,15 +413,16 @@ def work_800100() -> str:
     pyautogui.hotkey('ctrl', 'a')  # 전체 선택
     pyautogui.write("800100")
     pyautogui.press('enter')
+    time.sleep(5)
     # 조회 버튼 클릭
     region = get_region(RegionName.RIGHT_TOP)
     find_and_click(pngimg('query'), region=region, wait_seconds=5)
     region = get_region(RegionName.RIGHT_BOTTOM)
     # wait_for_image(pngimg('query_finish_chong'), region=region)
-    wait_for_image(pngimg('query_finish_gun'), region=(1818,955,84,30))
+    wait_for_image(pngimg('query_finish_gun'), region=(1818,955,100,30))
     time.sleep(3)
     
-# 다운로드 옵션 클릭
+    # 다운로드 옵션 클릭
     region = get_region(RegionName.LEFT_BOTTOM)
     find_and_click(pngimg('download_combo'), region=region, grayscale=True)
     press_keys(['down','down','enter'], wait_seconds=2)    
@@ -397,24 +433,35 @@ def work_800100() -> str:
     
     x, y = get_point_with_location(file_name, Direction.RIGHT, 100)
     mouse_move_and_click(x, y, wait_seconds=1)
-
-    # 저장 경로 입력
-    pyautogui.press('home')
-    pyautogui.write(Config.SAVE_AS_PATH1 + "\\")
-    saved_file_path = get_text_from_input_field()
-    time.sleep(1)
-    log.info('13')
+    #-------- Rename file------------
+    default_filename = get_text_from_input_field()
+    screen_no = "800100"
+    saved_file_path = os.path.join(Config.SAVE_AS_PATH1, f"{todayYmd()}_{screen_no}.{default_filename.rsplit('.', 1)[-1]}")
+    
+    pyautogui.hotkey('ctrl','a')
+    pyautogui.write(saved_file_path)
+    #--------------------------------
     pyautogui.press('enter')
+    time.sleep(5)
+    
+    log.info(f"파일 저장 경로(8): {saved_file_path}")    
+    warning_and_alert_check()
+    # region = get_region(RegionName.CENTER)
+    # find_and_press_key(pngimg('warning_icon'), 'space', region=region, ignoreNotFound=True, timeout=5)
+    
+    # region = get_region(RegionName.CENTER)
+    # find_and_press_key(pngimg('alert_icon'), 'space', region=region, ignoreNotFound=True, timeout=5)
+    # time.sleep(3)
+    return saved_file_path    
+
+def warning_and_alert_check():
+    '''저장enter이후 경고창 또는 alert가 나오면 이를 제거한다'''
     region = get_region(RegionName.CENTER)
     find_and_press_key(pngimg('warning_icon'), 'space', region=region, ignoreNotFound=True, timeout=5)
-    log.info('14')
-    log.info(f"파일 저장 경로(8): {saved_file_path}")
+    
     region = get_region(RegionName.CENTER)
-    find_and_press_key(pngimg('alert_icon'), 'space', region=region, ignoreNotFound=True)
-    log.info('15')
-    time.sleep(3)
-    return saved_file_path    
-                
+    find_and_press_key(pngimg('alert_icon'), 'space', region=region, ignoreNotFound=True, timeout=5)
+                    
 def esafe_auto_work():
     global hts_process  # finally에서 접근하기 위해 전역 변수 사용
     hts_process = None  # 실행한 프로세스 핸들러
@@ -442,25 +489,24 @@ def esafe_auto_work():
     
     # #-------------------------500038 분배금 내역통보
     log.info(">>> 500038 분배금 내역통보 작업 시작")
-    log.info("탭닫기 시작")
-    close_all_tabs_via_context_menu((460,85), pngimg('context_menu'), pngimg('all_tab_close'))
-    log.info("탭닫기 종료")
+    tabClose = close_all_tabs_via_context_menu((460,85), pngimg('context_menu'), pngimg('all_tab_close'))
+    if not tabClose:
+        mouse_move_and_click(493, 89, wait_seconds=2)
+            
     prev_working_day = get_prev_working_day(*get_today())
     log.info("이전 영업일: " + prev_working_day)
     filename = work_500038(prev_working_day)
     saved_files.append(filename)
     log.info(">>> 500038 분배금 내역통보 작업 종료")
-    # #-------------------------800008종목발행현황
+    #-------------------------800008종목발행현황
     log.info(">>> 800008 종목발행현황 작업 시작")
     close_all_tabs_via_context_menu((460,85), pngimg('context_menu'), pngimg('all_tab_close'))
     filename = work_800008(prev_working_day)
     saved_files.append(filename)
     log.info(">>> 800008 분배금 내역통보 작업 종료")
-    # #-------------------------800100 일자별 일정현황
+    #-------------------------800100 일자별 일정현황
     log.info(">>> 800100 일자별 일정현황 시작")
-    log.info("탭닫기 시작")
     close_all_tabs_via_context_menu((460,85), pngimg('context_menu'), pngimg('all_tab_close'))
-    log.info("탭닫기 종료")
     filename = work_800100()
     saved_files.append(filename)
     log.info(">>> 800100 일자별 일정현황 종료")
