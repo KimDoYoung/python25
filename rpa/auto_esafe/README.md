@@ -35,6 +35,19 @@
 6. pyinstaller를 사용하여 exe파일을 만든다.
 7. 다운로드 받은 excel은 csv로 변환되어 ftp 서버에 upload된다.
 
+## 빌드
+
+- pyinstaller로 exe파일을 만듬
+- 가상환경에서 작업해야함
+
+```shell
+source env/Script/activate
+which python
+which pip
+rm -rf ./dist ./build
+pyinstaller  auto_esafe.spec
+```
+
 ## 해야할일
 
 TODO  다음을 읽고 해결
