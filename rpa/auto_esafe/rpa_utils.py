@@ -190,6 +190,7 @@ def find_and_press_key(image_path: str, key: str, region: Optional[tuple] = None
         else:
             raise Exception(f"이미지 찾기 실패: {image_path}") 
     pyautogui.press(key)
+    time.sleep(1)
     return True
 
 def move_and_click(image_path: str, region: Optional[Tuple[int, int, int, int]] = None, grayscale: bool = True, confidence: float = 0.8, duration: float = 0.5, wait_seconds=1) -> bool:

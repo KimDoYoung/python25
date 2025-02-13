@@ -1,3 +1,4 @@
+import glob
 import os
 import subprocess
 import time
@@ -169,10 +170,11 @@ def work_500068_tab1():
     pyautogui.write(saved_file_path)
     #--------------------------------
     pyautogui.press('enter')
-    time.sleep(10)
+    # time.sleep(10)
     log.info(f"파일 저장 경로(기준가1): {saved_file_path}")
     # warning과 alert체크
-    warning_and_alert_check()
+    find_and_press_key(pngimg('alert_icon'), 'space', region=region, ignoreNotFound=True, timeout=120)
+    # warning_and_alert_check()
     time.sleep(5)
 
     return saved_file_path
@@ -185,7 +187,7 @@ def work_500068_tab2() -> list:
     mouse_move_and_click(1793, 53, wait_seconds=2)
     pyautogui.press('enter')
     # 443, 275기준가조회2 클릭
-    mouse_move_and_click(443, 275, 5)
+    mouse_move_and_click(443, 275, 0.5, wait_seconds=5)
     # 펀드전체 클릭
     region = get_region(RegionName.RIGHT_TOP)
     move_and_click(pngimg('fund_all_checkbox'), region=region, grayscale=True)
@@ -235,9 +237,9 @@ def work_500068_tab2() -> list:
 
     # warning과 alert체크
     warning_and_alert_check()
-    time.sleep(30)
+    time.sleep(5)
     region = get_region(RegionName.CENTER)
-    find_and_press_key(pngimg('alert_icon'), 'space', region=region, ignoreNotFound=True, timeout=5)    
+    find_and_press_key(pngimg('alert_icon'), 'space', region=region, ignoreNotFound=True, timeout=120)    
     time.sleep(3)
 
     # excel 저장
@@ -267,12 +269,11 @@ def work_500068_tab2() -> list:
     
     # warning과 alert체크
     warning_and_alert_check()
-    time.sleep(30)
+    time.sleep(5)
     
     region = get_region(RegionName.CENTER)
-    find_and_press_key(pngimg('alert_icon'), 'space', region=region, ignoreNotFound=True, timeout=5)
-    
-    
+    find_and_press_key(pngimg('alert_icon'), 'space', region=region, ignoreNotFound=True, timeout=180)
+    time.sleep(3)
     
     return filenames
 
@@ -336,6 +337,10 @@ def work_500038(prev_working_day: str) -> str:
     time.sleep(5)
     log.info(f"파일 저장 경로 : {saved_file_path}")
     warning_and_alert_check()
+
+    region = get_region(RegionName.CENTER)
+    find_and_press_key(pngimg('alert_icon'), 'space', region=region, ignoreNotFound=True, timeout=120)
+    time.sleep(3)
     
     return saved_file_path
 
@@ -443,16 +448,10 @@ def work_800100() -> str:
     pyautogui.write(saved_file_path)
     #--------------------------------
     pyautogui.press('enter')
-    time.sleep(5)
     
     log.info(f"파일 저장 경로(8): {saved_file_path}")    
     warning_and_alert_check()
-    # region = get_region(RegionName.CENTER)
-    # find_and_press_key(pngimg('warning_icon'), 'space', region=region, ignoreNotFound=True, timeout=5)
-    
-    # region = get_region(RegionName.CENTER)
-    # find_and_press_key(pngimg('alert_icon'), 'space', region=region, ignoreNotFound=True, timeout=5)
-    # time.sleep(3)
+    time.sleep(5)
     return saved_file_path    
 
 def warning_and_alert_check():
@@ -461,7 +460,7 @@ def warning_and_alert_check():
     find_and_press_key(pngimg('warning_icon'), 'space', region=region, ignoreNotFound=True, timeout=5)
     
     region = get_region(RegionName.CENTER)
-    find_and_press_key(pngimg('alert_icon'), 'space', region=region, ignoreNotFound=True, timeout=5)
+    find_and_press_key(pngimg('error_icon'), 'space', region=region, ignoreNotFound=True, timeout=5)
                     
 def esafe_auto_work():
     global hts_process  # finally에서 접근하기 위해 전역 변수 사용
@@ -487,7 +486,6 @@ def esafe_auto_work():
     files = work_500068_tab2()
     saved_files.extend(files)
     log.info(">>> 500068 기준가2 작업 종료")
-    
     # #-------------------------500038 분배금 내역통보
     log.info(">>> 500038 분배금 내역통보 작업 시작")
     tabClose = close_all_tabs_via_context_menu((460,85), pngimg('context_menu'), pngimg('all_tab_close'))
@@ -518,6 +516,19 @@ def esafe_auto_work():
     pyautogui.press('space')
     return saved_files
 
+def deleteTodayFiles(ymd):
+    """폴더 안에서 특정 날짜 패턴(YYYYMMDD_*)에 맞는 파일 삭제"""
+    pattern = os.path.join(Config.SAVE_AS_PATH1, f"{ymd}_*.*")
+    files = glob.glob(pattern)  # 패턴에 맞는 파일 찾기
+
+    for file in files:
+        try:
+            os.remove(file)
+            log.info(f" 기존 파일 삭제 완료: {file}")
+        except Exception as e:
+            log.error(f"기존 파일 삭제 실패: {file} -> {e}")
+    
+    
 def pre_check():
     # auto_esafe를 실행할 수 있는 상태인지 체크, 할 수 없는 상태라면 메세지와 함께 exit
     env_file = env_path()
@@ -554,9 +565,13 @@ if __name__ == "__main__":
         today_ymd = datetime.now().strftime("%Y%m%d")
         if isHoliday(today_ymd):
             raise HolidayError(f"오늘({today_ymd})은 공휴일입니다.")
+        
+        # 이미 오늘의 파일이 존재하면 삭제한다
+        deleteTodayFiles(today_ymd)
+
         # esafe화면작업
         filenames = esafe_auto_work()
-        
+    
         log.info(">>> CSV 변환 시작") 
         for idx, filename in enumerate(filenames, start=1):
             # 확장자가 xls인 파일을 csv로 변환
