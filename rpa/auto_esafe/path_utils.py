@@ -30,6 +30,10 @@ def pngimg(filename):
     """이미지 파일 경로를 간단히 참조하는 함수"""
     return os.path.join(BASE_PATH, "images", filename + ".png")
 
+def image_path():
+    """이미지 파일 경로를 간단히 참조하는 함수"""
+    return os.path.join(BASE_PATH, "images")
+
 def env_path():
     """PyInstaller 실행 환경에서도 올바른 .env 경로 반환"""
     if getattr(sys, 'frozen', False):  # PyInstaller로 실행될 경우

@@ -55,7 +55,6 @@ pyinstaller  auto_esafe.spec
 ![설치내용](doc/images/taskmng1.png)
 - 주의할 점은 auto_esafe가 동작할 때 모니터가 켜져 있어야 하며 동작 중에 마우스를 움직여서는 안됨.
 
-
 ## 해야할일
 
 TODO  다음을 읽고 해결
@@ -67,3 +66,8 @@ TODO  다음을 읽고 해결
 5. log를 다른 py에서도 사용하자.
 6. debugging pytest로 테스팅을 ai에게 맡기자.
 7. .env에 LOG_LEVEL=DEBUG 로
+
+## History
+
+1.0.3 : 사용자명으로 이미지를 내부에서 만들어서 비교
+1.0.4 : 인증서 위치를 클릭하도록 수정.

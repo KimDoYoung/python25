@@ -12,3 +12,7 @@
 class HolidayError(Exception):
     """휴일일때 발생하는 예외"""
     pass
+
+class CertiError(Exception):
+    """인증서 password 오류"""
+    pass

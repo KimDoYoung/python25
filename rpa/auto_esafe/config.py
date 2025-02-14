@@ -19,7 +19,7 @@ load_dotenv(env_path())
 
 class Config:
     """환경 설정 및 상수 관리"""
-    VERSION = os.getenv("VERSION")
+    VERSION = "1.0.4"
 
     # 프로그램 실행 경로
     PROGRAM_PATH = os.getenv("PROGRAM_PATH")
@@ -34,6 +34,8 @@ class Config:
     SAVE_AS_PATH1 = os.getenv("SAVE_AS_PATH1")
 
     # 보안 환경변수
+    CERTI_LOCATION = os.getenv("CERTI_LOCATION")
+    USERNAME = os.getenv("CERTI_USERNAME")
     PASSWORD = os.getenv("CERTI_PASSWORD")
     
     # FTP 설정

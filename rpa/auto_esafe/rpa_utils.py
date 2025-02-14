@@ -16,6 +16,7 @@
 버전: 1.0
 """
 
+import re
 import time
 import ctypes
 import pyautogui
@@ -160,9 +161,9 @@ def get_point_in_region(location: Optional[Tuple[int, int, int, int]], offset_x:
     x, y, _, _ = location  # (left, top, width, height) 중 x, y만 사용
     return (x + offset_x, y + offset_y)
 
-def find_and_click(image_path, region=None, grayscale=True, confidence=0.8,wait_seconds=1):
+def find_and_click(image_path, region=None, grayscale=True, confidence=0.8,wait_seconds=1, timeout=60):
     """ 이미지를 찾아 클릭하는 함수. 실패 시 Exception 발생 """
-    element = wait_for_image(image_path, region=region, grayscale=grayscale, confidence=confidence)
+    element = wait_for_image(image_path, region=region, grayscale=grayscale, confidence=confidence, timeout=timeout)
     if not element:
         raise Exception(f"이미지 찾기 실패: {image_path}")
     
@@ -238,3 +239,56 @@ def press_keys(keys, delay=0.2, wait_seconds=1):
         time.sleep(delay)
     
     time.sleep(wait_seconds)  # 모든 키 입력 후 추가 대기
+
+def move_and_press(x:int, y: int, key: str, duration: float = 0.5, wait_seconds=1):
+    """
+    특정 좌표로 이동한 후 키를 누르는 함수.
+
+    :param x: X 좌표
+    :param y: Y 좌표
+    :param key: 누를 키 (예: 'space', 'enter')
+    :param duration: 마우스 이동 시간 (기본값: 0.5초)
+    """
+    pyautogui.moveTo(x, y, duration=duration)
+    pyautogui.press(key)
+    time.sleep(wait_seconds)
+
+def put_keys(command_str, interval=0.2, sleep_time=0.5):
+    """
+    문자열 기반 키 입력 자동화 함수.
+
+    - 형식: `H:ctrl+shift+a | P:delete | W:"C:\\Users\\MyUser\\Documents\\file.txt" | P:enter`
+    - H: 핫키 (여러 개 가능, 예: `H:ctrl+shift+a`)
+    - P: 단일 키 입력 (예: `P:delete`, `P:enter`)
+    - W: 문자열 입력 (예: `W:"abc"` → "abc" 입력)
+
+    :param command_str: 매크로 스타일 명령어 문자열 (구분자: `|`)
+    :param interval: 키 입력 간격 (기본값 0.2초)
+    :param sleep_time: 입력 후 대기 시간 (기본값 0.5초)
+    :raises ValueError: 지원되지 않는 명령어 형식일 경우 예외 발생
+    """
+    commands = command_str.split("|")  # '|' 기준으로 명령어 분리
+
+    for cmd in commands:
+        cmd = cmd.strip()
+
+        if cmd.startswith("H:"):  # 핫키 (예: H:ctrl+shift+a)
+            hotkeys = cmd[2:].split("+")  # '+' 기준으로 여러 키 분리
+            pyautogui.hotkey(*hotkeys, interval=interval)
+
+        elif cmd.startswith("P:"):  # 단일 키 입력 (예: P:delete)
+            key = cmd[2:].strip()
+            pyautogui.press(key, interval=interval)
+
+        elif cmd.startswith("W:"):  # 문자열 입력 (예: W:"C:\경로\파일.txt")
+            text_match = re.match(r'W:"(.*?)"', cmd)  # 큰따옴표 안의 문자열 추출
+            if text_match:
+                text = text_match.group(1)  # "..." 안의 내용만 가져옴
+                pyautogui.write(text, interval=interval)
+            else:
+                raise ValueError(f"잘못된 문자열 입력 형식: {cmd}")
+
+        else:
+            raise ValueError(f"지원되지 않는 명령어: {cmd}")
+
+        time.sleep(sleep_time)  # 각 동작 후 대기

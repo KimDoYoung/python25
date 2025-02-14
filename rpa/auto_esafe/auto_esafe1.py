@@ -6,13 +6,12 @@ import pyautogui
 from logger import Logger
 from config import Config
 from datetime import datetime, timedelta
-from path_utils import env_path, image_path, pngimg
-from rpa_exceptions import CertiError, HolidayError
+from path_utils import env_path, pngimg
+from rpa_exceptions import HolidayError
 from rpa_misc import get_text_from_input_field
 from rpa_utils import *
 from rpa_process import is_process_running, kill_process, maximize_window
 from ftplib import FTP
-from PIL import Image, ImageDraw, ImageFont
 
 from working_days import get_prev_working_day, get_today, isHoliday, isTodayAHoliday, todayYmd
 from excel_utils import excel_to_csv
@@ -99,17 +98,10 @@ def work_start_main():
     region = get_region(RegionName.CENTER)
 
     # 로그인 버튼 클릭
-    find_and_click(pngimg('login_button'), region=region, wait_seconds=3)
-
-    location = Config.CERTI_LOCATION
-    if location == "USB":
-        mouse_move_and_click(801,444, wait_seconds=1)
-    elif location == "HDD":
-        mouse_move_and_click(1037, 444, wait_seconds=1)
-    else:
-        mouse_move_and_click(1037, 444, wait_seconds=1)
+    find_and_click(pngimg('login_button'), region=region, wait_seconds=2)
+    
     # 사용자 선택
-    find_and_click(pngimg('user'), region=region, grayscale=True, timeout=5)
+    find_and_click(pngimg('user'), region=region)
 
     # 비밀번호 입력
     pyautogui.write(Config.PASSWORD)
@@ -117,9 +109,6 @@ def work_start_main():
     # 인증서 선택 버튼 클릭
     find_and_click(pngimg('certi_select_button'), grayscale=True, wait_seconds=3)
 
-    error_alert = find_and_press_key(pngimg('certi_alert'), 'space', ignoreNotFound=True, grayscale=True,  timeout=5)    
-    if error_alert:
-        raise CertiError("인증서 사용자와 인증서 비밀번호가 일치 하지 않습니다")
 
     log.info("업무구분 선택")
     find_and_click(pngimg('work_type'), grayscale=True)
@@ -162,7 +151,7 @@ def work_500068_tab1():
     find_and_click(pngimg('query'), region=region, wait_seconds=3)
 
     # 조회 완료 확인
-    query_finish_check = wait_for_image(pngimg('query_finish_gun'), region=(1818,955,84,30), timeout=(60*10))
+    query_finish_check = wait_for_image(pngimg('query_finish_gun'), region=(1818,955,84,30))
     time.sleep(10)
 
     # 다운로드 옵션 클릭
@@ -183,14 +172,15 @@ def work_500068_tab1():
     default_filename = get_text_from_input_field()
     screen_no = "500068_T1"
     saved_file_path = os.path.join(Config.SAVE_AS_PATH1, f"{todayYmd()}_{screen_no}.{default_filename.rsplit('.', 1)[-1]}")
-    put_keys(f'H:ctrl+a | P:delete | W:"{saved_file_path}"')
-    time.sleep(1)    
+    
+    pyautogui.hotkey('ctrl','a')
+    pyautogui.write(saved_file_path)
     #--------------------------------
     pyautogui.press('enter')
     # time.sleep(10)
     log.info(f"파일 저장 경로(기준가1): {saved_file_path}")
     # warning과 alert체크
-    find_and_press_key(pngimg('alert_icon'), 'space', grayscale=True, region=region, ignoreNotFound=True,  timeout=120)
+    find_and_press_key(pngimg('alert_icon'), 'space', grayscale=True, region=region, ignoreNotFound=True, timeout=120)
     # warning_and_alert_check()
     time.sleep(5)
     #안전장치 alert에 대한
@@ -220,7 +210,7 @@ def work_500068_tab2() -> list:
     move_and_click(pngimg('query'), region=region, wait_seconds=3)
     # 기준가 조회 체크까지 기다림
     # query_finish_check = wait_for_image(pngimg('query_finish_check'), region=region, timeout=120)
-    query_finish_check = wait_for_image(pngimg('query_finish_gun'), region=(1818,955,84,30), timeout=(60*10))
+    query_finish_check = wait_for_image(pngimg('query_finish_gun'), region=(1818,955,84,30), timeout=120)
     time.sleep(10)
     found_image = find_and_press_key(pngimg('error_icon'), 'space', region=region, ignoreNotFound=True, timeout=5)
     if found_image:
@@ -247,8 +237,9 @@ def work_500068_tab2() -> list:
     default_filename = get_text_from_input_field()
     screen_no = "500068_T2"
     saved_file_path = os.path.join(Config.SAVE_AS_PATH1, f"{todayYmd()}_{screen_no}.{default_filename.rsplit('.', 1)[-1]}")
-    put_keys(f'H:ctrl+a | P:delete | W:"{saved_file_path}"')
-    time.sleep(1)
+    
+    pyautogui.hotkey('ctrl','a')
+    pyautogui.write(saved_file_path)
     #--------------------------------
     pyautogui.press('enter')
     log.info(f"CSV 파일 저장 경로(기준가2) : {saved_file_path}")
@@ -281,8 +272,9 @@ def work_500068_tab2() -> list:
     default_filename = get_text_from_input_field()
     screen_no = "500068_T2"
     saved_file_path = os.path.join(Config.SAVE_AS_PATH1, f"{todayYmd()}_{screen_no}.{default_filename.rsplit('.', 1)[-1]}")
-    put_keys(f'H:ctrl+a | P:delete | W:"{saved_file_path}"')
-    time.sleep(1)
+    
+    pyautogui.hotkey('ctrl','a')
+    pyautogui.write(saved_file_path)
     #--------------------------------
     pyautogui.press('enter')
     filenames.append(saved_file_path)
@@ -352,8 +344,9 @@ def work_500038(prev_working_day: str) -> str:
     default_filename = get_text_from_input_field()
     screen_no = "500038"
     saved_file_path = os.path.join(Config.SAVE_AS_PATH1, f"{todayYmd()}_{screen_no}.{default_filename.rsplit('.', 1)[-1]}")
-    put_keys(f'H:ctrl+a | P:delete | W:"{saved_file_path}"')
-    time.sleep(1)
+    
+    pyautogui.hotkey('ctrl','a')
+    pyautogui.write(saved_file_path)
     #--------------------------------    time.sleep(1)
     pyautogui.press('enter')
     time.sleep(5)
@@ -419,8 +412,9 @@ def work_800008(prev_working_day: str) -> str:
     default_filename = get_text_from_input_field()
     screen_no = "800008"
     saved_file_path = os.path.join(Config.SAVE_AS_PATH1, f"{todayYmd()}_{screen_no}.{default_filename.rsplit('.', 1)[-1]}")
-    put_keys(f'H:ctrl+a | P:delete | W:"{saved_file_path}"')
-    time.sleep(1)
+    
+    pyautogui.hotkey('ctrl','a')
+    pyautogui.write(saved_file_path)
     #--------------------------------
     pyautogui.press('enter')
     time.sleep(5)
@@ -461,14 +455,15 @@ def work_800100() -> str:
     default_filename = get_text_from_input_field()
     screen_no = "800100"
     saved_file_path = os.path.join(Config.SAVE_AS_PATH1, f"{todayYmd()}_{screen_no}.{default_filename.rsplit('.', 1)[-1]}")
-    put_keys(f'H:ctrl+a | P:delete | W:"{saved_file_path}"')
-    time.sleep(1)
+    
+    pyautogui.hotkey('ctrl','a')
+    pyautogui.write(saved_file_path)
     #--------------------------------
     pyautogui.press('enter')
     
     log.info(f"파일 저장 경로(8): {saved_file_path}")    
     warning_and_alert_check()
-    time.sleep(1)
+    time.sleep(5)
     return saved_file_path    
 
 def warning_and_alert_check():
@@ -498,7 +493,7 @@ def esafe_auto_work():
     filename = work_500068_tab1()
     saved_files.append(filename)
     log.info(">>> 500068 기준가1 종료")
-    #-------------------------기준가2
+    # #-------------------------기준가2
     log.info(">>> 500068 기준가2 작업 시작")
     files = work_500068_tab2()
     saved_files.extend(files)
@@ -514,7 +509,7 @@ def esafe_auto_work():
     filename = work_500038(prev_working_day)
     saved_files.append(filename)
     log.info(">>> 500038 분배금 내역통보 작업 종료")
-    # #-------------------------800008종목발행현황
+    #-------------------------800008종목발행현황
     log.info(">>> 800008 종목발행현황 작업 시작")
     close_all_tabs_via_context_menu((460,85), pngimg('context_menu'), pngimg('all_tab_close'))
     filename = work_800008(prev_working_day)
@@ -571,39 +566,8 @@ def pre_check():
         print("❌ 모니터 해상도가 1920x1080이 아닙니다.")
         exit(1)
 
-def create_user_name_imge():
-    # 사용자 이름을 이미지로 저장
-    user_name = Config.USERNAME
-    user_name_img = os.path.join(image_path(), "user.png")
-
-    # 이미지 크기 및 배경 설정
-    width, height = 34, 13
-    img = Image.new("L", (width, height), color=255)  # "L" 모드는 그레이스케일
-
-    # 텍스트 추가
-    draw = ImageDraw.Draw(img)
-    # font = ImageFont.truetype("malgun.ttf", 10)  # 'malgun.ttf'는 Windows 기본 한글 폰트
-    font = ImageFont.truetype("gulim.ttc", 12)  # 'malgun.ttf'는 Windows 기본 한글 폰트
-
-    # 텍스트 크기 계산 (textbbox 사용)
-    bbox = draw.textbbox((0, 0), user_name, font=font)
-    text_width = bbox[2] - bbox[0]
-    text_height = bbox[3] - bbox[1]
-
-    # 중앙 정렬
-    text_x = (width - text_width) // 2
-    text_y = (height - text_height) // 2
-    draw.text((text_x, text_y), user_name, fill=0, font=font)  # 검은색 글자 (0)
-
-    # 이미지 저장
-    img.save(user_name_img)
-    log.info(f"사용자 이름 이미지 저장: {user_name_img}")    
-    
 if __name__ == "__main__":
-    # exit(1)
     pre_check()
-    # 이름문자를 이미지로 만들어서 저장한다.
-    create_user_name_imge()
     version = Config.VERSION
     log.info("------------------------------------------------------")
     log.info(f"auto_esafe 프로그램 시작 ver : {version}")
