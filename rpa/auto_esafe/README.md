@@ -48,6 +48,14 @@ rm -rf ./dist ./build
 pyinstaller  auto_esafe.spec
 ```
 
+## 설치
+
+- 윈도우 pc에 task 스케줄러 이용, 매일 정해진 시간에 동작하게 함.
+- window + r , taskschd.msc
+![설치내용](doc/images/taskmng1.png)
+- 주의할 점은 auto_esafe가 동작할 때 모니터가 켜져 있어야 하며 동작 중에 마우스를 움직여서는 안됨.
+
+
 ## 해야할일
 
 TODO  다음을 읽고 해결
