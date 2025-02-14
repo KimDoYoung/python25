@@ -284,6 +284,7 @@ def put_keys(command_str, interval=0.2, sleep_time=0.5):
             text_match = re.match(r'W:"(.*?)"', cmd)  # 큰따옴표 안의 문자열 추출
             if text_match:
                 text = text_match.group(1)  # "..." 안의 내용만 가져옴
+                text = bytes(text, "utf-8").decode("unicode_escape")
                 pyautogui.write(text, interval=interval)
             else:
                 raise ValueError(f"잘못된 문자열 입력 형식: {cmd}")

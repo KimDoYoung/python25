@@ -19,7 +19,7 @@ load_dotenv(env_path())
 
 class Config:
     """환경 설정 및 상수 관리"""
-    VERSION = "1.0.6"
+    VERSION = "1.0.7"
 
     # 프로그램 실행 경로
     PROGRAM_PATH = os.getenv("PROGRAM_PATH")

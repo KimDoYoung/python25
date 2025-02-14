@@ -183,6 +183,7 @@ def work_500068_tab1():
     default_filename = get_text_from_input_field()
     screen_no = "500068_T1"
     saved_file_path = os.path.join(Config.SAVE_AS_PATH1, f"{todayYmd()}_{screen_no}.{default_filename.rsplit('.', 1)[-1]}")
+    saved_file_path = saved_file_path.replace("\\", "\\\\")
     put_keys(f'H:ctrl+a | P:delete | W:"{saved_file_path}"')
     time.sleep(1)    
     #--------------------------------
@@ -281,6 +282,7 @@ def work_500068_tab2() -> list:
     default_filename = get_text_from_input_field()
     screen_no = "500068_T2"
     saved_file_path = os.path.join(Config.SAVE_AS_PATH1, f"{todayYmd()}_{screen_no}.{default_filename.rsplit('.', 1)[-1]}")
+    saved_file_path = saved_file_path.replace("\\", "\\\\") 
     put_keys(f'H:ctrl+a | P:delete | W:"{saved_file_path}"')
     time.sleep(1)
     #--------------------------------
@@ -352,6 +354,7 @@ def work_500038(prev_working_day: str) -> str:
     default_filename = get_text_from_input_field()
     screen_no = "500038"
     saved_file_path = os.path.join(Config.SAVE_AS_PATH1, f"{todayYmd()}_{screen_no}.{default_filename.rsplit('.', 1)[-1]}")
+    saved_file_path = saved_file_path.replace("\\", "\\\\")
     put_keys(f'H:ctrl+a | P:delete | W:"{saved_file_path}"')
     time.sleep(1)
     #--------------------------------    time.sleep(1)
@@ -419,6 +422,7 @@ def work_800008(prev_working_day: str) -> str:
     default_filename = get_text_from_input_field()
     screen_no = "800008"
     saved_file_path = os.path.join(Config.SAVE_AS_PATH1, f"{todayYmd()}_{screen_no}.{default_filename.rsplit('.', 1)[-1]}")
+    saved_file_path = saved_file_path.replace("\\", "\\\\")
     put_keys(f'H:ctrl+a | P:delete | W:"{saved_file_path}"')
     time.sleep(1)
     #--------------------------------
@@ -461,6 +465,7 @@ def work_800100() -> str:
     default_filename = get_text_from_input_field()
     screen_no = "800100"
     saved_file_path = os.path.join(Config.SAVE_AS_PATH1, f"{todayYmd()}_{screen_no}.{default_filename.rsplit('.', 1)[-1]}")
+    saved_file_path = saved_file_path.replace("\\", "\\\\")
     put_keys(f'H:ctrl+a | P:delete | W:"{saved_file_path}"')
     time.sleep(1)
     #--------------------------------
