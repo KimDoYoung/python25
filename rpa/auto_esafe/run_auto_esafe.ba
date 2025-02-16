@@ -1,0 +1,16 @@
+@echo off
+:: 1. 절전 모드 해제 (강제 깨우기)
+powercfg /requestsoverride PROCESS auto_esafe.exe DISPLAY SYSTEM
+powercfg /waketimers
+
+:: 2. 10초 대기 후 auto_esafe 실행 (절전 모드에서 깨는 시간 확보)
+timeout /t 10
+
+:: 3. auto_esafe 실행
+start "" "C:\Program Files\auto_esafe\auto_esafe.exe"
+
+:: 4. auto_esafe 실행 완료 대기
+timeout /t 300  REM 300초(5분) 대기 (필요에 따라 조절)
+
+:: 5. 절전 모드로 전환
+rundll32.exe powrprof.dll,SetSuspendState Sleep
