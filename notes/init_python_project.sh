@@ -9,18 +9,21 @@ echo "🔹 Python 프로젝트 초기화 스크립트 실행"
 # .gitignore 파일 생성
 echo "🔹 .gitignore 파일 생성"
 cat <<EOF > .gitignore
+env/
+build/
+dist/
+*.bak
+*.pdf
+log/
 # Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[cod]
 *$py.class
 
-# Virtual environment
-venv/
-env/
-
-
-# macOS 관련
-.DS_Store
+# C extensions
+*.so
+# dotenv
+.env*
 EOF
 
 # README.md 파일 생성
