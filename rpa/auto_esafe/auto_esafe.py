@@ -12,6 +12,7 @@ from rpa_misc import get_text_from_input_field
 from rpa_utils import *
 from rpa_process import is_process_running, kill_process, maximize_window
 from ftplib import FTP
+import paramiko
 from PIL import Image, ImageDraw, ImageFont
 
 from working_days import get_prev_working_day, get_today, isHoliday, isTodayAHoliday, todayYmd
@@ -42,6 +43,36 @@ def ftp_upload_files(filenames):
                 with open(local_file, "rb") as file:
                     ftp.storbinary(f"STOR {remote_file}", file)
                 log.info(f"✅ 업로드 완료: {remote_file}")
+    except Exception as e:
+        log.error(f"❌ 업로드 실패: {e}")
+
+def sftp_upload_files(filenames):
+    """여러 개의 파일을 SFTP 서버에 업로드하는 함수"""
+    SFTP_HOST = Config.SFTP_HOST  # 기존 FTP 설정 그대로 사용
+    SFTP_USER = Config.SFTP_USER
+    SFTP_PASS = Config.SFTP_PASS
+    SFTP_REMOTE_DIR = Config.SFTP_REMOTE_DIR  # 예: "/HDD1/esafe"
+    
+    try:
+        # SFTP 연결 설정
+        transport = paramiko.Transport((SFTP_HOST, 22))  # 기본 SFTP 포트 22
+        transport.connect(username=SFTP_USER, password=SFTP_PASS)
+
+        # SFTP 클라이언트 생성
+        sftp = paramiko.SFTPClient.from_transport(transport)
+        
+        # 원격 디렉토리 이동
+        sftp.chdir(SFTP_REMOTE_DIR)
+
+        for local_file in filenames:
+            remote_file = os.path.basename(local_file)  # 파일 이름만 추출
+            sftp.put(local_file, f"{SFTP_REMOTE_DIR}/{remote_file}")  # 파일 업로드
+            log.info(f"✅ 업로드 완료: {remote_file}")
+
+        # 연결 종료
+        sftp.close()
+        transport.close()
+
     except Exception as e:
         log.error(f"❌ 업로드 실패: {e}")
 
@@ -691,9 +722,9 @@ if __name__ == "__main__":
                 log.info(f"{idx}. 저장된 파일 경로: {filename}")
         log.info(">>> CSV 변환 시작") 
         # FTP 업로드
-        log.info(">>> FTP 업로드 시작")
-        ftp_upload_files(filenames)
-        log.info(">>> FTP 업로드 종료")
+        log.info(">>> SFTP 업로드 시작")
+        sftp_upload_files(filenames)
+        log.info(">>> SFTP 업로드 종료")
     except HolidayError as e:
         log.info(f"에러메세지: {e}")    
     except Exception as e:

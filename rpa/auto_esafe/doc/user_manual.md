@@ -15,13 +15,13 @@ esafe 2019 프로그램을 자동으로 수행시켜서 필요한 파일들을 �
 ## 설치 및 실행
 
 1. 특정 폴더에 auto_esafe.exe와 .env 2개의 파일을 copy
-2. 특정 폴더를 c:\tmp로 가정
+2. 특정 폴더를 c:\auto_esafe 로 가정
 3. .env를 환경에 맞게 수정 (hotepad 이용)
    1. PROGRAM_PATH <수정필요>
    2. SAVE_AS_PATH1 <수정필요>
 4. win+r cmd
-5. cd \tmp
-6. auto_esafe.exe
+5. cd \auto_esafe
+6. auto_esafe_$VERSION.exe
 
 ## 동작순서
 
@@ -32,11 +32,12 @@ auto_esafe는 다음과 같은 과정을 거치며 동작합니다.
 3. 기존파일들 삭제: 오늘의 날짜로 되어 있는파일들 삭제
 4. eSafe2019실행 및 파일 다운로드
 5. 다운로드한 파일들을 csv로 변환
-6. csv로 변환된 파일들을 ftp서버로 전송
+6. csv로 변환된 파일들을 sftp서버로 전송
 
-## 결과 확인
+## 스케줄링
 
-auto_esafe.exe가 실행된 후 동작에 대한 확인
-
-1. c:\tmp\log 폴더 확인, 오늘의 날짜로 된 로그를 확인
-2. .env에 기술된 ftp서버확인
+1. taskschd.msc 에 특정시간에 자동으로 수행되게 함.
+2. 동작
+   1. 모니터를 깨움
+   2. 수행
+   3. 모니터 절전모드로 진입

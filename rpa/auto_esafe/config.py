@@ -19,7 +19,7 @@ load_dotenv(env_path())
 
 class Config:
     """환경 설정 및 상수 관리"""
-    VERSION = "1.0.8"
+    VERSION = "1.0.9"
 
     # 프로그램 실행 경로
     PROGRAM_PATH = os.getenv("PROGRAM_PATH")
@@ -38,11 +38,11 @@ class Config:
     USERNAME = os.getenv("CERTI_USERNAME")
     PASSWORD = os.getenv("CERTI_PASSWORD")
     
-    # FTP 설정
-    FTP_HOST = os.getenv("FTP_HOST")
-    FTP_USER = os.getenv("FTP_USER")
-    FTP_PASS = os.getenv("FTP_PASS")
-    FTP_REMOTE_DIR = os.getenv("FTP_REMOTE_DIR")
+    # SFTP 설정
+    SFTP_HOST = os.getenv("SFTP_HOST")
+    SFTP_USER = os.getenv("SFTP_USER")
+    SFTP_PASS = os.getenv("SFTP_PASS")
+    SFTP_REMOTE_DIR = os.getenv("SFTP_REMOTE_DIR")
 
     #GODATA api key
     GODATA_API_KEY = os.getenv("GODATA_API_KEY")    
