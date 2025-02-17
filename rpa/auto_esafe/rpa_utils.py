@@ -23,8 +23,11 @@ import pyautogui
 import psutil
 from enum import Enum
 from typing import Optional, Tuple
+
+import pyperclip
 from config import Config
 from logger import Logger
+import keyboard
 
 log = Logger()
 
@@ -48,6 +51,10 @@ class Direction(Enum):
     LEFT = "Left"
     UP = "Up"
     DOWN = "Down"    
+
+def get_scale_factor() -> float:
+    """ 현재 사용자의 화면 DPI 스케일 팩터를 반환합니다. """
+    return ctypes.windll.shcore.GetScaleFactorForDevice(0) / 100
 
 def get_point_with_location(location: Tuple[int, int, int, int], direction: Direction, px: int) -> Tuple[int, int]:
     """
@@ -124,7 +131,7 @@ def is_process_running(process_name="efriendplus.exe"):
             return True
     return False
 
-def wait_for_image(image_path, timeout=60, confidence=0.8, region=None, grayscale=False):
+def wait_for_image(image_path, timeout=60, confidence=0.8, region=None, grayscale=False, wait_seconds=0):
     """ 지정된 이미지가 화면에 나타날 때까지 대기합니다. """
     start_time = time.time()
     while time.time() - start_time < timeout:
@@ -137,6 +144,8 @@ def wait_for_image(image_path, timeout=60, confidence=0.8, region=None, grayscal
             log.warning(f"wait_for_image: 이미지 찾기 실패: {image_path}")
             pass
         time.sleep(1)
+    if wait_seconds > 0:
+        time.sleep(wait_seconds)    
     return None
 
 def find_for_image(image_path, confidence=0.8, region=None, grayscale=False):
@@ -255,12 +264,12 @@ def move_and_press(x:int, y: int, key: str, duration: float = 0.5, wait_seconds=
 
 def put_keys(command_str, interval=0.2, sleep_time=0.5):
     """
-    문자열 기반 키 입력 자동화 함수.
+    문자열 기반 키 입력 자동화 함수 (pyperclip + pyautogui 사용)
 
     - 형식: `H:ctrl+shift+a | P:delete | W:"C:\\Users\\MyUser\\Documents\\file.txt" | P:enter`
     - H: 핫키 (여러 개 가능, 예: `H:ctrl+shift+a`)
     - P: 단일 키 입력 (예: `P:delete`, `P:enter`)
-    - W: 문자열 입력 (예: `W:"abc"` → "abc" 입력)
+    - W: 문자열 입력 (예: `W:"abc"` → "abc" 입력, 클립보드 붙여넣기 방식)
 
     :param command_str: 매크로 스타일 명령어 문자열 (구분자: `|`)
     :param interval: 키 입력 간격 (기본값 0.2초)
@@ -284,8 +293,9 @@ def put_keys(command_str, interval=0.2, sleep_time=0.5):
             text_match = re.match(r'W:"(.*?)"', cmd)  # 큰따옴표 안의 문자열 추출
             if text_match:
                 text = text_match.group(1)  # "..." 안의 내용만 가져옴
-                text = bytes(text, "utf-8").decode("unicode_escape")
-                pyautogui.write(text, interval=interval)
+                pyperclip.copy(text)  # 클립보드에 복사
+                time.sleep(0.1)  # 복사가 완료될 때까지 잠깐 대기
+                pyautogui.hotkey("ctrl", "v")  # Ctrl+V로 붙여넣기
             else:
                 raise ValueError(f"잘못된 문자열 입력 형식: {cmd}")
 

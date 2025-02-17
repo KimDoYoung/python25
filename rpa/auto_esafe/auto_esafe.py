@@ -130,7 +130,7 @@ def work_start_main():
     # 메인 화면 체크
     region = get_region(RegionName.LEFT_TOP)
     #find_and_click(pngimg('main_logo'), region=region)
-    wait_for_image(pngimg('main_logo'), region=region, grayscale=True, timeout=60)
+    wait_for_image(pngimg('main_logo_home'), region=(286,80,70, 25), grayscale=True, timeout=60, wait_seconds=5)
     log.info("메인화면 로딩 완료")
     # 최대화를 한다.
     log.info("화면을 최대화 시도")
@@ -183,7 +183,6 @@ def work_500068_tab1():
     default_filename = get_text_from_input_field()
     screen_no = "500068_T1"
     saved_file_path = os.path.join(Config.SAVE_AS_PATH1, f"{todayYmd()}_{screen_no}.{default_filename.rsplit('.', 1)[-1]}")
-    saved_file_path = saved_file_path.replace("\\", "\\\\")
     put_keys(f'H:ctrl+a | P:delete | W:"{saved_file_path}"')
     time.sleep(1)    
     #--------------------------------
@@ -282,7 +281,6 @@ def work_500068_tab2() -> list:
     default_filename = get_text_from_input_field()
     screen_no = "500068_T2"
     saved_file_path = os.path.join(Config.SAVE_AS_PATH1, f"{todayYmd()}_{screen_no}.{default_filename.rsplit('.', 1)[-1]}")
-    saved_file_path = saved_file_path.replace("\\", "\\\\") 
     put_keys(f'H:ctrl+a | P:delete | W:"{saved_file_path}"')
     time.sleep(1)
     #--------------------------------
@@ -354,7 +352,6 @@ def work_500038(prev_working_day: str) -> str:
     default_filename = get_text_from_input_field()
     screen_no = "500038"
     saved_file_path = os.path.join(Config.SAVE_AS_PATH1, f"{todayYmd()}_{screen_no}.{default_filename.rsplit('.', 1)[-1]}")
-    saved_file_path = saved_file_path.replace("\\", "\\\\")
     put_keys(f'H:ctrl+a | P:delete | W:"{saved_file_path}"')
     time.sleep(1)
     #--------------------------------    time.sleep(1)
@@ -422,7 +419,6 @@ def work_800008(prev_working_day: str) -> str:
     default_filename = get_text_from_input_field()
     screen_no = "800008"
     saved_file_path = os.path.join(Config.SAVE_AS_PATH1, f"{todayYmd()}_{screen_no}.{default_filename.rsplit('.', 1)[-1]}")
-    saved_file_path = saved_file_path.replace("\\", "\\\\")
     put_keys(f'H:ctrl+a | P:delete | W:"{saved_file_path}"')
     time.sleep(1)
     #--------------------------------
@@ -465,11 +461,58 @@ def work_800100() -> str:
     default_filename = get_text_from_input_field()
     screen_no = "800100"
     saved_file_path = os.path.join(Config.SAVE_AS_PATH1, f"{todayYmd()}_{screen_no}.{default_filename.rsplit('.', 1)[-1]}")
-    saved_file_path = saved_file_path.replace("\\", "\\\\")
     put_keys(f'H:ctrl+a | P:delete | W:"{saved_file_path}"')
     time.sleep(1)
     #--------------------------------
     pyautogui.press('enter')
+    
+    log.info(f"파일 저장 경로(8): {saved_file_path}")    
+    warning_and_alert_check()
+    time.sleep(1)
+    return saved_file_path    
+
+def work_500086() -> str:
+    ''' 500086 등록잔량서비스'''
+    log.info("화면번호 입력 500086 입력 후 엔터")
+    mouse_move_and_click(1760, 50, wait_seconds=1)
+    pyautogui.hotkey('ctrl', 'a')  # 전체 선택
+    pyautogui.write("500086")
+    pyautogui.press('enter')
+    time.sleep(5)
+    
+    # 먼저 download_combo 클릭
+    region = get_region(RegionName.LEFT_BOTTOM)
+    move_and_click(pngimg('download_combo'),  region=region, grayscale=True)
+        
+    # 조회 버튼 클릭
+    region = get_region(RegionName.RIGHT_TOP)
+    find_and_click(pngimg('query'), region=region, wait_seconds=5)
+    # wait_for_image(pngimg('query_finish_chong'), region=region)
+    region = get_region(RegionName.RIGHT_BOTTOM)
+    wait_for_image(pngimg('query_finish_gun'), region=(1818,955,100,30))
+    time.sleep(3)
+    region = get_region(RegionName.CENTER)
+    find_and_press_key(pngimg('alert_icon'), 'space', region=region, grayscale=True, ignoreNotFound=True, timeout=60)    
+    # 다운로드 옵션 클릭
+    region = get_region(RegionName.LEFT_BOTTOM)
+    find_and_click(pngimg('download_combo'), region=region, grayscale=True)
+    press_keys(['down','down','down', 'enter'], wait_seconds=5)    
+    
+    # Save As 파일명 입력
+    region = get_region(RegionName.LEFT)
+    file_name = wait_for_image(pngimg('file_name'), grayscale=True, region=region)
+    if not file_name:
+        raise Exception("파일 이름 입력창을 찾을 수 없습니다.")
+    
+    x, y = get_point_with_location(file_name, Direction.RIGHT, 100)
+    mouse_move_and_click(x, y, wait_seconds=1)
+    #-------- Rename file------------
+    default_filename = get_text_from_input_field()
+    screen_no = "500086"
+    saved_file_path = os.path.join(Config.SAVE_AS_PATH1, f"{todayYmd()}_{screen_no}.{default_filename.rsplit('.', 1)[-1]}")
+    put_keys(f'H:ctrl+a | P:delete | W:"{saved_file_path}" | P:enter')
+    time.sleep(1)
+    find_and_press_key(pngimg('alert_icon'), 'space', region=region, grayscale=True, ignoreNotFound=True, timeout=60)        
     
     log.info(f"파일 저장 경로(8): {saved_file_path}")    
     warning_and_alert_check()
@@ -503,12 +546,12 @@ def esafe_auto_work():
     filename = work_500068_tab1()
     saved_files.append(filename)
     log.info(">>> 500068 기준가1 종료")
-    #-------------------------기준가2
+    # #-------------------------기준가2
     log.info(">>> 500068 기준가2 작업 시작")
     files = work_500068_tab2()
     saved_files.extend(files)
     log.info(">>> 500068 기준가2 작업 종료")
-    # #-------------------------500038 분배금 내역통보
+    #-------------------------500038 분배금 내역통보
     log.info(">>> 500038 분배금 내역통보 작업 시작")
     tabClose = close_all_tabs_via_context_menu((460,85), pngimg('context_menu'), pngimg('all_tab_close'))
     if not tabClose:
@@ -519,7 +562,7 @@ def esafe_auto_work():
     filename = work_500038(prev_working_day)
     saved_files.append(filename)
     log.info(">>> 500038 분배금 내역통보 작업 종료")
-    # #-------------------------800008종목발행현황
+    #-------------------------800008종목발행현황
     log.info(">>> 800008 종목발행현황 작업 시작")
     close_all_tabs_via_context_menu((460,85), pngimg('context_menu'), pngimg('all_tab_close'))
     filename = work_800008(prev_working_day)
@@ -531,6 +574,12 @@ def esafe_auto_work():
     filename = work_800100()
     saved_files.append(filename)
     log.info(">>> 800100 일자별 일정현황 종료")
+    #-------------------------800100 일자별 일정현황
+    log.info(">>> 500086 등록잔량서비스 시작")
+    close_all_tabs_via_context_menu((460,85), pngimg('context_menu'), pngimg('all_tab_close'))
+    filename = work_500086()
+    saved_files.append(filename)
+    log.info(">>> 500086 등록잔량서비스 종료")
     
     # 프로그램 종료
     mouse_move_and_click(1901, 16, wait_seconds=1)
@@ -575,6 +624,11 @@ def pre_check():
     if pyautogui.size() != (1920, 1080):
         print("❌ 모니터 해상도가 1920x1080이 아닙니다.")
         exit(1)
+    # DPI 100%가 아니면
+    if (get_scale_factor() != 1.0):
+        print("❌ 화면 배율이 100%가 아닙니다.")
+        exit(1)
+        
 
 def create_user_name_imge():
     # 사용자 이름을 이미지로 저장
