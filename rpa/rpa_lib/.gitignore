@@ -1,0 +1,12 @@
+# Byte-compiled / optimized / DLL files
+__pycache__/
+*.py[cod]
+*.class
+.pytest_cache/
+# Virtual environment
+venv/
+env/
+
+
+# macOS 관련
+.DS_Store
