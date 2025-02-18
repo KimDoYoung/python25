@@ -3,3 +3,4 @@ opencv-python
 psutil
 python-dotenv
 screeninfo
+pywinauto
