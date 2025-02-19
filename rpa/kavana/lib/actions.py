@@ -24,6 +24,12 @@ def press_key_on_point(key: str):
         pyautogui.press(key)
     return _press_key
 
+def move_cursor_to_point(duration: float = 0.5):
+    """ 주어진 좌표로 마우스를 이동하는 함수 """
+    def _move(point: Point):
+        pyautogui.moveTo(point.x, point.y, duration=duration)
+    return _move
+
 def wait_for_image(
     image_path: str,
     timeout: int = 60,
