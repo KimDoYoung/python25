@@ -50,7 +50,7 @@ cat <<EOF > .vscode/launch.json
     "configurations": [
         {
             "name": "Python: Current File",
-            "type": "python",
+            "type": "debugpy",
             "request": "launch",
             "program": "\${file}",
             "console": "integratedTerminal"
