@@ -7,21 +7,64 @@
 - abc.kva의 내용
     LOAD ".env" # 로 처음에 환경변수등을 load한다 .env에는 LOG_DIR와 같은 꼭필요한 변수를 넣는다. 없으면 에러보여주고 종료
 
+## 전제적인 구조
+
+```sql
+# functions
+FUCTION plus n, b
+    RETURN
+ENDFUNCTION
+...
+...
+# global variable
+
+MAIN
+    LOAD ".env"
+    # 프로그램 코드
+    ...
+
+EXCEPTION
+    SET error_img = CAPTURE_SCREEN
+    SAVE error_img TO $EXEUTE_FOLDER+"/error"+$NOW+".png"
+    EXIT 1
+ENDEXCEPTION
+
+ENDMAIN
+```
+
+## System변수
+    $EXCEPTION_MSG : exception message 문자열
+    $EXCEPTION_TYPE : exception type 문자열
+    $NOW : yyyy-mm-dd HH:MM:SS
+    $TODAY : yyyyMMdd
+    $TIMESTAMP : yy
+
 ## 예약어
 
+FUNCTION, RETURN, END_FUNCTION, MAIN, EXIT, END_MAIN, ON_EXCEPTION, END_EXCEPTION
+IF, ELSE_IF, ELSE, END_IF, WHILE, END_WHILE, FOR TO STEP END_FOR
 
 
 ## 주석
 
-    - # , // 한줄 라인 주석
-    - /* 멀티라인 주석 */
+- '//' 한줄 라인 주석
+- /* 멀티라인 주석 */
 
-```python
- PRINT abc # 이것은 주석입니다
+```sql
+ PRINT abc // 이것은 주석입니다
  /*
  ....
  */       
 ```
+
+## 함수
+
+### 문자열함수
+
+- FORMAT_DATE : SET today  = FORAMT_DATE "20250219" AS "%y-%m-%d"
+- SUBSTRING : SET s = SUBSTRING "123", 1, 2 // startIndex, Length 
+- LENGTH  : SET len = LENGTH "12345"
+
 
 ## 명령어
 
@@ -45,8 +88,8 @@ PRINT_DEBUG : log.debug
 ... 유사하게
 
 
-문법
-===
+## 문법
+
 1. 예약어는 모두 대문자, 변수명은 소문자
 	(모든 명령어는 대문자가 좋을까? 변수, 옵션 함수명 이런것은 소문자로 하고)
 2. 변수 : 알파벳으로 시작 255글자 이하. 특수문자 사용 못함. 알파벳과 숫자로만 
@@ -133,11 +176,3 @@ ENDFOR;
 9. ON_EXCEPTION BEGIN ..EXIT 1. END_EXCEPTION
 10. SET init_screen = CAPTURE_SCREEN 화면캡쳐해서 이미지변수에 저장
 
-================================
-1번 소스를 쭉 검사해서 문법적 오류를 지적해주고 오류가 있다면 수행하지 않고 끝내는게 좋겠음.
-두서없이 막 생각나는대로 적었는데. 섹터별로 같이 좀 더 생각하고 확정하는게 좋겠음.
-또 내부적으로 변수를 담고 있다거 넣고 꺼내는 자료구조가 있어야할 것 같아. 그것의 이름을 무엇이라고 하는게
-좋을지 모르겠는데. VariableManager(?) 라고하는게 좋을까? 좋은 이름 추천 좀 해줘.
-
-* 수식을 해석하는 모듈이 있어야할 것 같아. 변수도 가만해서
-* 데이터타입별로 사칙연산이 가능한 범위도 확정해야할 듯.
