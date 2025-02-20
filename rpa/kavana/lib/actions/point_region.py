@@ -16,12 +16,12 @@ from typing import Optional, Tuple
 import pyautogui
 from lib.actions.enums  import Direction, PointName, RegionName
 
-def get_point_on_region(region , point_name: PointName):
+def get_point_on_region(region , point_name: PointName):   
     ''' region 에서 point_name 에 해당하는 좌표를 반환한다.'''
     x, y, w, h = region
     if point_name == PointName.LEFT_TOP:
         return x, y
-    elif point_name == PointName.RIGHT_TOP:
+    elif point_name == PointName.RIGHT_T OP :
         return x+w, y
     elif point_name == PointName.RIGHT_BOTTOM:
         return x+w, y+h
