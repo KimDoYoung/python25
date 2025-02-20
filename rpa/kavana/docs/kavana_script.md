@@ -3,33 +3,29 @@
 ## 기본적인 생각
 
 - kavana 스크립트의 확장자 .kvs
-- kavana.exc abc.kva 와 같이 사용
+- kavana.exe abc.kvs 와 같이 사용
 - abc.kva의 내용
     LOAD ".env" # 로 처음에 환경변수등을 load한다 .env에는 LOG_DIR와 같은 꼭필요한 변수를 넣는다. 없으면 에러보여주고 종료
 
 ## 전제적인 구조
 
 ```sql
-# functions
+// functions
 FUCTION plus n, b
     RETURN
-ENDFUNCTION
-...
-...
-# global variable
+END_FUNCTION
 
-MAIN
-    LOAD ".env"
-    # 프로그램 코드
-    ...
 
 EXCEPTION
     SET error_img = CAPTURE_SCREEN
     SAVE error_img TO $EXEUTE_FOLDER+"/error"+$NOW+".png"
     EXIT 1
-ENDEXCEPTION
+END_EXCEPTION
 
-ENDMAIN
+MAIN
+    LOAD ".env"
+    // 프로그램 코드
+END_MAIN
 ```
 
 ## System변수
@@ -103,7 +99,7 @@ PRINT_DEBUG : log.debug
 	4. Region
 	5. Image
 	6. Boolean 
-	7. Date타입은 없는 것으로
+	7. Date
 	8. List, Map, NONE 
 SET numbers = [1, 2, 3, 4, 5];
 PRINT numbers[0];  # 1 출력

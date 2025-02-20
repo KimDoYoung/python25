@@ -1,8 +1,8 @@
 from typing import Tuple
 import pyautogui
 import pytest
-from lib.enums import Direction, RegionName, PointName
-from lib.point_region import get_point_on_region, get_point_in_region, get_point_with_region,  get_region
+from lib.actions.enums import Direction, RegionName, PointName
+from lib.actions.point_region import get_point_on_region, get_point_in_region, get_point_with_region,  get_region
 
 @pytest.mark.parametrize("region, point_name, expected", [
     ((10, 20, 100, 200), PointName.LEFT_TOP, (10, 20)),

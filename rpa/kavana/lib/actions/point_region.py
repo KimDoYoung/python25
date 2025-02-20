@@ -14,7 +14,7 @@
 """
 from typing import Optional, Tuple
 import pyautogui
-from lib.enums  import Direction, PointName, RegionName
+from lib.actions.enums  import Direction, PointName, RegionName
 
 def get_point_on_region(region , point_name: PointName):
     ''' region 에서 point_name 에 해당하는 좌표를 반환한다.'''
