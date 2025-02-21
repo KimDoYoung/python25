@@ -2,8 +2,8 @@ import re
 import operator
 from typing import List, Union
 from datetime import datetime, timedelta
-from variable_manager import VariableManager
-from builtin_functions import BuiltinFunctions
+from lib.core.variable_manager import VariableManager
+from lib.core.builtin_functions import BuiltinFunctions
 
 class ExprEvaluator:
     OPERATORS = {

@@ -21,7 +21,7 @@ def get_point_on_region(region , point_name: PointName):
     x, y, w, h = region
     if point_name == PointName.LEFT_TOP:
         return x, y
-    elif point_name == PointName.RIGHT_T OP :
+    elif point_name == PointName.RIGHT_TOP :
         return x+w, y
     elif point_name == PointName.RIGHT_BOTTOM:
         return x+w, y+h
