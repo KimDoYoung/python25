@@ -1,6 +1,6 @@
 import pytest
 from datetime import datetime, timedelta
-from lib.core.varaible_manager import VariableManager
+from lib.core.variable_manager import VariableManager
 from lib.core.builtin_functions import BuiltinFunctions
 from lib.core.expr_evaluator import ExprEvaluator
 

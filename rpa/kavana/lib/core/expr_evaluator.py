@@ -2,7 +2,7 @@ import re
 import operator
 from typing import List, Union
 from datetime import datetime, timedelta
-from varaible_manager import VariableManager
+from variable_manager import VariableManager
 from builtin_functions import BuiltinFunctions
 
 class ExprEvaluator:
