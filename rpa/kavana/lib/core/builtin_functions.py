@@ -4,7 +4,9 @@ from datetime import datetime
 class BuiltinFunctions:
     @staticmethod
     def LENGTH(s: str) -> int:
-        return len(s)
+        if isinstance(s, str):
+            return len(s)
+        raise TypeError("LENGTH() requires a string argument")
     
     @staticmethod
     def SUBSTR(s: str, start: int, length: int) -> str:

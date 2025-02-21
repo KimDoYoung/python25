@@ -26,6 +26,7 @@ def test_date_operations():
 def test_builtin_functions():
     var_manager = VariableManager()
     assert ExprEvaluator("LENGTH(\"abcde\")", var_manager).evaluate() == 5
+    assert ExprEvaluator("length(\"abcde\")", var_manager).evaluate() == 5
     assert ExprEvaluator("SUBSTR(\"hello\", 1, 3)", var_manager).evaluate() == "ell"
     assert isinstance(ExprEvaluator("CURRENT_DATETIME()", var_manager).evaluate(), datetime)
     assert 1 <= ExprEvaluator("RANDOM(1, 10)", var_manager).evaluate() <= 10

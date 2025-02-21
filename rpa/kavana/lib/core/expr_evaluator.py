@@ -4,6 +4,7 @@ from typing import List, Union
 from datetime import datetime, timedelta
 from lib.core.variable_manager import VariableManager
 from lib.core.builtin_functions import BuiltinFunctions
+from lib.core.function_parser import FunctionParser
 
 class ExprEvaluator:
     OPERATORS = {
@@ -20,17 +21,19 @@ class ExprEvaluator:
     
     def tokenize(self) -> List[str]:
         """수식을 토큰 리스트로 변환"""
-        return re.findall(r'\".*?\"|\d+\.\d+|\d+|[a-zA-Z_][a-zA-Z0-9_]*|[()+\-*/%,]', self.expression)
+        tokens = re.findall(r'\".*?\"|\d+\.\d+|\d+|[a-zA-Z_][a-zA-Z0-9_]*|[()+\-*/%,]', self.expression)
+        return [t for t in tokens if t != ","]  # ✅ 쉼표 제거
     
     def to_postfix(self, tokens: List[str]) -> List[str]:
         """토큰 리스트를 후위 표기법(RPN)으로 변환"""
         output = []
         stack = []
-        func_args = {}
         
         i = 0
         while i < len(tokens):
             token = tokens[i]
+            token_upper = token.upper()  # ✅ 대소문자 무시
+
             if token.isnumeric() or re.match(r'\d+\.\d+', token) or token.startswith('"'):
                 output.append(token)
             elif token in self.OPERATORS:
@@ -44,13 +47,12 @@ class ExprEvaluator:
                 while stack and stack[-1] != '(':
                     output.append(stack.pop())
                 stack.pop()
-                if stack and stack[-1] in func_args:
+                if stack and stack[-1].isalpha():
                     output.append(stack.pop())
             elif i + 1 < len(tokens) and tokens[i + 1] == '(':  # 함수 호출 감지
-                stack.append(token)
-                func_args[token] = []
+                stack.append(token_upper)
             else:
-                output.append(token)
+                output.append(token_upper)
             i += 1
         
         while stack:
@@ -63,44 +65,77 @@ class ExprEvaluator:
         stack = []
         
         for token in tokens:
+            token_upper = token.upper()
+            
+            if token == ",":
+                continue  # ✅ 쉼표 무시
+            
             if token.isnumeric():
                 stack.append(int(token))
             elif re.match(r'\d+\.\d+', token):
                 stack.append(float(token))
             elif token.startswith('"') and token.endswith('"'):
-                stack.append(token.strip('"'))  # 문자열 리터럴 처리
+                stack.append(token.strip('"'))  # ✅ 문자열 따옴표 제거
             elif token in self.OPERATORS:
                 b = stack.pop()
                 a = stack.pop()
-                
-                if token == '%' and not (isinstance(a, int) and isinstance(b, int)):
-                    raise TypeError("Modulo operator '%' only supports integer operands")
-                
-                if isinstance(a, datetime) and isinstance(b, int):
-                    result = a + timedelta(days=b) if token == '+' else a - timedelta(days=b)
+
+                # ✅ 문자열 연산 예외 처리
+                if isinstance(a, str) or isinstance(b, str):
+                    if token != '+':  # ✅ 문자열 연결만 허용
+                        raise TypeError(f"Unsupported operation: {a} {token} {b}")
+
+                # ✅ 문자열 + 문자열 (문자열 연결 지원)
+                if isinstance(a, str) and isinstance(b, str) and token == '+':
+                    result = a + b
+
+                # ✅ 날짜 연산 지원 (datetime + int, datetime - int)
+                elif isinstance(a, datetime) and isinstance(b, int):
+                    if token == '+':
+                        result = a + timedelta(days=b)
+                    elif token == '-':
+                        result = a - timedelta(days=b)
+                    else:
+                        raise TypeError(f"Unsupported operation: {a} {token} {b}")
+
+                # ✅ 날짜 차이 계산 (datetime - datetime)
                 elif isinstance(a, datetime) and isinstance(b, datetime) and token == '-':
-                    result = (a - b).days  # 날짜 차이 반환 (일 단위)
-                elif isinstance(a, str) and isinstance(b, str) and token == '+':
-                    result = a + b  # 문자열 연결 지원
+                    result = (a - b).days  # 날짜 차이 (일 단위)
+
+                elif token == '%':
+                    if not isinstance(a, int) or not isinstance(b, int):
+                        raise TypeError(f"Unsupported operand types for %: {type(a).__name__} and {type(b).__name__}")
+                    result = a % b  # ✅ 정수 나머지 연산 수행
+                
+                # ✅ 일반 숫자 연산 (int, float)
                 elif isinstance(a, (int, float)) and isinstance(b, (int, float)):
                     result = self.OPERATORS[token][1](a, b)
                     result = int(result) if isinstance(a, int) and isinstance(b, int) else result
+
+                # ❌ 지원하지 않는 연산 예외 발생
                 else:
                     raise TypeError(f"Unsupported operand types: {type(a).__name__} and {type(b).__name__}")
-                
+
                 stack.append(result)
-            elif hasattr(BuiltinFunctions, token.upper()):  # 함수 호출
-                func = getattr(BuiltinFunctions, token.upper())
-                args = []
-                while stack and isinstance(stack[-1], (int, float, str, datetime)):
-                    args.insert(0, stack.pop())
-                stack.append(func(*args))
+
+
+            elif hasattr(BuiltinFunctions, token_upper):  # ✅ 함수 호출 처리
+                func = getattr(BuiltinFunctions, token_upper)
+
+                # ✅ 스택에서 필요한 인자 개수만큼 꺼내기
+                parser = FunctionParser(f"{token_upper}({', '.join(map(str, stack))})")
+                pos_args, kw_args = parser.parse_arguments()
+
+                result = func(*pos_args, **kw_args)  # ✅ 함수 실행
+                stack.clear()  # ✅ 스택 비우고 결과만 남김
+                stack.append(result)
+
             else:
-                value = self.var_manager.get_variable(token)
+                value = self.var_manager.get_variable(token_upper)
                 if value is None:
                     raise ValueError(f"Undefined variable: {token}")
                 stack.append(value)
-        
+    
         return stack[0]
     
     def evaluate(self) -> Union[int, float, str, datetime]:
@@ -113,7 +148,7 @@ class ExprEvaluator:
 if __name__ == "__main__":
     var_manager = VariableManager()
     var_manager.set_variable("name", "hello")
-    expr = "LENGTH(name) + 3"
+    expr = "length(name)"  # 대소문자 구분 없이 동작해야 함
     evaluator = ExprEvaluator(expr, var_manager)
     result = evaluator.evaluate()
     print(f"{expr} = {result}")
