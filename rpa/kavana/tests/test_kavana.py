@@ -18,7 +18,8 @@ def test_kavana_scripts():
     """
     test_cases = {
         1: ("hello",),  # ./scripts/0.kvs → "hello" 출력 예상
-        2: ("hello", "", "123")
+        2: ("hello", "", "123"),
+        3: ("hello 홍길동")
     }
 
     for test_num, expected_outputs in test_cases.items():
