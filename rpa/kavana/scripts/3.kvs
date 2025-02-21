@@ -2,5 +2,5 @@
 include "./scripts/common.kvs"
 // name="홍길동" ,  SET name = "홍길동" 으로 해석  main 밖에서 선언된 변수는 global변수
 main
-    PRINT("hello " + name)
+    PRINT("hello {name}")
 end_main

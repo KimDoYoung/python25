@@ -162,7 +162,19 @@ class CommandParser:
     def tokenize(line: str):
         """
         명령어를 토큰 리스트로 변환
-        - 공백을 기준으로 분리하되, 문자열은 그대로 유지
-        - PRINT("hello world") → ["PRINT", "(", '"hello world"', ")"]
+        - PRINT Hello → ["PRINT", "Hello"]
+        - PRINT "Hello World" → ["PRINT", '"Hello World"']
+        - PRINT("hello {name}") → ["PRINT", '"hello {name}"']
+        - PRINT("hello", "world") → ["PRINT", '"hello"', '"world"']
         """
-        return re.findall(r'".*?"|\S+', line)  # ✅ 문자열 따옴표 유지, 공백 기준 분리
+        # ✅ PRINT(...) 함수형 명령어 처리
+        func_match = re.match(r'^(\w+)\((.*)\)$', line)
+        if func_match:
+            cmd = func_match.group(1).upper()
+            args = func_match.group(2).strip()
+            split_args = re.findall(r'".*?"|\w+', args)  # ✅ 쉼표 제거
+            return [cmd] + split_args
+
+        # ✅ 일반 명령어 처리
+        tokens = re.findall(r'".*?"|\S+', line)
+        return tokens

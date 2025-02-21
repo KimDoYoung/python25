@@ -10,6 +10,7 @@
 - 대소문자를 구분하지 않음.
 - 내장객체 log을 갖음.
 - .env의 변수, 시스템변수는 $를 앞에 붙인다.
+- FUNCTION 안에서 SET 하는 변수는 모두 local 그 외에서 SET하는 변수는 global변수
 - 한 문장은 ';' ,'\n' 으로 끝난다.
 - 변수는 대입되는 값에 의해서 결정된다.
 
@@ -45,7 +46,8 @@ END_MAIN
 
 ## 예약어
 
-INCLUDE, LOAD, PRINT, PRINTLN
+INCLUDE, LOAD, PRINT, PRINTLN, GLOBAL
+
 FUNCTION, RETURN, END_FUNCTION, MAIN, EXIT, END_MAIN, ON_EXCEPTION, END_EXCEPTION
 IF, ELSE_IF, ELSE, END_IF, WHILE, END_WHILE, FOR TO STEP END_FOR
 
@@ -120,7 +122,7 @@ IF, ELSE_IF, ELSE, END_IF, WHILE, END_WHILE, FOR TO STEP END_FOR
 ### SET
 
 - 기능 : 변수를 설정한다
-- 구문 :  set [변수명] = [데이터]; //이때 a는 정수타입이다
+- 구문 :  SET <varname> = <expression> [GLOBAL] //이때 a는 정수타입이다
   
 - Example
 
