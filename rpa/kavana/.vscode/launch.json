@@ -1,6 +1,17 @@
 {
     "version": "0.2.0",
-    "configurations": [
+    "configurations": [        
+        {
+            "name": "kavana",
+            "type": "debugpy",
+            "request": "launch",
+            "program": "${file}",
+            "console": "integratedTerminal",
+            "args": ["./scripts/0.kvs"],
+            "env": {
+                "PYTHONPATH": "${workspaceFolder}"
+            }
+        },
         {
             "name": "Python: Current File",
             "type": "debugpy",

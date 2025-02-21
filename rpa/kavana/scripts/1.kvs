@@ -1,0 +1,4 @@
+//가장 작은 코드
+main
+    print("hello")
+end_main
