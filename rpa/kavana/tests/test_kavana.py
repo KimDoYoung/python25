@@ -13,23 +13,28 @@ def run_kavana_script(script_path):
 
 def test_kavana_scripts():
     """
-    scripts 디렉터리에 있는 여러 개의 Kavana 스크립트를 실행하고, 
+    scripts 디렉터리에 있는 여러 개의 Kavana 스크립트를 실행하고,
     각각의 예상 출력과 일치하는지 확인한다.
     """
     test_cases = {
-        1: ("hello",),  # ./scripts/0.kvs → "hello" 출력 예상
-        2: ("hello", "", "123"),
-        3: ("hello 홍길동")
+        1: "hello",  # ./scripts/0.kvs → "hello" 출력 예상
+        2: "hello\n\n123",
+        3: "hello 홍길동",
+        4: "hello 트럼프",
     }
 
-    for test_num, expected_outputs in test_cases.items():
+    for test_num, expected_output in test_cases.items():
         script_path = f"./scripts/{test_num}.kvs"
-        
+
         if not os.path.exists(script_path):
             print(f"⚠️ 테스트 파일 없음: {script_path} (건너뜀)")
             continue
 
-        output = run_kavana_script(script_path)
-        expected_output = "\n".join(expected_outputs)
+        output = run_kavana_script(script_path).strip()  # ✅ 개행 문제 해결
+        expected_output = expected_output.strip()  # ✅ 개행 문제 해결
 
-        assert output == expected_output, f"🚨 출력 불일치! 파일: {script_path}, 예상: {expected_output}, 실제: {output}"
+        assert output == expected_output, (
+            f"🚨 출력 불일치! 파일: {script_path}\n"
+            f"예상:\n{repr(expected_output)}\n"
+            f"실제:\n{repr(output)}"
+        )

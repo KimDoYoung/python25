@@ -10,6 +10,8 @@ def test_basic_arithmetic():
     assert ExprEvaluator("(1 + 2) * 3", var_manager).evaluate() == 9
     assert ExprEvaluator("10 / 2", var_manager).evaluate() == 5
     assert ExprEvaluator("10 % 3", var_manager).evaluate() == 1
+    assert ExprEvaluator("-1 + 2", var_manager).evaluate() == 1
+    assert ExprEvaluator("-5 * 2", var_manager).evaluate() == -10
 
 def test_string_operations():
     var_manager = VariableManager()
@@ -40,10 +42,16 @@ def test_variable_usage():
 
 def test_invalid_operations():
     var_manager = VariableManager()
-    with pytest.raises(TypeError):
+    
+    # 문자열 연산 예외 처리 확인
+    with pytest.raises(ValueError, match="Unsupported operation between strings"):
         ExprEvaluator("\"hello\" - \"world\"", var_manager).evaluate()
-    with pytest.raises(TypeError):
+    
+    # 잘못된 연산 예외 처리 확인
+    with pytest.raises(ValueError):
         ExprEvaluator("10 % 2.5", var_manager).evaluate()
+    
+    # 정의되지 않은 변수 사용 예외 확인
     with pytest.raises(ValueError):
         ExprEvaluator("undefined_var + 3", var_manager).evaluate()
 

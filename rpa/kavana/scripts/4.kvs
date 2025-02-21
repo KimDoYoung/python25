@@ -1,0 +1,8 @@
+//가장 작은 코드
+include "./scripts/common.kvs"
+// name="홍길동" ,  SET name = "홍길동" 으로 해석  main 밖에서 선언된 변수는 global변수
+main
+    //이미 name에는 홍길동이 들어 있음.
+    set name = "트럼프"
+    PRINT("hello {name}")
+end_main
