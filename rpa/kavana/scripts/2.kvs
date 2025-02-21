@@ -1,0 +1,6 @@
+//가장 작은 코드
+main
+    PRINT("hello")
+    PRINTLN()
+    print("123")
+end_main

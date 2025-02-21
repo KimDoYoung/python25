@@ -15,6 +15,8 @@ class CommandExecutor:
 
         if cmd == "PRINT":
             self._execute_print(args)
+        elif cmd == "PRINTLN":
+            self._execute_println(args)
         else:
             raise ValueError(f"Unknown command: {cmd}")
 
@@ -31,3 +33,16 @@ class CommandExecutor:
             output = output[1:-1]  # 따옴표 제거
 
         print(output)
+
+    def _execute_println(self, args):
+        """
+        PRINTLN 명령어 실행 (출력 후 개행)
+        예: PRINTLN("Hello, World!")
+        """
+        if not args:
+            print()  # ✅ 인자가 없으면 개행만 출력
+        else:
+            output = " ".join(args)  # ✅ 여러 인자가 있을 경우 공백으로 결합
+            if output.startswith('"') and output.endswith('"'):
+                output = output[1:-1]  # ✅ 따옴표 제거
+            print(output)  # ✅ 기본 출력 (자동 개행 포함)
