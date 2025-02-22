@@ -1,4 +1,4 @@
 main
-    set a = substr("KDY",1,2)
+    set a = substr "KDY",1,2
     print a
 end_main

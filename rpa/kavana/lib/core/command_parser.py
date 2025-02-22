@@ -22,10 +22,14 @@ class CommandParser:
             stripped = line.strip()
             if not stripped or stripped.startswith("//"):
                 continue  # 빈 줄 및 주석 제거
+            # 라인 중 //이 나오면 //이후는 삭제 후 추가
+            
 
             if stripped.endswith("\\"):
                 current_line += stripped[:-1] + " "  # `\` 제거 후 다음 줄 연결
             else:
+                if "//" in stripped:
+                    stripped = stripped[:stripped.index("//")]                
                 current_line += stripped
                 merged_lines.append(current_line)
                 current_line = ""  # 새로운 줄 시작
