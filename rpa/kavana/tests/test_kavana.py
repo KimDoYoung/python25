@@ -21,6 +21,7 @@ def test_kavana_scripts():
         2: "hello\n\n123",
         3: "hello 홍길동",
         4: "hello 트럼프",
+        5: "DY",
     }
 
     for test_num, expected_output in test_cases.items():

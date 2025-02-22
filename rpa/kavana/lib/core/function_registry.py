@@ -4,7 +4,6 @@ from typing import List, Union
 from datetime import datetime, timedelta
 from lib.core.variable_manager import VariableManager
 from lib.core.builtin_functions import BuiltinFunctions
-from lib.core.function_parser import FunctionParser
 
 class FunctionRegistry:
     """내장 함수 및 사용자 정의 함수를 관리하는 클래스"""

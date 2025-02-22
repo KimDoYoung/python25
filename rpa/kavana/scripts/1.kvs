@@ -1,4 +1,6 @@
 //가장 작은 코드
 main
-    print("hello")
+    set s = "012hello345"
+    set name = substr s,3,5 
+    print "{name}"
 end_main

@@ -3,6 +3,9 @@ from lib.core.command_parser import CommandParser
 
 @pytest.mark.parametrize("input_line, expected_tokens", [
     # ✅ 기본 명령어 테스트
+    ("LENGTH(\"abc\")", ["LENGTH", '"abc"']),
+    
+    # ✅ 기본 명령어 테스트
     ("PRINT Hello", ["PRINT", "Hello"]),
     ("SET x = 10", ["SET", "x", "=", "10"]),
 

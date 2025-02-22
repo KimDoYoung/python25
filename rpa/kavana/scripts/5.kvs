@@ -1,0 +1,4 @@
+main
+    set name = substr("KDY",1,2)
+    PRINT "{name}"
+end_main

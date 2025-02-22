@@ -4,6 +4,44 @@ from lib.core.variable_manager import VariableManager
 from lib.core.builtin_functions import BuiltinFunctions
 from lib.core.expr_evaluator import ExprEvaluator
 
+def test_boolean_and_none():
+    var_manager = VariableManager()
+    
+    # ✅ True, False, None 저장 테스트
+    assert ExprEvaluator("True", var_manager).evaluate() is True
+    assert ExprEvaluator("False", var_manager).evaluate() is False
+    assert ExprEvaluator("None", var_manager).evaluate() is None
+
+    # ✅ 비교 연산자 테스트
+    assert ExprEvaluator("5 > 3", var_manager).evaluate() is True
+    assert ExprEvaluator("5 < 3", var_manager).evaluate() is False
+    assert ExprEvaluator("True == 1", var_manager).evaluate() is True
+    assert ExprEvaluator("False == 0", var_manager).evaluate() is True
+    assert ExprEvaluator("None == None", var_manager).evaluate() is True
+
+    # ✅ 변수에 저장
+    var_manager.set_variable("a", True)
+    var_manager.set_variable("b", False)
+    var_manager.set_variable("c", None)
+    assert ExprEvaluator("a", var_manager).evaluate() is True
+    assert ExprEvaluator("b", var_manager).evaluate() is False
+    # assert ExprEvaluator("c", var_manager).evaluate() is None
+
+def test_comparison_operators():
+    var_manager = VariableManager()
+    assert ExprEvaluator("5 > 3", var_manager).evaluate() is True
+    assert ExprEvaluator("5 < 3", var_manager).evaluate() is False
+    assert ExprEvaluator("5 >= 5", var_manager).evaluate() is True
+    assert ExprEvaluator("5 <= 3", var_manager).evaluate() is False
+    assert ExprEvaluator("5 == 5", var_manager).evaluate() is True
+    assert ExprEvaluator("5 != 5", var_manager).evaluate() is False
+    assert ExprEvaluator("True == True", var_manager).evaluate() is True
+    assert ExprEvaluator("False == False", var_manager).evaluate() is True
+    assert ExprEvaluator("None == None", var_manager).evaluate() is True
+
+    with pytest.raises(ValueError):  # ✅ 문자열 비교는 ==, !=만 허용
+        ExprEvaluator("\"hello\" > \"world\"", var_manager).evaluate()
+
 def test_basic_arithmetic():
     var_manager = VariableManager()
     assert ExprEvaluator("1 + 2 * 3", var_manager).evaluate() == 7
@@ -15,6 +53,7 @@ def test_basic_arithmetic():
 
 def test_string_operations():
     var_manager = VariableManager()
+    assert ExprEvaluator("\"hello\"", var_manager).evaluate() == "hello"
     assert ExprEvaluator("\"hello\" + \" world\"", var_manager).evaluate() == "hello world"
     assert ExprEvaluator("LENGTH(\"hello\") + 3", var_manager).evaluate() == 8
 
