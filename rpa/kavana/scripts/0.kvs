@@ -1,3 +1,10 @@
+FUNCTION plus(a, b)
+   set c = a + b + global_number
+   return c
+END_FUNCTION
+
 main
-   set a = not True
+   set global_number = 10
+   set a = plus(3, 4)
+   print "{a}"
 end_main

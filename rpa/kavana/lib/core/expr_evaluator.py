@@ -33,11 +33,14 @@ class ExprEvaluator:
     def tokenize(self) -> List[str]:
         """수식을 토큰 리스트로 변환 (문자열 유지)"""
     #   tokens = re.findall(r'<=|>=|==|!=|[-+]?[0-9]*\.?[0-9]+|"[^"]*"|[a-zA-Z_][a-zA-Z0-9_]*|[()+\-*/%,]', self.expression)
+        # tokens = re.findall(
+        #     r'<=|>=|==|!=|[<>]|[-+]?[0-9]*\.?[0-9]+|"[^"]*"|[a-zA-Z_][a-zA-Z0-9_]*|[()+\-*/%]', 
+        #     self.expression
+        # )        
         tokens = re.findall(
-            r'<=|>=|==|!=|[<>]|[-+]?[0-9]*\.?[0-9]+|"[^"]*"|[a-zA-Z_][a-zA-Z0-9_]*|[()+\-*/%]', 
+            r'<=|>=|==|!=|[<>]|[-+]?[0-9]*\.?[0-9]+|"[^"]*"|[a-zA-Z_][a-zA-Z0-9_]*|[(),+\-*/%]', 
             self.expression
-        )        
-
+        )   
         # 쉼표 제거
         tokens = [t for t in tokens if t != ","]
         
@@ -174,9 +177,18 @@ class ExprEvaluator:
 
                     # ✅ 스택에서 필요한 인자 개수만큼 꺼내서 실행 환경 구성
                     local_vars = {param: stack.pop() for param in reversed(param_names)}
+                    # ✅ FunctionExecutor 사용하여 함수 실행
+                    function_executor = function_executor(
+                        function_name=token_upper,
+                        func_body=func_body,
+                        param_names=param_names,
+                        local_vars=local_vars,
+                        global_var_manager=self.var_manager  # ✅ 전역 변수 전달
+                    )
 
-                    # ✅ 사용자 함수 실행 (간단한 해석기 사용)
-                    result = self.execute_user_function(func_body, local_vars)
+                    result = function_executor.execute()
+                    stack.append(result)  # ✅ 결과를 스택에 추가
+
                 else:  # ✅ 내장 함수일 경우
                     if isinstance(func_info, staticmethod):
                         func_info = func_info.__func__  # ✅ 정적 메서드 실행 가능하도록 변환
