@@ -2,6 +2,7 @@ import re
 import operator
 from typing import List, Union
 from datetime import datetime, timedelta
+from lib.core.function_parser import FunctionParser
 from lib.core.function_registry import FunctionRegistry
 from lib.core.variable_manager import VariableManager
 from lib.core.builtin_functions import BuiltinFunctions
@@ -58,6 +59,12 @@ class ExprEvaluator:
         i = 0
         while i < len(tokens):
             token = tokens[i]
+            # pluse ( 3 4 ) -> pluse(3,4)로 
+            if FunctionRegistry.get_function(token.upper()):
+                combined_token, i = FunctionParser._parse_function_call(tokens, i)
+                output.append(combined_token)
+                continue
+
             if isinstance(token, str) and token.replace('.', '', 1).lstrip('-').isdigit():
                 token = float(token) if '.' in token else int(token)  # ✅ 문자열 숫자를 실제 숫자로 변환
                 output.append(token)
