@@ -2,6 +2,15 @@ import sys
 from lib.core.command_parser import CommandParser
 from lib.core.command_executor import CommandExecutor
 
+#TODO
+# 1. custom functions
+# 2. --check, --pretty 옵션
+# 3. IF,FOR, WHILE, BREAK, CONTINUE
+# 4. custom type : Point, Region, Image, Application, Window
+# 5. RPA 명령어들 :   Click, KeyIn, Move, Wait_For_Image, Create_Image, Sleep, Capture_Scrren, 
+# Run_Application, Close_Application, Get_Window, Get_Window_List, Get_Window_Info
+
+
 def main():
     if len(sys.argv) != 2:
         print("Usage: python kavana.py <script.kvs>")
@@ -31,3 +40,5 @@ def main():
 
 if __name__ == "__main__":
     main()
+
+

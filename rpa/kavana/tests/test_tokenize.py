@@ -28,6 +28,8 @@ from lib.core.command_parser import CommandParser
 
     # ✅ 함수 형태가 아닌 일반적인 명령어
     ("FUNCTION myFunc", ["FUNCTION", "myFunc"]),
+    ("FUNCTION myFunc a, b", ["FUNCTION", "myFunc","a","b"]),
+    ("FUNCTION myFunc (a, b)", ["FUNCTION", "myFunc","a","b"]),
     ("END_FUNCTION", ["END_FUNCTION"])
     
 ])
