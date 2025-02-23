@@ -1,0 +1,7 @@
+//가장 작은 코드
+main
+    SET b = not True
+    //SET b1 = (1==1)
+    //SET b2 = (2==2)
+    //SET b = B1 AND B2
+end_main

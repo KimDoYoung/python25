@@ -19,7 +19,10 @@ class ExprEvaluator:
         '>=': (0, operator.ge),
         '<=': (0, operator.le),
         '==': (0, operator.eq),
-        '!=': (0, operator.ne)
+        '!=': (0, operator.ne),
+        'NOT': (-1, lambda a: not a),  # 단항 연산자
+        'AND': (-2, lambda a, b: bool(a) and bool(b)),
+        'OR':  (-3, lambda a, b: bool(a) or bool(b))        
     }
     
     def __init__(self, expression: str, var_manager: VariableManager):
@@ -35,7 +38,14 @@ class ExprEvaluator:
             self.expression
         )        
 
-        return [t for t in tokens if t != ","]  # ✅ 쉼표 제거    
+        # 쉼표 제거
+        tokens = [t for t in tokens if t != ","]
+        
+        # boolean 예약어를 대문자로 변환하여 토큰으로 처리 ("and", "or", "not")
+        reserved = {"and", "or", "not"}
+        tokens = [t.upper() if t.lower() in reserved else t for t in tokens]
+        
+        return tokens
 
     def to_postfix(self, tokens: List[str]) -> List[str]:
         """토큰 리스트를 후위 표기법(RPN)으로 변환"""
@@ -66,11 +76,23 @@ class ExprEvaluator:
 
             if token.replace('.', '', 1).lstrip('-').isdigit() or token.startswith('"'):
                 output.append(token)
+            # elif token in self.OPERATORS:
+            #     while (stack and stack[-1] in self.OPERATORS and
+            #         self.OPERATORS[token][0] <= self.OPERATORS[stack[-1]][0]):
+            #         output.append(stack.pop())
+            #     stack.append(token)
             elif token in self.OPERATORS:
-                while (stack and stack[-1] in self.OPERATORS and
-                    self.OPERATORS[token][0] <= self.OPERATORS[stack[-1]][0]):
-                    output.append(stack.pop())
-                stack.append(token)
+                if token == "NOT":
+                    # NOT은 오른쪽 결합이므로, 우선순위가 '더 큰' 연산자만 pop합니다.
+                    while (stack and stack[-1] in self.OPERATORS and
+                        self.OPERATORS[token][0] < self.OPERATORS[stack[-1]][0]):
+                        output.append(stack.pop())
+                else:
+                    # 이항 연산자는 왼쪽 결합: 우선순위가 같거나 큰 연산자 pop
+                    while (stack and stack[-1] in self.OPERATORS and
+                        self.OPERATORS[token][0] <= self.OPERATORS[stack[-1]][0]):
+                        output.append(stack.pop())
+                stack.append(token)            
             elif token == '(':
                 stack.append(token)
             elif token == ')':
@@ -113,6 +135,11 @@ class ExprEvaluator:
 
             if isinstance(token, str) and token.replace('.', '', 1).lstrip('-').isdigit():
                 stack.append(float(token) if '.' in token else int(token))
+            elif token == "NOT":
+                # 단항 boolean not 연산자 처리
+                a = stack.pop()
+                result = self.OPERATORS[token][1](a)
+                stack.append(result)                
             elif token in self.OPERATORS:
                 b = stack.pop()
                 a = stack.pop()

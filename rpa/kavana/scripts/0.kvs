@@ -1,4 +1,3 @@
 main
-    set a = substr "KDY",1,2
-    print a
+   set a = not True
 end_main
