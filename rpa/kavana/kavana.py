@@ -1,6 +1,7 @@
 import sys
 from lib.core.command_parser import CommandParser
 from lib.core.command_executor import CommandExecutor
+from lib.core.function_registry import FunctionRegistry
 
 #TODO
 # 1. custom functions
@@ -26,9 +27,10 @@ def main():
         parser = CommandParser(script_lines)
         parsed_commands = parser.parse()
         
-        # for command in parsed_commands:
-        #     print(command)
+        for command in parsed_commands:
+            print(command)
         # exit(0)
+        FunctionRegistry.print_user_functions()
         
         # 명령어 실행
         executor = CommandExecutor()

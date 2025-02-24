@@ -2,6 +2,7 @@ import re
 import operator
 from typing import List, Union
 from datetime import datetime, timedelta
+from lib.core.function_executor import FunctionExecutor
 from lib.core.function_parser import FunctionParser
 from lib.core.function_registry import FunctionRegistry
 from lib.core.variable_manager import VariableManager
@@ -60,9 +61,10 @@ class ExprEvaluator:
         while i < len(tokens):
             token = tokens[i]
             # pluse ( 3 4 ) -> pluse(3,4)로 
-            func, arg_count = FunctionRegistry.get_function(token.upper())
-            if func != None:
-                combined_token, i = FunctionParser._parse_function_call(tokens, start_index = i, arg_count=arg_count)
+            func_info = FunctionRegistry.get_function(token.upper())
+            if func_info != None:
+                arg_count = func_info["arg_count"]
+                combined_token, i = FunctionParser._parse_function_call(tokens, start_index = i, func=None,  arg_count=arg_count)
                 output.append(combined_token)
                 continue
 
@@ -172,46 +174,73 @@ class ExprEvaluator:
 
                 stack.append(result)
 
-            elif FunctionRegistry.get_function(token_upper):
-                func_info = FunctionRegistry.get_function(token_upper)
-                if isinstance(func_info, dict):  # ✅ 사용자 정의 함수일 경우
-                    param_names = func_info["params"]
-                    func_body = func_info["body"]
+            if self.isFunction(token_upper):  
+                func_tokens = self.split_function_token(token_upper)  
+                func_info = FunctionRegistry.get_function(func_tokens[0])
+                
+                if func_info is None:
+                    raise ValueError(f"Undefined function: {func_tokens[0]}")
 
-                    # ✅ 스택에서 필요한 인자 개수만큼 꺼내서 실행 환경 구성
-                    local_vars = {param: stack.pop() for param in reversed(param_names)}
-                    # ✅ FunctionExecutor 사용하여 함수 실행
-                    function_executor = function_executor(
-                        function_name=token_upper,
-                        func_body=func_body,
-                        param_names=param_names,
-                        local_vars=local_vars,
-                        global_var_manager=self.var_manager  # ✅ 전역 변수 전달
-                    )
+                evaluated_args = [func_tokens[1:]]
 
-                    result = function_executor.execute()
-                    stack.append(result)  # ✅ 결과를 스택에 추가
+                function_executor = FunctionExecutor(func_info, global_var_manager=self.var_manager, evaluated_args=evaluated_args)
 
-                else:  # ✅ 내장 함수일 경우
-                    if isinstance(func_info, staticmethod):
-                        func_info = func_info.__func__  # ✅ 정적 메서드 실행 가능하도록 변환
+                result = function_executor.execute()
+                stack.append(result)  
 
-                    required_args = func_info.__code__.co_argcount
-                    if len(stack) < required_args:
-                        raise ValueError(f"Not enough arguments for function: {token_upper}")
-                    pos_args = [stack.pop() for _ in range(required_args)]
-                    result = func_info(*reversed(pos_args))
-
-                stack.append(result)
-
-            else:
+            else:  
                 value = self.var_manager.get_variable(token_upper)
                 if value is None:
-                    raise ValueError(f"Undefined variable: {token_upper}")  # ✅ 대소문자 오류 수정
+                    raise ValueError(f"Undefined variable: {token_upper}")
                 stack.append(value)
 
         return stack[0]
+    
+    def split_function_token(self, function_token:str) -> List[str]:
+        """function_token PLUS(3,4) -> PLUS,3,4 함수명과 인자로 분리"""
+        if "(" not in function_token or not function_token.endswith(")"):
+            return [function_token]  # 괄호가 없으면 그대로 반환
 
+        func_name = function_token[:function_token.index("(")]  # ✅ 함수명 추출
+        args_str = function_token[function_token.index("(") + 1:-1].strip()  # ✅ 괄호 안의 내용
+
+        if not args_str:  # ✅ 빈 괄호 처리 (예: MY_FUNC())
+            return [func_name]
+
+        args = []
+        current_arg = []
+        bracket_depth = 0  # ✅ 괄호 깊이 추적
+
+        i = 0
+        while i < len(args_str):
+            char = args_str[i]
+
+            if char == "(":
+                bracket_depth += 1
+            elif char == ")":
+                bracket_depth -= 1
+
+            if char == "," and bracket_depth == 0:
+                # ✅ 쉼표가 최상위 레벨에 있을 때만 인자 구분
+                args.append("".join(current_arg).strip())
+                current_arg = []
+            else:
+                current_arg.append(char)
+
+            i += 1
+
+        if current_arg:  # ✅ 마지막 인자 추가
+            args.append("".join(current_arg).strip())
+
+        return [func_name] + args
+
+    def isFunction(self, token: str) -> bool:
+        """토큰이 함수인지 확인 PLUS(3,4)"""
+        func_name = token.upper()
+        if "(" in token:
+            func_name =  token[:token.index("(")]  # '(' 이전까지 잘라서 반환
+        func_info = FunctionRegistry.get_function(func_name)
+        return func_info != None
 
     def execute_user_function(self, func_body: str, local_vars: dict):
         """

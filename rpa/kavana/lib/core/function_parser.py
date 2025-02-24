@@ -8,9 +8,11 @@ class FunctionParser:
         i = 0
         while i < len(tokens):
             token = tokens[i]
-            func, arg_count = FunctionRegistry.get_function(token.upper())
-            if func:
+            func_info = FunctionRegistry.get_function(token.upper())
+            if func_info:
                 # ✅ 함수 호출 감지
+                func = None
+                arg_count = func_info["arg_count"]
                 combined_token, new_index = FunctionParser._parse_function_call(tokens, i, func, arg_count)
                 stack.append(combined_token)
                 i = new_index  # ✅ 함수 호출 후 다음 토큰 위치로 이동
@@ -37,10 +39,11 @@ class FunctionParser:
             while i < len(tokens):
                 if tokens[i] == '(':
                     bracket_depth += 1
-                    nested_func, nested_arg_count = FunctionRegistry.get_function(tokens[i - 1].upper())
-                    if nested_func:
+                    func_info = FunctionRegistry.get_function(tokens[i - 1].upper())
+                    if func_info:
                         # ✅ 중첩된 함수 호출 처리
-                        nested_token, i = FunctionParser._parse_function_call(tokens, i - 1, nested_func, nested_arg_count)
+                        nested_arg_count = func_info["arg_count"]
+                        nested_token, i = FunctionParser._parse_function_call(tokens, i - 1, None, nested_arg_count)
                         args.append(nested_token)
                         i -= 1
                         # current_arg의 마지막을 삭제
@@ -54,8 +57,6 @@ class FunctionParser:
                 elif tokens[i] == ')':
                     bracket_depth -= 1
                     if bracket_depth == 0:
-                        # if current_arg:
-                        #     args.append("".join(current_arg).strip())  # ✅ 마지막 인자 추가
                         break  # ✅ 가장 바깥 괄호 닫힘
                     else:
                         current_arg.append(tokens[i])
@@ -74,10 +75,11 @@ class FunctionParser:
         else:
             # ✅ 괄호 없는 경우 (예: my_func 3 4)
             while i < len(tokens) and len(args) < arg_count:
-                nested_func, nested_arg_count = FunctionRegistry.get_function(tokens[i].upper())
-                if nested_func:
+                func_info = FunctionRegistry.get_function(tokens[i].upper())
+                if func_info:
                     # ✅ 중첩된 함수 호출 처리
-                    nested_token, i = FunctionParser._parse_function_call(tokens, i, nested_func, nested_arg_count)
+                    nested_arg_count = func_info["arg_count"]
+                    nested_token, i = FunctionParser._parse_function_call(tokens, i, None, nested_arg_count)
                     args.append(nested_token)
                 else:
                     args.append(tokens[i])

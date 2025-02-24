@@ -35,10 +35,10 @@ test_cases = [
 def test_function_parser(tokens, expected):
     # FunctionRegistry에서 함수 정보 가져오기
     func_name = tokens[0].upper()
-    func, arg_count = FunctionRegistry.get_function(func_name)
-    
+    func_info = FunctionRegistry.get_function(func_name)
+    arg_count = func_info["arg_count"]
     # FunctionParser를 사용하여 토큰 파싱
-    if func is not None:
+    if func_info is not None:
         result, _ = FunctionParser._parse_function_call(tokens, 0, None, arg_count)
         assert [result] == expected, f"Expected {expected}, but got {[result]}"
     else:
