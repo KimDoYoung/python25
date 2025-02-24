@@ -271,7 +271,8 @@ class CommandParser:
             return [cmd] + split_args
 
         # ✅ 일반 명령어 처리 (PRINT "Hello World", SET x = 10, IF a and b)
-        tokens = re.findall(r'".*?"|\S+', line)
+        # tokens = re.findall(r'".*?"|\S+', line)
+        tokens = re.findall(r'<=|>=|==|!=|[()+\-*/%=]|[-+]?[0-9]*\.?[0-9]+|"[^"]*"|[a-zA-Z_][a-zA-Z0-9_]*', line)
 
         # ✅ boolean 예약어 대문자로 변환
         reserved = {"and", "or", "not"}

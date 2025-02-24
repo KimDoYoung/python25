@@ -60,8 +60,9 @@ class ExprEvaluator:
         while i < len(tokens):
             token = tokens[i]
             # pluse ( 3 4 ) -> pluse(3,4)로 
-            if FunctionRegistry.get_function(token.upper()):
-                combined_token, i = FunctionParser._parse_function_call(tokens, i)
+            func, arg_count = FunctionRegistry.get_function(token.upper())
+            if func != None:
+                combined_token, i = FunctionParser._parse_function_call(tokens, start_index = i, arg_count=arg_count)
                 output.append(combined_token)
                 continue
 
@@ -86,11 +87,6 @@ class ExprEvaluator:
 
             if token.replace('.', '', 1).lstrip('-').isdigit() or token.startswith('"'):
                 output.append(token)
-            # elif token in self.OPERATORS:
-            #     while (stack and stack[-1] in self.OPERATORS and
-            #         self.OPERATORS[token][0] <= self.OPERATORS[stack[-1]][0]):
-            #         output.append(stack.pop())
-            #     stack.append(token)
             elif token in self.OPERATORS:
                 if token == "NOT":
                     # NOT은 오른쪽 결합이므로, 우선순위가 '더 큰' 연산자만 pop합니다.

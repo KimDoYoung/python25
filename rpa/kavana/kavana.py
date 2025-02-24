@@ -25,7 +25,11 @@ def main():
         # 명령어 분석 (구문 파싱)
         parser = CommandParser(script_lines)
         parsed_commands = parser.parse()
-
+        
+        # for command in parsed_commands:
+        #     print(command)
+        # exit(0)
+        
         # 명령어 실행
         executor = CommandExecutor()
         for command in parsed_commands:
