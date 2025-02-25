@@ -4,22 +4,18 @@ from lib.core.function_registry import FunctionRegistry
 
 
 script_lines = [
-    "function plus(a, b)",
-    "SET result = a + b",
-    "RETURN result",
-    "end_function",
     "main",
-    "SET a = plus(1,2)",
-    "set b = substr(\"12345\",1,2)",
-    "print \"{a} {b}\"",
+    "set s = \"012hello345\"",
+    "set name = substr( s,3,5 )",
+    "print \"{name}\"",
     "end_main"
 ];
 
 parser = CommandParser(script_lines)
 parsed_commands = parser.parse()
 
-for command in parsed_commands:
-    print(command)
+# for command in parsed_commands:
+#     print(command)
 # exit(0)
 FunctionRegistry.print_user_functions()
 

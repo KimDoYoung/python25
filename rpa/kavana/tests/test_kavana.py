@@ -17,7 +17,7 @@ def test_kavana_scripts():
     각각의 예상 출력과 일치하는지 확인한다.
     """
     test_cases = {
-        1: "hello",  # ./scripts/0.kvs → "hello" 출력 예상
+        1: "hello",  # ./scripts/1.kvs → "hello" 출력 예상
         2: "hello\n\n123",
         3: "hello 홍길동",
         4: "hello 트럼프",

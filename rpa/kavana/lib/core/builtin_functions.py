@@ -34,10 +34,10 @@ BuiltinFunctions.arg_counts = {
 }
 
 # 테스트 코드
-if __name__ == "__main__":
-    print("LENGTH('hello'):", BuiltinFunctions.LENGTH("hello"))
-    print("SUBSTR('hello', 1, 3):", BuiltinFunctions.SUBSTR("hello", 1, 3))
-    print("CURRENT_DATETIME():", BuiltinFunctions.CURRENT_DATETIME())
-    print("RANDOM(1, 10):", BuiltinFunctions.RANDOM(1, 10))
-    print("DATE_FORMAT(CURRENT_DATETIME(), '%Y-%m-%d'):", 
-          BuiltinFunctions.DATE_FORMAT(BuiltinFunctions.CURRENT_DATETIME(), '%Y-%m-%d'))
+# if __name__ == "__main__":
+#     print("LENGTH('hello'):", BuiltinFunctions.LENGTH("hello"))
+#     print("SUBSTR('hello', 1, 3):", BuiltinFunctions.SUBSTR("hello", 1, 3))
+#     print("CURRENT_DATETIME():", BuiltinFunctions.CURRENT_DATETIME())
+#     print("RANDOM(1, 10):", BuiltinFunctions.RANDOM(1, 10))
+#     print("DATE_FORMAT(CURRENT_DATETIME(), '%Y-%m-%d'):", 
+#           BuiltinFunctions.DATE_FORMAT(BuiltinFunctions.CURRENT_DATETIME(), '%Y-%m-%d'))

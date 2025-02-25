@@ -6,8 +6,6 @@ from lib.core.function_executor import FunctionExecutor
 from lib.core.function_parser import FunctionParser
 from lib.core.function_registry import FunctionRegistry
 from lib.core.variable_manager import VariableManager
-from lib.core.builtin_functions import BuiltinFunctions
-
 
 class ExprEvaluator:
     OPERATORS = {
@@ -174,16 +172,16 @@ class ExprEvaluator:
 
                 stack.append(result)
 
-            if self.isFunction(token_upper):  
+            elif self.isFunction(token_upper):  
                 func_tokens = self.split_function_token(token_upper)  
                 func_info = FunctionRegistry.get_function(func_tokens[0])
                 
                 if func_info is None:
                     raise ValueError(f"Undefined function: {func_tokens[0]}")
 
-                evaluated_args = [func_tokens[1:]]
+                arg_values = func_tokens[1:]
 
-                function_executor = FunctionExecutor(func_info, global_var_manager=self.var_manager, evaluated_args=evaluated_args)
+                function_executor = FunctionExecutor(func_info, global_var_manager=self.var_manager, arg_values=arg_values)
 
                 result = function_executor.execute()
                 stack.append(result)  

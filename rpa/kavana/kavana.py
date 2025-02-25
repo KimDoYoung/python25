@@ -27,8 +27,8 @@ def main():
         parser = CommandParser(script_lines)
         parsed_commands = parser.parse()
         
-        for command in parsed_commands:
-            print(command)
+        # for command in parsed_commands:
+        #     print(command)
         # exit(0)
         FunctionRegistry.print_user_functions()
         

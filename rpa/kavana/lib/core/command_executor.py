@@ -1,7 +1,7 @@
-
 from lib.core.commands.endfunction_command import EndFunctionCommand
 from lib.core.commands.function_command import FunctionCommand
 from lib.core.commands.print_command import PrintCommand
+from lib.core.commands.return_command import ReturnCommand
 from lib.core.commands.set_command import SetCommand
 from lib.core.expr_evaluator import ExprEvaluator
 from lib.core.variable_manager import VariableManager
@@ -19,6 +19,7 @@ class CommandExecutor:
             "PRINT": PrintCommand(),
             "FUNCTION": FunctionCommand(),
             "END_FUNCTION": EndFunctionCommand(),
+            "RETURN": ReturnCommand()  # RETURN은 END_FUNCTION으로 처리
         }
 
     def execute(self, command: dict):
