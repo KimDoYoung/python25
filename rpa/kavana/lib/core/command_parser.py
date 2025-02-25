@@ -70,6 +70,60 @@ class CommandParser:
 
                     # ✅ 함수 인자 여러 개 처리 (PRINT("hello", "world"))
                     args = [arg.strip() for arg in raw_args.split(",")]
+            # ✅ IF 블록 처리 (cmd + args 리스트로 변환)
+            if cmd == "IF":
+                block_body = []  # IF 내부 명령어 리스트
+                block_body.append({"cmd": cmd, "args": args})  # IF 헤더 저장
+                i += 1
+
+                while i < len(processed_lines) and processed_lines[i].strip().upper() not in ["END_IF"]:
+                    inner_tokens = self.tokenize(processed_lines[i])
+                    if inner_tokens:
+                        block_body.append({"cmd": inner_tokens[0].upper(), "args": inner_tokens[1:]})
+                    i += 1
+
+                if i >= len(processed_lines) or processed_lines[i].strip().upper() != "END_IF":
+                    raise SyntaxError("IF 문에서 END_IF가 필요합니다.")
+                i += 1  # END_IF 스킵
+
+                parsed_commands.append({"cmd": "IF_BLOCK", "body": block_body})
+                continue
+
+            # ✅ WHILE 블록 처리
+            if cmd == "WHILE":
+                block_body = [{"cmd": cmd, "args": args}]
+                i += 1
+
+                while i < len(processed_lines) and processed_lines[i].strip().upper() != "END_WHILE":
+                    inner_tokens = self.tokenize(processed_lines[i])
+                    if inner_tokens:
+                        block_body.append({"cmd": inner_tokens[0].upper(), "args": inner_tokens[1:]})
+                    i += 1
+
+                if i >= len(processed_lines) or processed_lines[i].strip().upper() != "END_WHILE":
+                    raise SyntaxError("WHILE 문에서 END_WHILE이 필요합니다.")
+                i += 1  # END_WHILE 스킵
+
+                parsed_commands.append({"cmd": "WHILE_BLOCK", "body": block_body})
+                continue
+
+            # ✅ FOR 블록 처리
+            if cmd == "FOR":
+                block_body = [{"cmd": cmd, "args": args}]
+                i += 1
+
+                while i < len(processed_lines) and processed_lines[i].strip().upper() != "END_FOR":
+                    inner_tokens = self.tokenize(processed_lines[i])
+                    if inner_tokens:
+                        block_body.append({"cmd": inner_tokens[0].upper(), "args": inner_tokens[1:]})
+                    i += 1
+
+                if i >= len(processed_lines) or processed_lines[i].strip().upper() != "END_FOR":
+                    raise SyntaxError("FOR 문에서 END_FOR이 필요합니다.")
+                i += 1  # END_FOR 스킵
+
+                parsed_commands.append({"cmd": "FOR_BLOCK", "body": block_body})
+                continue
 
             # 함수 정의 처리: FUNCTION으로 시작하면 END_FUNCTION까지 읽음
             if cmd == "FUNCTION":

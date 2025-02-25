@@ -220,24 +220,23 @@ ENDIF;
  Label abc::
   ....
  End_Label
-6.  IF <조건식> BEGIN ... ENDIF,
+6.  if, while, for 조건문문
 
-IF EXISTS "confirm.png"
-    CLICK "confirm.png";
-ELSEIF EXISTS "cancel.png"
-    CLICK "cancel.png";
+IF <조건식>
+    PRINT "confirm.png";
+ELIF EXISTS "cancel.png"
+    PRINT "cancel.png";
 ELSE
     PRINT "어떤 버튼도 없음";
-ENDIF;
+END_IF;
 
- WHILE <조건식> ...ENDWHILE
-WHILE EXISTS "loading.png"
+WHILE <조건식>
     WAIT 1;
-ENDWHILE;
-    FOR <수식> TO <수식> STEP <수식> BEGIN ... ENDFOR
-FOR i = 1 TO 5 STEP 1
+END_WHILE;
+
+FOR <설정> TO <수식> STEP <수식>
     CLICK "button.png";
-ENDFOR;
+END_FOR;
 
 7. FUNCTION 있음. CALL functio_name
  FUNCTION LOGIN username
