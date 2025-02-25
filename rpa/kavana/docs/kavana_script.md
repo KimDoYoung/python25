@@ -174,15 +174,16 @@ PRINT_DEBUG : log.debug
 - .env에 기술된 변수는 모두 sys_FTP_HOST와 같이 sys_를 붙여서 가져오는 사용가능하게끔, 아니면 $FTP_HOST와 같이 특수문자를 앞에 붙이는게 좋을까?
 
 3. 데이터 타입
-1. String
-2. Integer
-3. Float
-3. Point
-4. Region
-5. Image
-6. Boolean
-7. Date
-8. List, Map, NONE
+    - String
+    - Integer
+    - Float
+    - Date
+    - True, False, None
+    - Point
+    - Region
+    - Image
+    - Boolean
+    - List, Map
 
 SET numbers = [1, 2, 3, 4, 5];
 PRINT numbers[0];  # 1 출력
