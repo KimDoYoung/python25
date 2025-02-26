@@ -4,7 +4,7 @@ from typing import List
 
 from lib.core.function_registry import FunctionRegistry
 
-class CommandParser:
+class CommandParser0:
     """
     Kavana 스크립트의 명령어를 분석하는 파서.
     - `main ... end_main` 블록 안에서 실행
@@ -42,149 +42,173 @@ class CommandParser:
     def parse(self):
         """
         스크립트의 모든 명령어를 분석하여 리스트로 반환.
+        - `INCLUDE "./scripts/common.kvs"` → 외부 파일 불러오기
+        - `LOAD "./config.env"` → 환경 변수 불러오기
+        - `SET name = "홍길동"` → 변수 설정
         """
         parsed_commands = []
         processed_lines = self.preprocess_lines()
-        i = 0  
 
-        while i < len(processed_lines):
-            tokens = self.tokenize(processed_lines[i])
+        i = 0  # ✅ i 변수 초기화
+        while i < len(processed_lines):  # ✅ while 루프로 변경
+            line = processed_lines[i]
+            tokens = self.tokenize(line)
             if not tokens:
+                i += 1  # ✅ 빈 줄일 경우 i 증가
+                continue
+
+            cmd_original = tokens[0]  # 원본 명령어 유지
+            cmd = cmd_original.upper()  # ✅ 명령어만 대문자로 변환
+            args = tokens[1:]  # ✅ 인자는 원본 그대로 유지
+
+            # ✅ PRINT("hello") 같은 함수 호출 처리
+            if "(" in cmd_original and cmd_original.endswith(")"):
+                func_match = re.match(r'(\w+)\((.*)\)', cmd_original)
+                if func_match:
+                    cmd = func_match.group(1).upper()  # ✅ 명령어만 대문자로 변환
+                    raw_args = func_match.group(2)  # ✅ 괄호 안의 내용 원본 유지
+
+                    # ✅ 함수 인자 여러 개 처리 (PRINT("hello", "world"))
+                    args = [arg.strip() for arg in raw_args.split(",")]
+            # ✅ IF 블록 처리 (cmd + args 리스트로 변환)
+            if cmd == "IF":
+                block_body = []  # IF 내부 명령어 리스트
+                block_body.append({"cmd": cmd, "args": args})  # IF 헤더 저장
                 i += 1
+
+                while i < len(processed_lines) and processed_lines[i].strip().upper() not in ["END_IF"]:
+                    inner_tokens = self.tokenize(processed_lines[i])
+                    if inner_tokens:
+                        block_body.append({"cmd": inner_tokens[0].upper(), "args": inner_tokens[1:]})
+                    i += 1
+
+                if i >= len(processed_lines) or processed_lines[i].strip().upper() != "END_IF":
+                    raise SyntaxError("IF 문에서 END_IF가 필요합니다.")
+                i += 1  # END_IF 스킵
+
+                parsed_commands.append({"cmd": "IF_BLOCK", "body": block_body})
                 continue
 
-            cmd = tokens[0].upper()
-            args = tokens[1:]
+            # ✅ WHILE 블록 처리
+            if cmd == "WHILE":
+                block_body = [{"cmd": cmd, "args": args}]
+                i += 1
 
-            # ✅ 블록 명령어 처리
-            if cmd in ["IF", "WHILE", "FOR"]:
-                end_mapping = {"IF": "END_IF", "WHILE": "END_WHILE", "FOR": "END_FOR"}
-                block_body, new_index = self.parse_block(processed_lines, i + 1, end_mapping[cmd])
-                parsed_commands.append({"cmd": f"{cmd}_BLOCK", "body": [{"cmd": cmd, "args": args}] + block_body})
-                i = new_index + 1
+                while i < len(processed_lines) and processed_lines[i].strip().upper() != "END_WHILE":
+                    inner_tokens = self.tokenize(processed_lines[i])
+                    if inner_tokens:
+                        block_body.append({"cmd": inner_tokens[0].upper(), "args": inner_tokens[1:]})
+                    i += 1
+
+                if i >= len(processed_lines) or processed_lines[i].strip().upper() != "END_WHILE":
+                    raise SyntaxError("WHILE 문에서 END_WHILE이 필요합니다.")
+                i += 1  # END_WHILE 스킵
+
+                parsed_commands.append({"cmd": "WHILE_BLOCK", "body": block_body})
                 continue
 
-            # ✅ FUNCTION 처리
+            # ✅ FOR 블록 처리
+            if cmd == "FOR":
+                block_body = [{"cmd": cmd, "args": args}]
+                i += 1
+
+                while i < len(processed_lines) and processed_lines[i].strip().upper() != "END_FOR":
+                    inner_tokens = self.tokenize(processed_lines[i])
+                    if inner_tokens:
+                        block_body.append({"cmd": inner_tokens[0].upper(), "args": inner_tokens[1:]})
+                    i += 1
+
+                if i >= len(processed_lines) or processed_lines[i].strip().upper() != "END_FOR":
+                    raise SyntaxError("FOR 문에서 END_FOR이 필요합니다.")
+                i += 1  # END_FOR 스킵
+
+                parsed_commands.append({"cmd": "FOR_BLOCK", "body": block_body})
+                continue
+
+            # 함수 정의 처리: FUNCTION으로 시작하면 END_FUNCTION까지 읽음
             if cmd == "FUNCTION":
-                i = self.parse_function(processed_lines, i)
+                func_def_lines = [line]  # FUNCTION 줄을 포함시킴
+                i += 1  # FUNCTION 줄 다음 줄부터 시작
+
+                # FUNCTION 줄부터 END_FUNCTION까지 모두 읽음
+                while i < len(processed_lines) and processed_lines[i].strip().upper() != "END_FUNCTION":
+                    func_def_lines.append(processed_lines[i])
+                    i += 1
+
+                # END_FUNCTION 줄은 추가하지 않음
+                if i >= len(processed_lines) or processed_lines[i].strip().upper() != "END_FUNCTION":
+                    raise SyntaxError("함수 정의에서 END_FUNCTION이 누락되었습니다.")
+                i += 1  # END_FUNCTION 줄을 건너�
+
+                # 함수 헤더 파싱: FUNCTION plus(a, b)
+                header_line = func_def_lines[0].strip()  # FUNCTION 줄
+                header_tokens = self.tokenize(header_line)
+                if len(header_tokens) < 2:
+                    raise SyntaxError("함수 정의 헤더가 올바르지 않습니다.")
+
+                func_name = header_tokens[1]  # 함수 이름 추출
+                params = []
+
+                # 매개변수 추출: FUNCTION plus(a, b) 또는 FUNCTION plus a, b
+                if len(header_tokens) > 2 and header_tokens[2] == "(":
+                    # 괄호 안의 매개변수 추출
+                    param_str = " ".join(header_tokens[3:])
+                    param_str = param_str.rstrip(")")  # 닫는 괄호 제거
+                    params = [p.strip() for p in param_str.split(",")]
+                elif len(header_tokens) > 2:
+                    # 괄호 없이 매개변수가 나오는 경우
+                    params = [p.strip() for p in header_tokens[2:]]
+
+                # 함수 본문 추출: 헤더를 제외한 나머지 줄
+                func_body = "\n".join(func_def_lines[1:])
+
+                # FunctionRegistry에 등록
+                FunctionRegistry.register_function(func_name, params, func_body)
                 continue  # 함수 정의는 parsed_commands에 추가하지 않음
 
-            # ✅ INCLUDE 처리
             if cmd == "INCLUDE":
                 if not args:
                     raise SyntaxError("INCLUDE 문에 파일 경로가 필요합니다.")
-                include_path = args[0].strip('"')
+                include_path = args[0].strip('"')  # 따옴표 제거
                 self._process_include(include_path, parsed_commands)
-                i += 1
+                i += 1  # ✅ INCLUDE 처리 후 i 증가
                 continue
 
-            # ✅ LOAD 처리
             if cmd == "LOAD":
                 if not args:
                     raise SyntaxError("LOAD 문에 .env 파일 경로가 필요합니다.")
-                env_path = args[0].strip('"')
+                env_path = args[0].strip('"')  # 따옴표 제거
                 self._process_env(env_path, parsed_commands)
-                i += 1
+                i += 1  # ✅ LOAD 처리 후 i 증가
                 continue
 
-            # ✅ MAIN 블록 처리
             if cmd == "MAIN":
-                if not getattr(self, "ignore_main_check", False):
+                if not getattr(self, "ignore_main_check", False):  # ✅ MAIN 검사 무시 여부 확인
                     if self.in_main_block:
                         raise SyntaxError("Nested 'MAIN' blocks are not allowed.")
                     self.in_main_block = True
-                i += 1
-                continue
+                i += 1  # ✅ MAIN 처리 후 i 증가
+                continue  # `MAIN` 자체는 저장하지 않음
 
-            if cmd == "END_MAIN":
-                if not getattr(self, "ignore_main_check", False):
-                    if not self.in_main_block:
+            elif cmd == "END_MAIN":
+                if not getattr(self, "ignore_main_check", False):  # ✅ MAIN 검사 무시 여부 확인
+                    if not self.in_main_block and not getattr(self, "ignore_main_check", False): 
                         raise SyntaxError("'END_MAIN' found without 'MAIN'.")
                     self.in_main_block = False
-                i += 1
-                break
+                i += 1  # ✅ END_MAIN 처리 후 i 증가
+                break  # `END_MAIN` 이후 명령어는 무시
 
-            # ✅ MAIN 블록 외부에서 명령어 사용 제한
-            if not self.in_main_block and not getattr(self, "ignore_main_check", False):
+            elif not self.in_main_block and not getattr(self, "ignore_main_check", False): 
                 raise SyntaxError("Commands must be inside a 'MAIN' block.")
 
-            # ✅ 일반 명령어 추가
             parsed_commands.append({"cmd": cmd, "args": args})
-            i += 1  
+            i += 1  # ✅ 일반 명령어 처리 후 i 증가
 
         if self.in_main_block:
             raise SyntaxError("Missing 'END_MAIN' at the end of the script.")
 
         return parsed_commands
-
-    def parse_block(self, processed_lines, start_index, end_keyword):
-        """재귀적으로 블록을 파싱하는 함수"""
-        block_body = []
-        i = start_index
-
-        while i < len(processed_lines):
-            line = processed_lines[i].strip().upper()
-
-            if line == end_keyword:
-                return block_body, i  # ✅ END 키워드를 만나면 종료
-
-            tokens = self.tokenize(processed_lines[i])
-            if not tokens:
-                i += 1
-                continue
-
-            cmd = tokens[0].upper()
-            args = tokens[1:]
-
-            # ✅ 중첩된 블록 처리 (IF, WHILE, FOR)
-            if cmd in ["IF", "WHILE", "FOR"]:
-                end_mapping = {"IF": "END_IF", "WHILE": "END_WHILE", "FOR": "END_FOR"}
-                nested_block, new_index = self.parse_block(processed_lines, i + 1, end_mapping[cmd])
-                block_body.append({"cmd": f"{cmd}_BLOCK", "body": [{"cmd": cmd, "args": args}] + nested_block})
-                i = new_index + 1
-                continue
-
-            # ✅ 일반 명령어 추가
-            block_body.append({"cmd": cmd, "args": args})
-            i += 1
-
-        raise SyntaxError(f"{end_keyword}가 없습니다.")  # ✅ 종료 키워드가 없으면 오류 발생
-   
-
-    def parse_function(self, processed_lines, start_index):
-        """FUNCTION 블록을 파싱하는 함수"""
-        func_def_lines = [processed_lines[start_index]]
-        i = start_index + 1
-
-        while i < len(processed_lines) and processed_lines[i].strip().upper() != "END_FUNCTION":
-            func_def_lines.append(processed_lines[i])
-            i += 1
-
-        if i >= len(processed_lines) or processed_lines[i].strip().upper() != "END_FUNCTION":
-            raise SyntaxError("함수 정의에서 END_FUNCTION이 누락되었습니다.")
-        i += 1  # ✅ END_FUNCTION 스킵
-
-        # ✅ 함수 헤더 파싱
-        header_tokens = self.tokenize(func_def_lines[0].strip())
-        if len(header_tokens) < 2:
-            raise SyntaxError("함수 정의 헤더가 올바르지 않습니다.")
-
-        func_name = header_tokens[1]
-        params = []
-        
-        if len(header_tokens) > 2 and header_tokens[2] == "(":
-            param_str = " ".join(header_tokens[3:]).rstrip(")")
-            params = [p.strip() for p in param_str.split(",")]
-        elif len(header_tokens) > 2:
-            params = header_tokens[2:]
-
-        func_body = "\n".join(func_def_lines[1:])
-        
-        # ✅ FunctionRegistry에 등록
-        FunctionRegistry.register_function(func_name, params, func_body)
-        return i  # ✅ 함수 정의 후 새로운 인덱스 반환
-
-
+    
     def parse_function_definition(self, lines: List[str]) -> dict:
         """
         함수 정의 블록을 파싱하여 함수 이름, 매개변수, 본문을 추출.

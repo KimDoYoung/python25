@@ -3,26 +3,22 @@ from lib.core.command_parser import CommandParser
 
 
 script = """
-function plus(a, b)
-    return a + b
-end_function
-
 main
-    SET a = 5
+    PRINT "Before loop"
 
-    IF a > 3
-        PRINT "a is greater than 3"
-    END_IF
-
-    FOR i = 1 TO 3 STEP 1
+    FOR i = 1 TO 5 STEP 1
+        IF i == 3
+            PRINT "Skipping 3"
+            CONTINUE
+        END_IF
+        IF i == 4
+            PRINT "Breaking at 4"
+            BREAK
+        END_IF
         PRINT "Loop iteration {i}"
     END_FOR
 
-    SET count = 0
-    WHILE count < 3
-        PRINT "Count is {count}"
-        SET count = count + 1
-    END_WHILE
+    PRINT "After loop"
 end_main
 """
 script_lines = script.split("\n")
