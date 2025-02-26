@@ -1,7 +1,8 @@
 import re
 import os
 from typing import List
-
+from lib.core.token import Token
+from lib.core.datatypes.token_type import TokenType
 from lib.core.function_registry import FunctionRegistry
 
 class CommandParser:
@@ -39,22 +40,99 @@ class CommandParser:
 
         return merged_lines
 
+    # def parse(self):
+    #     """
+    #     스크립트의 모든 명령어를 분석하여 리스트로 반환.
+    #     """
+    #     parsed_commands = []
+    #     processed_lines = self.preprocess_lines()
+    #     i = 0  
+
+    #     while i < len(processed_lines):
+    #         tokens = self.tokenize(processed_lines[i])
+    #         if not tokens:
+    #             i += 1
+    #             continue
+
+    #         cmd = tokens[0].upper()
+    #         args = tokens[1:]
+
+    #         # ✅ 블록 명령어 처리
+    #         if cmd in ["IF", "WHILE", "FOR"]:
+    #             end_mapping = {"IF": "END_IF", "WHILE": "END_WHILE", "FOR": "END_FOR"}
+    #             block_body, new_index = self.parse_block(processed_lines, i + 1, end_mapping[cmd])
+    #             parsed_commands.append({"cmd": f"{cmd}_BLOCK", "body": [{"cmd": cmd, "args": args}] + block_body})
+    #             i = new_index + 1
+    #             continue
+
+    #         # ✅ FUNCTION 처리
+    #         if cmd == "FUNCTION":
+    #             i = self.parse_function(processed_lines, i)
+    #             continue  # 함수 정의는 parsed_commands에 추가하지 않음
+
+    #         # ✅ INCLUDE 처리
+    #         if cmd == "INCLUDE":
+    #             if not args:
+    #                 raise SyntaxError("INCLUDE 문에 파일 경로가 필요합니다.")
+    #             include_path = args[0].strip('"')
+    #             self._process_include(include_path, parsed_commands)
+    #             i += 1
+    #             continue
+
+    #         # ✅ LOAD 처리
+    #         if cmd == "LOAD":
+    #             if not args:
+    #                 raise SyntaxError("LOAD 문에 .env 파일 경로가 필요합니다.")
+    #             env_path = args[0].strip('"')
+    #             self._process_env(env_path, parsed_commands)
+    #             i += 1
+    #             continue
+
+    #         # ✅ MAIN 블록 처리
+    #         if cmd == "MAIN":
+    #             if not getattr(self, "ignore_main_check", False):
+    #                 if self.in_main_block:
+    #                     raise SyntaxError("Nested 'MAIN' blocks are not allowed.")
+    #                 self.in_main_block = True
+    #             i += 1
+    #             continue
+
+    #         if cmd == "END_MAIN":
+    #             if not getattr(self, "ignore_main_check", False):
+    #                 if not self.in_main_block:
+    #                     raise SyntaxError("'END_MAIN' found without 'MAIN'.")
+    #                 self.in_main_block = False
+    #             i += 1
+    #             break
+
+    #         # ✅ MAIN 블록 외부에서 명령어 사용 제한
+    #         if not self.in_main_block and not getattr(self, "ignore_main_check", False):
+    #             raise SyntaxError("Commands must be inside a 'MAIN' block.")
+
+    #         # ✅ 일반 명령어 추가
+    #         parsed_commands.append({"cmd": cmd, "args": args})
+    #         i += 1  
+
+    #     if self.in_main_block:
+    #         raise SyntaxError("Missing 'END_MAIN' at the end of the script.")
+
+    #     return parsed_commands
     def parse(self):
         """
-        스크립트의 모든 명령어를 분석하여 리스트로 반환.
+        ✅ 스크립트의 모든 명령어를 분석하여 `Token` 리스트로 반환.
         """
         parsed_commands = []
         processed_lines = self.preprocess_lines()
         i = 0  
 
         while i < len(processed_lines):
-            tokens = self.tokenize(processed_lines[i])
+            tokens = self.tokenize(processed_lines[i])  # ✅ `Token` 객체 리스트 반환
             if not tokens:
                 i += 1
                 continue
 
-            cmd = tokens[0].upper()
-            args = tokens[1:]
+            cmd = tokens[0].value.upper()  # ✅ 명령어는 대문자로 변환
+            args = tokens[1:]  # ✅ 나머지는 `Token` 리스트 그대로 유지
 
             # ✅ 블록 명령어 처리
             if cmd in ["IF", "WHILE", "FOR"]:
@@ -67,13 +145,13 @@ class CommandParser:
             # ✅ FUNCTION 처리
             if cmd == "FUNCTION":
                 i = self.parse_function(processed_lines, i)
-                continue  # 함수 정의는 parsed_commands에 추가하지 않음
+                continue  # ✅ 함수 정의는 parsed_commands에 추가하지 않음
 
             # ✅ INCLUDE 처리
             if cmd == "INCLUDE":
                 if not args:
                     raise SyntaxError("INCLUDE 문에 파일 경로가 필요합니다.")
-                include_path = args[0].strip('"')
+                include_path = args[0].value.strip('"')  # ✅ Token 객체에서 값 추출
                 self._process_include(include_path, parsed_commands)
                 i += 1
                 continue
@@ -82,7 +160,7 @@ class CommandParser:
             if cmd == "LOAD":
                 if not args:
                     raise SyntaxError("LOAD 문에 .env 파일 경로가 필요합니다.")
-                env_path = args[0].strip('"')
+                env_path = args[0].value.strip('"')  # ✅ Token 객체에서 값 추출
                 self._process_env(env_path, parsed_commands)
                 i += 1
                 continue
@@ -109,7 +187,7 @@ class CommandParser:
                 raise SyntaxError("Commands must be inside a 'MAIN' block.")
 
             # ✅ 일반 명령어 추가
-            parsed_commands.append({"cmd": cmd, "args": args})
+            parsed_commands.append({"cmd": cmd, "args": args})  # ✅ `args`도 `Token` 리스트로 저장
             i += 1  
 
         if self.in_main_block:
@@ -275,48 +353,91 @@ class CommandParser:
                 parsed_commands.append({"cmd": "SET", "args": [key, "=", value]})
 
     @staticmethod
-    def tokenize(line: str) -> List[str]:
-        """명령어를 토큰 리스트로 변환"""
+    def tokenize(line: str, line_num: int) -> list:
+        """한 줄을 `Token` 객체 리스트로 변환"""
         line = line.strip()
+        tokens = []
 
-        # ✅ FUNCTION 명령어 처리 (괄호 있는 경우와 없는 경우)
-        func_match = re.match(r'^(FUNCTION)\s+(\w+)\s*\(?([^()]*)\)?$', line, re.IGNORECASE)
-        if func_match:
-            cmd = func_match.group(1).upper()   # FUNCTION
-            func_name = func_match.group(2)     # myfunc
-            args = func_match.group(3).strip()  # "a,b" 또는 "a b"
+        token_patterns = [
+            # ✅ 논리 값
+            (r'\bTrue\b', TokenType.BOOLEAN),
+            (r'\bFalse\b', TokenType.BOOLEAN),
+            (r'\bNone\b', TokenType.NONE),
 
-            # ✅ 쉼표 제거하고 인자 분리
-            split_args = re.findall(r'".*?"|\w+', args)
-            return [cmd, func_name] + split_args
+            # ✅ 제어문 키워드
+            (r'(?i)\bIF\b', TokenType.IF),
+            (r'(?i)\bELSE\b', TokenType.ELSE),
+            (r'(?i)\bELIF\b', TokenType.ELIF),  # ✅ 추가
+            (r'(?i)\bWHILE\b', TokenType.WHILE),
+            (r'(?i)\bFOR\b', TokenType.FOR),
+            (r'(?i)\bTO\b', TokenType.TO),  # ✅ 추가
+            (r'(?i)\bSTEP\b', TokenType.STEP),  # ✅ 추가
+            (r'(?i)\bEND_IF\b', TokenType.END_IF),
+            (r'(?i)\bEND_WHILE\b', TokenType.END_WHILE),
+            (r'(?i)\bEND_FOR\b', TokenType.END_FOR),
 
-        # ✅ 일반 함수형 명령어 처리 (PRINT("hello", "world"))
-        func_call_match = re.match(r'^(\w+)\((.*)\)$', line)
-        if func_call_match:
-            cmd = func_call_match.group(1).upper()  # PRINT 같은 명령어
-            args = func_call_match.group(2).strip()  # "hello", "world"
+            # ✅ 함수 관련 키워드
+            (r'(?i)\bFUNCTION\b', TokenType.FUNCTION),
+            (r'(?i)\bEND_FUNCTION\b', TokenType.END_FUNCTION),  # ✅ 추가
+            (r'(?i)\bRETURN\b', TokenType.RETURN),
 
-            # ✅ 쉼표로 구분된 인자 분리 (쉼표 없이 공백 구분도 처리)
-            split_args = re.findall(r'".*?"|\w+', args)
-            return [cmd] + split_args
+            # ✅ 스크립트 실행 관련 키워드
+            (r'(?i)\bINCLUDE\b', TokenType.INCLUDE),
+            (r'(?i)\bLOAD\b', TokenType.LOAD),
+            (r'(?i)\bMAIN\b', TokenType.MAIN),
+            (r'(?i)\bEND_MAIN\b', TokenType.END_MAIN),
 
-        # ✅ 일반 명령어 처리 (PRINT "Hello World", SET x = 10, IF a and b)
-        # tokens = re.findall(r'".*?"|\S+', line)
-        tokens = re.findall(r'<=|>=|==|!=|[()+\-*/%=<>]|[-+]?[0-9]*\.?[0-9]+|"[^"]*"|[a-zA-Z_][a-zA-Z0-9_]*', line)
 
-        # ✅ boolean 예약어 대문자로 변환
-        reserved = {"and", "or", "not"}
-        tokens = [t.upper() if t.lower() in reserved else t for t in tokens]
+            # ✅ 논리 연산자
+            (r'(?i)\bAND\b', TokenType.LOGICAL_OPERATOR),  # ✅ 추가
+            (r'(?i)\bOR\b', TokenType.LOGICAL_OPERATOR),  # ✅ 추가
+            (r'(?i)\bNOT\b', TokenType.LOGICAL_OPERATOR),  # ✅ 추가
 
-        return tokens    
-    
-#     test_cases = [
-#     "FUNCTION myfunc a,b",       # → ['FUNCTION', 'myfunc', 'a', 'b']
-#     "FUNCTION myfunc(a,b)",      # → ['FUNCTION', 'myfunc', 'a', 'b']
-#     "FUNCTION myfunc ( a , b )", # → ['FUNCTION', 'myfunc', 'a', 'b']
-#     'PRINT "Hello World"',       # → ['PRINT', '"Hello World"']
-#     'PRINT("hello {name}")',     # → ['PRINT', '"hello {name}"']
-#     'PRINT("hello", "world")',   # → ['PRINT', '"hello"', '"world"']
-#     'SET x = 10',                # → ['SET', 'x', '=', '10']
-#     'IF a and b',                # → ['IF', 'a', 'AND', 'b']
-# ]
+            # ✅ 루프 제어 키워드
+            (r'(?i)\bBREAK\b', TokenType.BREAK),
+            (r'(?i)\bCONTINUE\b', TokenType.CONTINUE),
+
+            # ✅ 데이터 타입 키워드
+            (r'(?i)\bPOINT\b', TokenType.POINT),
+            (r'(?i)\bREGION\b', TokenType.REGION),
+            (r'(?i)\bRECTANGLE\b', TokenType.RECTANGLE),
+            (r'(?i)\bIMAGE\b', TokenType.IMAGE),
+            (r'(?i)\bWINDOW\b', TokenType.WINDOW),  # 추가
+            (r'(?i)\bAPPLICATION\b', TokenType.APPLICATION),  # 추가            
+
+            # ✅ 일반 식별자 및 연산자
+            (r'\b\d+\.\d+|\.\d+|\d+\.\b', TokenType.FLOAT),  # 🔥 소수점만 있는 경우도 포함
+            (r'\b\d+\b', TokenType.INTEGER),         # 정수 (예: 10, 42, 1000)
+            (r'[a-zA-Z_\$][a-zA-Z0-9_]*', TokenType.IDENTIFIER),
+            (r'[+\-*/=%]', TokenType.OPERATOR),
+            (r'\(', TokenType.LEFT_PAREN),
+            (r'\)', TokenType.RIGHT_PAREN),
+            (r'\[', TokenType.LEFT_BRACKET),
+            (r'\]', TokenType.RIGHT_BRACKET),
+            (r',', TokenType.COMMA),
+        ]
+        column = 0
+        while line:
+            matched = False
+
+            # 🔥 공백을 건너뛰고 column 조정
+            while line and line[0] == " ":
+                column += 1
+                line = line[1:]
+
+            for pattern, token_type in token_patterns:
+                match = re.match(pattern, line)
+                if match:
+                    value = match.group(0)
+                    tokens.append(Token(value=value, type=token_type, line=line_num, column=column))
+                    
+                    column += len(value)
+                    line = line[len(value):]
+
+                    matched = True
+                    break
+            
+            if not matched and line:  # 처리할 수 없는 문자 발견 시 예외 발생
+                raise SyntaxError(f"Unknown token at line {line_num}, column {column}: {line[0]}")
+
+        return tokens

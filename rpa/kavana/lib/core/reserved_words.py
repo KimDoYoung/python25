@@ -6,7 +6,7 @@ class ReservedWords:
         "AND", "OR", "NOT",
         "IF", "ELSE", "ELSEIF", "END_IF", "WHILE", "END_WHILE",
         "FOR", "TO", "STEP", "END_FOR", "FUNCTION", "END_FUNCTION",
-        "RETURN", "PRINT", "GOTO", "LABEL"
+        "RETURN", "PRINT"
     }
 
     @classmethod

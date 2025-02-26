@@ -181,9 +181,12 @@ PRINT_DEBUG : log.debug
     - True, False, None
     - Point
     - Region
+    - Rectancle
     - Image
+    - Window
+    - Application
     - Boolean
-    - List, Map
+    - List
 
 SET numbers = [1, 2, 3, 4, 5];
 PRINT numbers[0];  # 1 출력
