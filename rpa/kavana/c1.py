@@ -4,21 +4,21 @@ from lib.core.command_parser import CommandParser
 
 script = """
 main
-IF a >= 10
-    PRINT "confirm.png"
-ELIF a == 5
-    PRINT "cancel.png"
-ELSE
-    PRINT "어떤 버튼도 없음";
-END_IF
+    SET a = 5
 
-WHILE x < 100
-    WAIT 1
-END_WHILE
+    IF a > 3
+        PRINT "a is greater than 3"
+    END_IF
 
-FOR i = 1 TO 5 STEP 1
-    CLICK "button.png"
-END_FOR
+    FOR i = 1 TO 3 STEP 1
+        PRINT "Loop iteration {i}"
+    END_FOR
+
+    SET count = 0
+    WHILE count < 3
+        PRINT "Count is {count}"
+        SET count = count + 1
+    END_WHILE
 end_main
 """
 script_lines = script.split("\n")
@@ -27,7 +27,7 @@ parsed_commands = parser.parse()
 
 for command in parsed_commands:
     print(command)
-exit(0)
+# exit(0)
 
 # 명령어 실행
 executor = CommandExecutor()

@@ -30,7 +30,26 @@ from lib.core.command_parser import CommandParser
     ("FUNCTION myFunc", ["FUNCTION", "myFunc"]),
     ("FUNCTION myFunc a, b", ["FUNCTION", "myFunc","a","b"]),
     ("FUNCTION myFunc (a, b)", ["FUNCTION", "myFunc","a","b"]),
-    ("END_FUNCTION", ["END_FUNCTION"])
+    ("END_FUNCTION", ["END_FUNCTION"]),
+    ("a > 1", ["a", ">", "1"]),
+    ("a < 1", ["a", "<", "1"]),
+    ("a <= 1", ["a", "<=", "1"]),
+    ("a >= 1", ["a", ">=", "1"]),
+    ("a == 1", ["a", "==", "1"]),
+    ("a != 1", ["a", "!=", "1"]),
+    ("a + 1", ["a", "+", "1"]),
+    ("a - 1", ["a", "-", "1"]),
+    ("a * 1", ["a", "*", "1"]),
+    ("a / 1", ["a", "/", "1"]),
+    ("a % 1", ["a", "%", "1"]),
+    ("a AND b", ["a", "AND", "b"]),
+    ("a OR b", ["a", "OR", "b"]),
+    ("a NOT b", ["a", "NOT", "b"]),
+    ("a = b", ["a", "=", "b"]),
+    ("a > b", ["a", ">", "b"]),
+    ("a < b", ["a", "<", "b"]),
+    ("a >= b", ["a", ">=", "b"]),
+    ("a <= b", ["a", "<=", "b"]),
     
 ])
 def test_tokenize(input_line, expected_tokens):
