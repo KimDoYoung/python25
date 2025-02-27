@@ -2,7 +2,7 @@ import subprocess
 import psutil
 import platform
 from pywinauto import Application
-from lib.logger import Logger  # Logger 클래스를 가져오기
+from lib.actions.logger import Logger  # Logger 클래스를 가져오기
 
 # Logger 인스턴스 생성
 log = Logger(log_name="process_logger")
