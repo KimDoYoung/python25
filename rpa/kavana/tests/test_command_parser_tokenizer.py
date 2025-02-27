@@ -5,6 +5,17 @@ from lib.core.datatypes.token_type import TokenType
 
 
 @pytest.mark.parametrize("line, expected_tokens", [
+    # ✅ String
+    ("\"ABC\"", [Token(value="ABC", type=TokenType.STRING, line=1, column=0)]),
+    ("\"Hello World\"", [Token(value="Hello World", type=TokenType.STRING, line=1, column=0)]),
+    ("\"12345\"", [Token(value="12345", type=TokenType.STRING, line=1, column=0)]),
+    ("\"한글 테스트\"", [Token(value="한글 테스트", type=TokenType.STRING, line=1, column=0)]),
+    ("\"escaped \\\"quote\\\"\"", [Token(value="escaped \"quote\"", type=TokenType.STRING, line=1, column=0)]),
+    ("\"newline\\n\"", [Token(value="newline\n", type=TokenType.STRING, line=1, column=0)]),
+    ("\"tab\\tspace\"", [Token(value="tab\tspace", type=TokenType.STRING, line=1, column=0)]),
+    ("\"\"", [Token(value="", type=TokenType.STRING, line=1, column=0)]),  # ✅ 빈 문자열
+
+
     # ✅ Boolean 값 테스트
     ("True", [Token(value="True", type=TokenType.BOOLEAN, line=1, column=0)]),
     ("False", [Token(value="False", type=TokenType.BOOLEAN, line=1, column=0)]),

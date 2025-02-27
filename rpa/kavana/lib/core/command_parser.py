@@ -1,3 +1,4 @@
+import codecs
 import re
 import os
 from typing import List
@@ -17,106 +18,42 @@ class CommandParser:
         self.base_path = base_path  # 스크립트 기본 경로 (INCLUDE, LOAD 처리용)
         self.in_main_block = False
 
-    def preprocess_lines(self):
-        """멀티라인 (`\\`) 연결 및 주석 (`//`) 제거"""
+    def replace_leading_tabs(self, line):
+        """Replace leading tabs with 4 spaces."""
+        # Find the index where the first non-tab character starts
+        first_non_tab = len(line) - len(line.lstrip('\t'))
+        # Replace only the leading tabs
+        return '    ' * first_non_tab + line[first_non_tab:]
+
+    def preprocess_lines(self, remove_comments=True):
+        """Preprocess lines by merging multiline continuations and optionally removing comments."""
         merged_lines = []
         current_line = ""
 
         for line in self.script_lines:
-            stripped = line.strip()
-            if not stripped or stripped.startswith("//"):
-                continue  # 빈 줄 및 주석 제거
-            # 라인 중 //이 나오면 //이후는 삭제 후 추가
-            
+            line = line.rstrip()  # Remove trailing whitespace
 
-            if stripped.endswith("\\"):
-                current_line += stripped[:-1] + " "  # `\` 제거 후 다음 줄 연결
+            # Replace leading tabs with spaces
+            line = self.replace_leading_tabs(line)
+
+            if not line:
+                continue  # Skip empty lines
+
+            # Remove comments if the option is enabled
+            if remove_comments:
+                line = re.sub(r'//.*', '', line).rstrip()  # Remove comments and trailing whitespace
+
+            # Handle multiline continuations
+            if line.endswith("\\"):
+                current_line += line[:-1].rstrip()  # Remove the backslash and any trailing spaces
             else:
-                if "//" in stripped:
-                    stripped = stripped[:stripped.index("//")]                
-                current_line += stripped
-                merged_lines.append(current_line)
-                current_line = ""  # 새로운 줄 시작
+                current_line += " " + line.lstrip()  # Add the line to the current line, removing leading spaces
+                merged_lines.append(current_line.strip())  # Add the completed line to the list
+                current_line = ""  # Reset for the next line
 
         return merged_lines
 
-    # def parse(self):
-    #     """
-    #     스크립트의 모든 명령어를 분석하여 리스트로 반환.
-    #     """
-    #     parsed_commands = []
-    #     processed_lines = self.preprocess_lines()
-    #     i = 0  
 
-    #     while i < len(processed_lines):
-    #         tokens = self.tokenize(processed_lines[i])
-    #         if not tokens:
-    #             i += 1
-    #             continue
-
-    #         cmd = tokens[0].upper()
-    #         args = tokens[1:]
-
-    #         # ✅ 블록 명령어 처리
-    #         if cmd in ["IF", "WHILE", "FOR"]:
-    #             end_mapping = {"IF": "END_IF", "WHILE": "END_WHILE", "FOR": "END_FOR"}
-    #             block_body, new_index = self.parse_block(processed_lines, i + 1, end_mapping[cmd])
-    #             parsed_commands.append({"cmd": f"{cmd}_BLOCK", "body": [{"cmd": cmd, "args": args}] + block_body})
-    #             i = new_index + 1
-    #             continue
-
-    #         # ✅ FUNCTION 처리
-    #         if cmd == "FUNCTION":
-    #             i = self.parse_function(processed_lines, i)
-    #             continue  # 함수 정의는 parsed_commands에 추가하지 않음
-
-    #         # ✅ INCLUDE 처리
-    #         if cmd == "INCLUDE":
-    #             if not args:
-    #                 raise SyntaxError("INCLUDE 문에 파일 경로가 필요합니다.")
-    #             include_path = args[0].strip('"')
-    #             self._process_include(include_path, parsed_commands)
-    #             i += 1
-    #             continue
-
-    #         # ✅ LOAD 처리
-    #         if cmd == "LOAD":
-    #             if not args:
-    #                 raise SyntaxError("LOAD 문에 .env 파일 경로가 필요합니다.")
-    #             env_path = args[0].strip('"')
-    #             self._process_env(env_path, parsed_commands)
-    #             i += 1
-    #             continue
-
-    #         # ✅ MAIN 블록 처리
-    #         if cmd == "MAIN":
-    #             if not getattr(self, "ignore_main_check", False):
-    #                 if self.in_main_block:
-    #                     raise SyntaxError("Nested 'MAIN' blocks are not allowed.")
-    #                 self.in_main_block = True
-    #             i += 1
-    #             continue
-
-    #         if cmd == "END_MAIN":
-    #             if not getattr(self, "ignore_main_check", False):
-    #                 if not self.in_main_block:
-    #                     raise SyntaxError("'END_MAIN' found without 'MAIN'.")
-    #                 self.in_main_block = False
-    #             i += 1
-    #             break
-
-    #         # ✅ MAIN 블록 외부에서 명령어 사용 제한
-    #         if not self.in_main_block and not getattr(self, "ignore_main_check", False):
-    #             raise SyntaxError("Commands must be inside a 'MAIN' block.")
-
-    #         # ✅ 일반 명령어 추가
-    #         parsed_commands.append({"cmd": cmd, "args": args})
-    #         i += 1  
-
-    #     if self.in_main_block:
-    #         raise SyntaxError("Missing 'END_MAIN' at the end of the script.")
-
-    #     return parsed_commands
     def parse(self):
         """
         ✅ 스크립트의 모든 명령어를 분석하여 `Token` 리스트로 반환.
@@ -126,7 +63,7 @@ class CommandParser:
         i = 0  
 
         while i < len(processed_lines):
-            tokens = self.tokenize(processed_lines[i])  # ✅ `Token` 객체 리스트 반환
+            tokens = self.tokenize(processed_lines[i], i+1)  # ✅ `Token` 객체 리스트 반환
             if not tokens:
                 i += 1
                 continue
@@ -169,7 +106,7 @@ class CommandParser:
             if cmd == "MAIN":
                 if not getattr(self, "ignore_main_check", False):
                     if self.in_main_block:
-                        raise SyntaxError("Nested 'MAIN' blocks are not allowed.")
+                        raise SyntaxError("Nested 'MAIN' blocks are not allowed. line : {i+1}")
                     self.in_main_block = True
                 i += 1
                 continue
@@ -184,7 +121,7 @@ class CommandParser:
 
             # ✅ MAIN 블록 외부에서 명령어 사용 제한
             if not self.in_main_block and not getattr(self, "ignore_main_check", False):
-                raise SyntaxError("Commands must be inside a 'MAIN' block.")
+                raise SyntaxError("Commands must be inside a 'MAIN' block. line : {i+1}")
 
             # ✅ 일반 명령어 추가
             parsed_commands.append({"cmd": cmd, "args": args})  # ✅ `args`도 `Token` 리스트로 저장
@@ -195,10 +132,10 @@ class CommandParser:
 
         return parsed_commands
 
-    def parse_block(self, processed_lines, start_index, end_keyword):
+    def parse_block(self, processed_lines, start_line, end_keyword):
         """재귀적으로 블록을 파싱하는 함수"""
         block_body = []
-        i = start_index
+        i = start_line
 
         while i < len(processed_lines):
             line = processed_lines[i].strip().upper()
@@ -206,12 +143,12 @@ class CommandParser:
             if line == end_keyword:
                 return block_body, i  # ✅ END 키워드를 만나면 종료
 
-            tokens = self.tokenize(processed_lines[i])
+            tokens = self.tokenize(processed_lines[i], i)
             if not tokens:
                 i += 1
                 continue
 
-            cmd = tokens[0].upper()
+            cmd = tokens[0].value.upper()
             args = tokens[1:]
 
             # ✅ 중첩된 블록 처리 (IF, WHILE, FOR)
@@ -227,12 +164,11 @@ class CommandParser:
             i += 1
 
         raise SyntaxError(f"{end_keyword}가 없습니다.")  # ✅ 종료 키워드가 없으면 오류 발생
-   
 
-    def parse_function(self, processed_lines, start_index):
+    def parse_function(self, processed_lines, start_line):
         """FUNCTION 블록을 파싱하는 함수"""
-        func_def_lines = [processed_lines[start_index]]
-        i = start_index + 1
+        func_def_lines = [processed_lines[start_line]]
+        i = start_line + 1
 
         while i < len(processed_lines) and processed_lines[i].strip().upper() != "END_FUNCTION":
             func_def_lines.append(processed_lines[i])
@@ -359,6 +295,7 @@ class CommandParser:
         tokens = []
 
         token_patterns = [
+
             # ✅ 논리 값
             (r'\bTrue\b', TokenType.BOOLEAN),
             (r'\bFalse\b', TokenType.BOOLEAN),
@@ -367,18 +304,18 @@ class CommandParser:
             # ✅ 제어문 키워드
             (r'(?i)\bIF\b', TokenType.IF),
             (r'(?i)\bELSE\b', TokenType.ELSE),
-            (r'(?i)\bELIF\b', TokenType.ELIF),  # ✅ 추가
+            (r'(?i)\bELIF\b', TokenType.ELIF),
             (r'(?i)\bWHILE\b', TokenType.WHILE),
             (r'(?i)\bFOR\b', TokenType.FOR),
-            (r'(?i)\bTO\b', TokenType.TO),  # ✅ 추가
-            (r'(?i)\bSTEP\b', TokenType.STEP),  # ✅ 추가
+            (r'(?i)\bTO\b', TokenType.TO),  
+            (r'(?i)\bSTEP\b', TokenType.STEP), 
             (r'(?i)\bEND_IF\b', TokenType.END_IF),
             (r'(?i)\bEND_WHILE\b', TokenType.END_WHILE),
             (r'(?i)\bEND_FOR\b', TokenType.END_FOR),
 
             # ✅ 함수 관련 키워드
             (r'(?i)\bFUNCTION\b', TokenType.FUNCTION),
-            (r'(?i)\bEND_FUNCTION\b', TokenType.END_FUNCTION),  # ✅ 추가
+            (r'(?i)\bEND_FUNCTION\b', TokenType.END_FUNCTION),
             (r'(?i)\bRETURN\b', TokenType.RETURN),
 
             # ✅ 스크립트 실행 관련 키워드
@@ -387,11 +324,10 @@ class CommandParser:
             (r'(?i)\bMAIN\b', TokenType.MAIN),
             (r'(?i)\bEND_MAIN\b', TokenType.END_MAIN),
 
-
             # ✅ 논리 연산자
-            (r'(?i)\bAND\b', TokenType.LOGICAL_OPERATOR),  # ✅ 추가
-            (r'(?i)\bOR\b', TokenType.LOGICAL_OPERATOR),  # ✅ 추가
-            (r'(?i)\bNOT\b', TokenType.LOGICAL_OPERATOR),  # ✅ 추가
+            (r'(?i)\bAND\b', TokenType.LOGICAL_OPERATOR), 
+            (r'(?i)\bOR\b', TokenType.LOGICAL_OPERATOR), 
+            (r'(?i)\bNOT\b', TokenType.LOGICAL_OPERATOR),
 
             # ✅ 루프 제어 키워드
             (r'(?i)\bBREAK\b', TokenType.BREAK),
@@ -402,19 +338,27 @@ class CommandParser:
             (r'(?i)\bREGION\b', TokenType.REGION),
             (r'(?i)\bRECTANGLE\b', TokenType.RECTANGLE),
             (r'(?i)\bIMAGE\b', TokenType.IMAGE),
-            (r'(?i)\bWINDOW\b', TokenType.WINDOW),  # 추가
-            (r'(?i)\bAPPLICATION\b', TokenType.APPLICATION),  # 추가            
-
-            # ✅ 일반 식별자 및 연산자
-            (r'\b\d+\.\d+|\.\d+|\d+\.\b', TokenType.FLOAT),  # 🔥 소수점만 있는 경우도 포함
-            (r'\b\d+\b', TokenType.INTEGER),         # 정수 (예: 10, 42, 1000)
-            (r'[a-zA-Z_\$][a-zA-Z0-9_]*', TokenType.IDENTIFIER),
-            (r'[+\-*/=%]', TokenType.OPERATOR),
+            (r'(?i)\bWINDOW\b', TokenType.WINDOW),  
+            (r'(?i)\bAPPLICATION\b', TokenType.APPLICATION),
+            # ✅ 연산자
             (r'\(', TokenType.LEFT_PAREN),
             (r'\)', TokenType.RIGHT_PAREN),
             (r'\[', TokenType.LEFT_BRACKET),
             (r'\]', TokenType.RIGHT_BRACKET),
             (r',', TokenType.COMMA),
+
+            # ✅ 일반 식별자  
+            (r'[a-zA-Z_\$][a-zA-Z0-9_]*', TokenType.IDENTIFIER),
+
+            # ✅ float, integer
+            (r'\b\d+\.\d+|\.\d+|\d+\.\b', TokenType.FLOAT),  # 🔥 소수점만 있는 경우도 포함
+            (r'\b\d+\b', TokenType.INTEGER),         # 정수 (예: 10, 42, 1000)
+
+            # ✅ OPERATOR
+            (r'[+\-*/=%]', TokenType.OPERATOR),
+
+            # ✅ 모든 유니코드 문자 포함          
+            (r'"((?:\\.|[^"\\])*)"', TokenType.STRING),  # ✅ 문자열 정규식 수정
         ]
         column = 0
         while line:
@@ -428,16 +372,49 @@ class CommandParser:
             for pattern, token_type in token_patterns:
                 match = re.match(pattern, line)
                 if match:
-                    value = match.group(0)
+                    raw_value = match.group(1) if token_type == TokenType.STRING else match.group(0)
+
+                    if token_type == TokenType.STRING:
+                        value = CommandParser.decode_escaped_string(raw_value)  # ✅ 직접 변환 함수 호출
+                    else:
+                        value = raw_value
+
                     tokens.append(Token(value=value, type=token_type, line=line_num, column=column))
-                    
-                    column += len(value)
-                    line = line[len(value):]
+
+                    column += len(match.group(0))
+                    line = line[len(match.group(0)):]  # ✅ `line`을 올바르게 줄임
 
                     matched = True
                     break
-            
-            if not matched and line:  # 처리할 수 없는 문자 발견 시 예외 발생
-                raise SyntaxError(f"Unknown token at line {line_num}, column {column}: {line[0]}")
+
+            if not matched and line:  # ✅ 더 이상 처리할 수 없는 문자가 있으면 예외 발생
+                raise SyntaxError(f"Unknown token at line {line_num}, column {column}")
 
         return tokens
+    
+    @staticmethod
+    def decode_escaped_string(s: str) -> str:
+        """✅ 1바이트씩 읽어가면서 이스케이프 문자 변환"""
+        result = []
+        i = 0
+        while i < len(s):
+            if s[i] == "\\" and i + 1 < len(s):  # 🔥 이스케이프 문자 발견
+                escape_seq = s[i + 1]
+
+                if escape_seq == "n":
+                    result.append("\n")
+                elif escape_seq == "t":
+                    result.append("\t")
+                elif escape_seq == "\\":
+                    result.append("\\")
+                elif escape_seq == '"':
+                    result.append('"')
+                else:
+                    result.append("\\" + escape_seq)  # ✅ 미리 정의되지 않은 경우 그대로 추가
+
+                i += 2  # 🔥 이스케이프 문자는 2바이트 처리
+            else:
+                result.append(s[i])
+                i += 1
+
+        return "".join(result)        
