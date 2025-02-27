@@ -26,3 +26,36 @@ gui
 8. image_capture 상태에서  우스 클릭 후 드래그 후 마우스 up 시 선택된 영역의 이미지를 저장 (이름은 자동으로 숫자증가 예를 들어 image_1.png, image_2.png식으로
 9. image_capture 버튼 클릭 -> image_capture상태 toggle
 
+
+1. 요구조건 1
+    status영역을 3부분으로 나누어서
+    1. 마우스의 x, y표시
+    2. 현재의 상태 즉 rectangle capture on 또는 image capture on을 표시, 물론 아무 상태도 아니면 비어 있게금.
+    3. 메세지 표시
+
+2. 요구조건2
+    - 정보영역의 넓기가 너무 작음 지금 사이즈의 2배로
+    
+3. 요구조건3
+    -  rectangle_capture on 또는 image_capture on일때 rubber band형식으로 점선으로 표시해 줄 수 없나?
+    
+
+요구조건 1
+File
+    Open
+    --------
+    Config
+    --------
+    Quit(alt+f4)
+
+요구조건 2
+-Config menu click시 modal로 환경설정 모달창 뜰 것
+-config-modal에서
+-이미지 저장위치를 설정하게 할 것 
+-default 이미지 저장장치는 실행위치아래 images폴더를 만들것
+
+
+1. 이미지 저장시 -> 정보영역에 'image_0.png' saved 표시
+2. 초기상태 maxize
+3. rectange_capture on 하면 image_catpure off  반대로 image_capture on 이면 rectange_capture off
+4. 정보영역 font 더 크게
