@@ -2,8 +2,9 @@
 from dataclasses import dataclass
 
 from lib.actions.enums import PointName
-from lib.actions.kavana_types import Point
-from lib.core.datatypes.rectangle import Rectangle
+
+from lib.core.datatypes.point import Point
+
 
 
 @dataclass
@@ -43,6 +44,7 @@ class Region:
         
     def to_rectangle(self):
         """Region을 Rectangle 객체로 변환"""
+        from lib.core.datatypes.rectangle import Rectangle
         return Rectangle(self.point_with_name(PointName.LEFT_TOP), self.point_with_name(PointName.RIGHT_BOTTOM))    
     
     def __str__(self):

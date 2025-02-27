@@ -5,7 +5,7 @@ from pywinauto import Application
 from lib.actions.logger import Logger  # Logger 클래스를 가져오기
 
 # Logger 인스턴스 생성
-log = Logger(log_name="process_logger")
+log = Logger(log_name="kavana")
 
 if platform.system() == "Windows":
     import win32gui

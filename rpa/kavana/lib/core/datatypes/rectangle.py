@@ -1,6 +1,7 @@
 from dataclasses import dataclass
 
-from lib.actions.kavana_types import Point, Region
+from lib.core.datatypes.point import Point
+from lib.core.datatypes.region import Region
 
 
 @dataclass
