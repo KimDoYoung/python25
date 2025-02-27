@@ -41,6 +41,10 @@ cat <<EOF > .vscode/settings.json
     "python.linting.enabled": true,
     "python.linting.pylintEnabled": true,
     "python.testing.pytestEnabled": true
+    "terminal.integrated.defaultProfile.windows": "Git Bash",
+    "editor.codeActionsOnSave": {
+        "source.fixAll.markdownlint": "explicit"
+    }	
 }
 EOF
 

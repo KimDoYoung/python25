@@ -7,3 +7,7 @@ screeninfo
 pywin32
 requests
 keyboard
+xlrd 
+openpyxl
+Pillow
+pywinauto

@@ -1,15 +1,14 @@
 
 import re
 import time
-import ctypes
 import pyautogui
-import psutil
 from typing import Callable, Optional, Tuple
 
 import pyperclip
-from lib.kavana_types import Point, Region
+from lib.core.datatypes.point import Point
+from lib.core.datatypes.region import Region
 from logger import Logger
-import keyboard
+
 
 log = Logger()
 
