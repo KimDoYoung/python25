@@ -93,3 +93,13 @@ File
 - 파일 오픈성공시 $HOME\사진\sophia_capture 하위에 오픈한 이미지파일명 (abc.png)으로 폴더생성 (있으면 skip)
 - capture한 이미지번호를 0번부터 다시 시작
 - 저장폴더명을 Ready 즉 statusbar 마지막 label에 표시
+
+### 추가요구사항 6차
+
+- 상단의 툴바에 3개의 버튼을 추가
+    1.mark : 클릭시 mark-on = not makr-on으로 mark-on일때 마우스 클릭하는 곳마다. +를 표시 빨간색으로
+    2.mark-clear : 클릭시 화면에 표시된 +를 모두 지움.
+    3.cross-cursor : on일때 커서가 움직일때마다 horizontal line과 vertical line으로 
+    즉 이미지 전체 넓이와 이미지 전체 높이로 cross라인을 그리면서 마우스가 움직이도록
+    on일때 다시 누르면 off
+
