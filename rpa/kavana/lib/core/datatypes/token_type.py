@@ -1,6 +1,7 @@
 from enum import Enum
 
 class TokenType(Enum):
+    GLOBAL = "GLOBAL"
     # 기존 타입
     NONE = "NONE" # None
     INTEGER = "INTEGER"

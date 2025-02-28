@@ -2,9 +2,11 @@ import re
 import operator
 from typing import List, Union
 from datetime import datetime, timedelta
+from lib.core.datatypes.token_type import TokenType
 from lib.core.function_executor import FunctionExecutor
 from lib.core.function_parser import FunctionParser
 from lib.core.function_registry import FunctionRegistry
+from lib.core.token import Token
 from lib.core.variable_manager import VariableManager
 
 class ExprEvaluator:
@@ -25,175 +27,152 @@ class ExprEvaluator:
         'OR':  (-3, lambda a, b: bool(a) or bool(b))        
     }
     
-    def __init__(self, expression: str, var_manager: VariableManager):
-        self.expression = expression
+    def __init__(self,  var_manager: VariableManager):
         self.var_manager = var_manager
-    
 
-    def tokenize(self) -> List[str]:
-        """수식을 토큰 리스트로 변환 (문자열 유지)"""
-    #   tokens = re.findall(r'<=|>=|==|!=|[-+]?[0-9]*\.?[0-9]+|"[^"]*"|[a-zA-Z_][a-zA-Z0-9_]*|[()+\-*/%,]', self.expression)
-        # tokens = re.findall(
-        #     r'<=|>=|==|!=|[<>]|[-+]?[0-9]*\.?[0-9]+|"[^"]*"|[a-zA-Z_][a-zA-Z0-9_]*|[()+\-*/%]', 
-        #     self.expression
-        # )        
-        tokens = re.findall(
-            r'<=|>=|==|!=|[<>]|[-+]?[0-9]*\.?[0-9]+|"[^"]*"|[a-zA-Z_][a-zA-Z0-9_]*|[(),+\-*/%]', 
-            self.expression
-        )   
-        # 쉼표 제거
-        tokens = [t for t in tokens if t != ","]
-        
-        # boolean 예약어를 대문자로 변환하여 토큰으로 처리 ("and", "or", "not")
-        reserved = {"and", "or", "not"}
-        tokens = [t.upper() if t.lower() in reserved else t for t in tokens]
-        
-        return tokens
-
-    def to_postfix(self, tokens: List[str]) -> List[str]:
+    def to_postfix(self, tokens: List[Token]) -> List[Token]:
         """토큰 리스트를 후위 표기법(RPN)으로 변환"""
         output = []
         stack = []
-        
+
         i = 0
         while i < len(tokens):
             token = tokens[i]
-            # pluse ( 3 4 ) -> pluse(3,4)로 
-            func_info = FunctionRegistry.get_function(token.upper())
-            if func_info != None:
+
+            # ✅ 함수 처리 (PLUSE(3,4) 형태)
+            func_info = FunctionRegistry.get_function(token.value)
+            if func_info is not None:
                 arg_count = func_info["arg_count"]
-                combined_token, i = FunctionParser._parse_function_call(tokens, start_index = i, func=None,  arg_count=arg_count)
+                combined_token, i = FunctionParser._parse_function_call(tokens, start_index=i, func=None, arg_count=arg_count)
                 output.append(combined_token)
                 continue
 
-            if isinstance(token, str) and token.replace('.', '', 1).lstrip('-').isdigit():
-                token = float(token) if '.' in token else int(token)  # ✅ 문자열 숫자를 실제 숫자로 변환
+            # ✅ 숫자, Boolean, None, 문자열 처리 (한 줄로 합침)
+            if token.type in {TokenType.INTEGER, TokenType.FLOAT, TokenType.BOOLEAN, TokenType.NONE, TokenType.STRING}:
                 output.append(token)
-                i+=1
+                i += 1
                 continue
 
-            if isinstance(token, str) and token in ("True", "False", "None"):
-                token = {"True": True, "False": False, "None": None}[token]            
-                output.append(token)  # ✅ 예약어는 그대로 추가
-                i+=1
-                continue
-
-            if isinstance(token, str) and token.startswith('"') and token.endswith('"'):
-                output.append(token)  # ✅ 문자열 그대로 추가
-                i+=1
-                continue
-            
-            token_upper = token.upper() if isinstance(token, str) and token.isidentifier() else token  
-
-            if token.replace('.', '', 1).lstrip('-').isdigit() or token.startswith('"'):
-                output.append(token)
-            elif token in self.OPERATORS:
-                if token == "NOT":
-                    # NOT은 오른쪽 결합이므로, 우선순위가 '더 큰' 연산자만 pop합니다.
-                    while (stack and stack[-1] in self.OPERATORS and
-                        self.OPERATORS[token][0] < self.OPERATORS[stack[-1]][0]):
+            # ✅ 연산자 처리
+            if token.type == TokenType.OPERATOR:
+                if token.value == "NOT":
+                    # NOT은 오른쪽 결합, 우선순위가 더 높은 연산자만 pop
+                    while stack and stack[-1].type == TokenType.OPERATOR and self.OPERATORS[token.value][0] < self.OPERATORS[stack[-1].value][0]:
                         output.append(stack.pop())
                 else:
-                    # 이항 연산자는 왼쪽 결합: 우선순위가 같거나 큰 연산자 pop
-                    while (stack and stack[-1] in self.OPERATORS and
-                        self.OPERATORS[token][0] <= self.OPERATORS[stack[-1]][0]):
+                    # 일반 이항 연산자는 왼쪽 결합, 우선순위가 같거나 높은 연산자 pop
+                    while stack and stack[-1].type == TokenType.OPERATOR and self.OPERATORS[token.value][0] <= self.OPERATORS[stack[-1].value][0]:
                         output.append(stack.pop())
-                stack.append(token)            
-            elif token == '(':
                 stack.append(token)
-            elif token == ')':
-                while stack and stack[-1] != '(':
+                i += 1
+                continue
+
+            # ✅ 괄호 처리
+            if token.type == TokenType.LEFT_PAREN:
+                stack.append(token)
+            elif token.type == TokenType.RIGHT_PAREN:
+                while stack and stack[-1].type != TokenType.LEFT_PAREN:
                     output.append(stack.pop())
-                stack.pop()
-                if stack and stack[-1].isalpha():
-                    output.append(stack.pop())
-            elif i + 1 < len(tokens) and tokens[i + 1] == '(':
-                stack.append(token_upper)
+                stack.pop()  # '(' 제거
+            elif i + 1 < len(tokens) and tokens[i + 1].type == TokenType.LEFT_PAREN:
+                stack.append(token)  # 함수 호출 (ex: FUNC(...))
+
             else:
-                output.append(token_upper)
+                output.append(token)
+
             i += 1
-        
+
+        # ✅ 스택에 남은 연산자 추가
         while stack:
             output.append(stack.pop())
-        
+
         return output
 
-    def evaluate_postfix(self, tokens: List[str]) -> Union[int, float, str, datetime]:
-        """후위 표기법 리스트를 계산 (날짜 연산 및 문자열 연산 강화)"""
+
+    def evaluate_postfix(self, tokens: List[Token]) -> Token:
+        """후위 표기법 수식을 계산"""
         stack = []
-        
+
         for token in tokens:
-            
-            if token in (True, False, None):  # ✅ 변환된 예약어는 그대로 스택에 추가
+            if token.type in {TokenType.INTEGER, TokenType.FLOAT, TokenType.STRING, TokenType.BOOLEAN, TokenType.NONE, TokenType.DATE}:
                 stack.append(token)
-                continue
-            if isinstance(token, (int, float)):  # ✅ 숫자는 그대로 스택에 추가
-                stack.append(token)
-                continue
-            if isinstance(token, str) and token.startswith('"') and token.endswith('"'):
-                stack.append(token.strip('"'))  # ✅ 문자열을 변수명이 아니라 문자열로 처리
-                continue
 
-            token_upper = token.upper() if isinstance(token, str) and token.isidentifier() else token  
-
-            if token == ",":
-                continue  # ✅ 쉼표 무시
-
-            if isinstance(token, str) and token.replace('.', '', 1).lstrip('-').isdigit():
-                stack.append(float(token) if '.' in token else int(token))
-            elif token == "NOT":
-                # 단항 boolean not 연산자 처리
-                a = stack.pop()
-                result = self.OPERATORS[token][1](a)
-                stack.append(result)                
-            elif token in self.OPERATORS:
-                b = stack.pop()
-                a = stack.pop()
-                if token == '%':
-                    if not isinstance(a, int) or not isinstance(b, int):
-                        raise ValueError(f"Unsupported operand types for %: {type(a).__name__} and {type(b).__name__}")
-                    result = a % b
-                elif isinstance(a, datetime) and isinstance(b, int):
-                    result = a + timedelta(days=b) if token == '+' else a - timedelta(days=b)
-                elif isinstance(a, datetime) and isinstance(b, datetime) and token == '-':
-                    result = (a - b).days  # ✅ 날짜 차이 연산 지원
-                elif isinstance(a, str) and isinstance(b, str) and token == '+':
-                    result = a + b  # ✅ 문자열 연결 지원
-                elif (a is None or b is None) and token in ('==', '!='):  # ✅ None 비교 연산 지원
-                    result = self.OPERATORS[token][1](a, b)
-                elif isinstance(a, str) or isinstance(b, str):
-                    if token not in ('==', '!='):
-                        raise ValueError(f"Unsupported operation between strings: '{a}' {token} '{b}'")
-                    result = self.OPERATORS[token][1](a, b)
-                elif isinstance(a, (int, float, bool)) and isinstance(b, (int, float, bool)):
-                    result = self.OPERATORS[token][1](a, b)
-                else:
-                    raise TypeError(f"Unsupported operand types: {type(a).__name__} and {type(b).__name__}")
-
-                stack.append(result)
-
-            elif self.isFunction(token_upper):  
-                func_tokens = self.split_function_token(token_upper)  
-                func_info = FunctionRegistry.get_function(func_tokens[0])
-                
-                if func_info is None:
-                    raise ValueError(f"Undefined function: {func_tokens[0]}")
-
-                arg_values = func_tokens[1:]
-
-                function_executor = FunctionExecutor(func_info, global_var_manager=self.var_manager, arg_values=arg_values)
-
-                result = function_executor.execute()
-                stack.append(result)  
-
-            else:  
-                value = self.var_manager.get_variable(token_upper)
+            elif token.type == TokenType.IDENTIFIER:
+                value = self.var_manager.get_variable(token.value)
                 if value is None:
-                    raise ValueError(f"Undefined variable: {token_upper}")
-                stack.append(value)
+                    raise ValueError(f"Undefined variable: {token.value}")
+                
+                token_type = (
+                    TokenType.INTEGER if isinstance(value, int)
+                    else TokenType.FLOAT if isinstance(value, float)
+                    else TokenType.STRING if isinstance(value, str)
+                    else TokenType.BOOLEAN if isinstance(value, bool)
+                    else TokenType.DATE if isinstance(value, datetime)
+                    else TokenType.NONE
+                )
+                stack.append(Token(value, token_type, line=token.line, column=token.column))
+
+            elif token.type == TokenType.OPERATOR:
+                if token.value == "NOT":
+                    a = stack.pop()
+                    result = self.OPERATORS[token.value][1](a.value)
+                    stack.append(Token(result, TokenType.BOOLEAN, line=token.line, column=token.column))
+
+                else:
+                    b = stack.pop()
+                    a = stack.pop()
+
+                    if token.value == "%" and (a.type != TokenType.INTEGER or b.type != TokenType.INTEGER):
+                        raise ValueError(f"Unsupported operand types for %: {a.type} and {b.type}")
+
+                    elif a.type == TokenType.DATE and b.type == TokenType.INTEGER:
+                        result = a.value + timedelta(days=b.value) if token.value == "+" else a.value - timedelta(days=b.value)
+
+                    elif a.type == TokenType.DATE and b.type == TokenType.DATE and token.value == "-":
+                        result = (a.value - b.value).days
+
+                    elif a.type == TokenType.STRING and b.type == TokenType.STRING and token.value == "+":
+                        result = a.value + b.value
+
+                    elif (a.type == TokenType.NONE or b.type == TokenType.NONE) and token.value in {"==", "!="}:
+                        result = self.OPERATORS[token.value][1](a.value, b.value)
+
+                    elif a.type in {TokenType.INTEGER, TokenType.FLOAT, TokenType.BOOLEAN} and b.type in {TokenType.INTEGER, TokenType.FLOAT, TokenType.BOOLEAN}:
+                        result = self.OPERATORS[token.value][1](a.value, b.value)
+
+                    else:
+                        raise TypeError(f"Unsupported operand types: {a.type} and {b.type}")
+
+                    result_type = (
+                        TokenType.BOOLEAN if isinstance(result, bool)
+                        else TokenType.INTEGER if isinstance(result, int)
+                        else TokenType.FLOAT if isinstance(result, float)
+                        else TokenType.STRING if isinstance(result, str)
+                        else TokenType.NONE
+                    )
+
+                    stack.append(Token(result, result_type, line=token.line, column=token.column))
+
+            elif self.is_function(token.value):
+                func_info = FunctionRegistry.get_function(token.value)
+                func_tokens = self.split_function_token(token.value)
+                arg_values = [stack.pop().value for _ in range(func_info["arg_count"])][::-1]
+                function_executor = FunctionExecutor(func_info, global_var_manager=self.var_manager, arg_values=arg_values)
+                result = function_executor.execute()
+
+                result_type = (
+                    TokenType.INTEGER if isinstance(result, int)
+                    else TokenType.STRING if isinstance(result, str)
+                    else TokenType.FLOAT if isinstance(result, float)
+                    else TokenType.BOOLEAN if isinstance(result, bool)
+                    else TokenType.NONE
+                )
+
+                stack.append(Token(result, result_type, line=token.line, column=token.column))
 
         return stack[0]
-    
+
+
     def split_function_token(self, function_token:str) -> List[str]:
         """function_token PLUS(3,4) -> PLUS,3,4 함수명과 인자로 분리"""
         if "(" not in function_token or not function_token.endswith(")"):
@@ -232,31 +211,28 @@ class ExprEvaluator:
 
         return [func_name] + args
 
-    def isFunction(self, token: str) -> bool:
+    def isFunction(self, token: Token) -> bool:
         """토큰이 함수인지 확인 PLUS(3,4)"""
-        func_name = token.upper()
-        if "(" in token:
-            func_name =  token[:token.index("(")]  # '(' 이전까지 잘라서 반환
+        func_name = token.value.upper()
         func_info = FunctionRegistry.get_function(func_name)
         return func_info != None
 
-    def execute_user_function(self, func_body: str, local_vars: dict):
+    def execute_user_function(self, func_body: List[Token], local_vars: dict):
         """
         간단한 사용자 정의 함수 실행기
         - 현재는 간단한 RETURN 문만 지원
         """
         if func_body.startswith("RETURN "):
             expr = func_body[len("RETURN "):].strip()
-            evaluator = ExprEvaluator(expr, VariableManager())  # ✅ 새로운 평가기 생성
+            evaluator = ExprEvaluator(VariableManager())  # ✅ 새로운 평가기 생성
             evaluator.var_manager.variables.update(local_vars)  # ✅ 지역 변수 전달
-            return evaluator.evaluate()
+            return evaluator.evaluate(func_body)
         raise ValueError(f"Unsupported function body: {func_body}")
 
 
-    def evaluate(self) -> Union[int, float, str, datetime]:
+    def evaluate(self, tokens:List[Token]) :
         """수식을 계산하여 결과 반환 (예외 처리 강화)"""
         try:
-            tokens = self.tokenize()
             postfix_tokens = self.to_postfix(tokens)
             return self.evaluate_postfix(postfix_tokens)
         except Exception as e:

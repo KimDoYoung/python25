@@ -270,6 +270,8 @@ class CommandParser:
             (r'\bTrue\b', TokenType.BOOLEAN),
             (r'\bFalse\b', TokenType.BOOLEAN),
             (r'\bNone\b', TokenType.NONE),
+            
+            (r'(?i)\bGLOBAL\b', TokenType.GLOBAL),
 
             # ✅ 제어문 키워드
             (r'(?i)\bIF\b', TokenType.IF),
