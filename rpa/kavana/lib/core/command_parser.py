@@ -2,6 +2,7 @@ import codecs
 import re
 import os
 from typing import List
+from lib.core.command_preprocessor import PreprocessedLine
 from lib.core.token import Token
 from lib.core.datatypes.token_type import TokenType
 from lib.core.function_registry import FunctionRegistry
@@ -13,21 +14,25 @@ class CommandParser:
     - `INCLUDE` → 외부 KVS 파일 포함
     - `LOAD` → .env 파일을 불러와 `SET`으로 변환
     """
-    def __init__(self, script_lines, base_path="."):
+    def __init__(self, script_lines=[], base_path="."):
         self.script_lines = script_lines
         self.base_path = base_path  # 스크립트 기본 경로 (INCLUDE, LOAD 처리용)
         self.in_main_block = False
 
-    def parse(self):
+    def parse(self, lines = []):
         """
         ✅ 스크립트의 모든 명령어를 분석하여 `Token` 리스트로 반환.
         """
+        self.in_main_block = False
         parsed_commands = []
-        processed_lines = self.preprocess_lines()
+        if lines:
+            self.script_lines = lines
+        processed_lines = self.script_lines
         i = 0  
 
         while i < len(processed_lines):
-            tokens = self.tokenize(processed_lines[i], i+1)  # ✅ `Token` 객체 리스트 반환
+            # tokens = self.tokenize(processed_lines[i], i+1)  # ✅ `Token` 객체 리스트 반환
+            tokens = self.tokenize(processed_lines[i])  # ✅ `Token` 객체 리스트 반환
             if not tokens:
                 i += 1
                 continue
@@ -96,18 +101,18 @@ class CommandParser:
 
         return parsed_commands
 
-    def parse_block(self, processed_lines, start_line, end_keyword):
+    def parse_block(self, ppLines: List[PreprocessedLine], start_line, end_keyword):
         """재귀적으로 블록을 파싱하는 함수"""
         block_body = []
         i = start_line
 
-        while i < len(processed_lines):
-            line = processed_lines[i].strip().upper()
+        while i < len(ppLines):
+            line = ppLines[i].text.strip().upper()
 
             if line == end_keyword:
                 return block_body, i  # ✅ END 키워드를 만나면 종료
 
-            tokens = self.tokenize(processed_lines[i], i)
+            tokens = self.tokenize(ppLines[i])
             if not tokens:
                 i += 1
                 continue
@@ -118,7 +123,7 @@ class CommandParser:
             # ✅ 중첩된 블록 처리 (IF, WHILE, FOR)
             if cmd in ["IF", "WHILE", "FOR"]:
                 end_mapping = {"IF": "END_IF", "WHILE": "END_WHILE", "FOR": "END_FOR"}
-                nested_block, new_index = self.parse_block(processed_lines, i + 1, end_mapping[cmd])
+                nested_block, new_index = self.parse_block(ppLines, i + 1, end_mapping[cmd])
                 block_body.append({"cmd": f"{cmd}_BLOCK", "body": [{"cmd": cmd, "args": args}] + nested_block})
                 i = new_index + 1
                 continue
@@ -129,21 +134,21 @@ class CommandParser:
 
         raise SyntaxError(f"{end_keyword}가 없습니다.")  # ✅ 종료 키워드가 없으면 오류 발생
 
-    def parse_function(self, processed_lines, start_line):
+    def parse_function(self, ppLines:List[PreprocessedLine], start_line):
         """FUNCTION 블록을 파싱하는 함수"""
-        func_def_lines = [processed_lines[start_line]]
+        func_def_lines = [ppLines[start_line]]
         i = start_line + 1
 
-        while i < len(processed_lines) and processed_lines[i].strip().upper() != "END_FUNCTION":
-            func_def_lines.append(processed_lines[i])
+        while i < len(ppLines) and ppLines[i].text.strip().upper() != "END_FUNCTION":
+            func_def_lines.append(ppLines[i])
             i += 1
 
-        if i >= len(processed_lines) or processed_lines[i].strip().upper() != "END_FUNCTION":
+        if i >= len(ppLines) or ppLines[i].strip().upper() != "END_FUNCTION":
             raise SyntaxError("함수 정의에서 END_FUNCTION이 누락되었습니다.")
         i += 1  # ✅ END_FUNCTION 스킵
 
         # ✅ 함수 헤더 파싱
-        header_tokens = self.tokenize(func_def_lines[0].strip())
+        header_tokens = self.tokenize(func_def_lines[0])
         if len(header_tokens) < 2:
             raise SyntaxError("함수 정의 헤더가 올바르지 않습니다.")
 
@@ -156,7 +161,8 @@ class CommandParser:
         elif len(header_tokens) > 2:
             params = header_tokens[2:]
 
-        func_body = "\n".join(func_def_lines[1:])
+        # func_body = "\n".join(func_def_lines[1:])
+        func_body = func_def_lines[1:]
         
         # ✅ FunctionRegistry에 등록
         FunctionRegistry.register_function(func_name, params, func_body)
@@ -251,7 +257,116 @@ class CommandParser:
                 parsed_commands.append({"cmd": "SET", "args": [key, "=", value]})
 
     @staticmethod
-    def tokenize(line: str, line_num: int) -> list:
+    # def tokenize(line: str, line_num: int) -> list:
+    def tokenize(ppLine: PreprocessedLine) -> list:
+        """한 줄을 `Token` 객체 리스트로 변환"""
+
+        line = ppLine.text.strip()
+        tokens = []
+
+        token_patterns = [
+
+            # ✅ 논리 값
+            (r'\bTrue\b', TokenType.BOOLEAN),
+            (r'\bFalse\b', TokenType.BOOLEAN),
+            (r'\bNone\b', TokenType.NONE),
+
+            # ✅ 제어문 키워드
+            (r'(?i)\bIF\b', TokenType.IF),
+            (r'(?i)\bELSE\b', TokenType.ELSE),
+            (r'(?i)\bELIF\b', TokenType.ELIF),
+            (r'(?i)\bWHILE\b', TokenType.WHILE),
+            (r'(?i)\bFOR\b', TokenType.FOR),
+            (r'(?i)\bTO\b', TokenType.TO),  
+            (r'(?i)\bSTEP\b', TokenType.STEP), 
+            (r'(?i)\bEND_IF\b', TokenType.END_IF),
+            (r'(?i)\bEND_WHILE\b', TokenType.END_WHILE),
+            (r'(?i)\bEND_FOR\b', TokenType.END_FOR),
+
+            # ✅ 함수 관련 키워드
+            (r'(?i)\bFUNCTION\b', TokenType.FUNCTION),
+            (r'(?i)\bEND_FUNCTION\b', TokenType.END_FUNCTION),
+            (r'(?i)\bRETURN\b', TokenType.RETURN),
+
+            # ✅ 스크립트 실행 관련 키워드
+            (r'(?i)\bINCLUDE\b', TokenType.INCLUDE),
+            (r'(?i)\bLOAD\b', TokenType.LOAD),
+            (r'(?i)\bMAIN\b', TokenType.MAIN),
+            (r'(?i)\bEND_MAIN\b', TokenType.END_MAIN),
+
+            # ✅ 논리 연산자
+            (r'(?i)\bAND\b', TokenType.LOGICAL_OPERATOR), 
+            (r'(?i)\bOR\b', TokenType.LOGICAL_OPERATOR), 
+            (r'(?i)\bNOT\b', TokenType.LOGICAL_OPERATOR),
+
+            # ✅ 루프 제어 키워드
+            (r'(?i)\bBREAK\b', TokenType.BREAK),
+            (r'(?i)\bCONTINUE\b', TokenType.CONTINUE),
+
+            # ✅ 데이터 타입 키워드
+            (r'(?i)\bDATE\b', TokenType.DATE),
+            (r'(?i)\bPOINT\b', TokenType.POINT),
+            (r'(?i)\bREGION\b', TokenType.REGION),
+            (r'(?i)\bRECTANGLE\b', TokenType.RECTANGLE),
+            (r'(?i)\bIMAGE\b', TokenType.IMAGE),
+            (r'(?i)\bWINDOW\b', TokenType.WINDOW),  
+            (r'(?i)\bAPPLICATION\b', TokenType.APPLICATION),
+            # ✅ 연산자
+            (r'\(', TokenType.LEFT_PAREN),
+            (r'\)', TokenType.RIGHT_PAREN),
+            (r'\[', TokenType.LEFT_BRACKET),
+            (r'\]', TokenType.RIGHT_BRACKET),
+            (r',', TokenType.COMMA),
+
+            # ✅ 일반 식별자  
+            (r'[a-zA-Z_\$][a-zA-Z0-9_]*', TokenType.IDENTIFIER),
+
+            # ✅ float, integer
+            (r'\b\d+\.\d+|\.\d+|\d+\.\b', TokenType.FLOAT),  # 🔥 소수점만 있는 경우도 포함
+            (r'\b\d+\b', TokenType.INTEGER),         # 정수 (예: 10, 42, 1000)
+
+            # ✅ OPERATOR
+            (r'[+\-*/=%]', TokenType.OPERATOR),
+
+            # ✅ 모든 유니코드 문자 포함          
+            (r'"((?:\\.|[^"\\])*)"', TokenType.STRING),  # ✅ 문자열 정규식 수정
+        ]
+        column_num = ppLine.original_column
+        line_num = ppLine.original_line
+
+        while line:
+            matched = False
+
+            # 🔥 공백을 건너뛰고 column 조정
+            while line and line[0] == " ":
+                column_num += 1
+                line = line[1:]
+
+            for pattern, token_type in token_patterns:
+                match = re.match(pattern, line)
+                if match:
+                    raw_value = match.group(1) if token_type == TokenType.STRING else match.group(0)
+
+                    if token_type == TokenType.STRING:
+                        value = CommandParser.decode_escaped_string(raw_value)  # ✅ 직접 변환 함수 호출
+                    else:
+                        value = raw_value
+
+                    tokens.append(Token(value=value, type=token_type, line=line_num, column=column_num))
+
+                    column_num += len(match.group(0))
+                    line = line[len(match.group(0)):]  # ✅ `line`을 올바르게 줄임
+
+                    matched = True
+                    break
+
+            if not matched and line:  # ✅ 더 이상 처리할 수 없는 문자가 있으면 예외 발생
+                raise SyntaxError(f"Unknown token at line {line_num}, column {column_num}")
+
+        return tokens
+
+    @staticmethod
+    def tokenize0(line: str, line_num: int) -> list:
         """한 줄을 `Token` 객체 리스트로 변환"""
         line = line.strip()
         tokens = []
@@ -296,8 +411,8 @@ class CommandParser:
             (r'(?i)\bCONTINUE\b', TokenType.CONTINUE),
 
             # ✅ 데이터 타입 키워드
-            (r'(?i)\bPOINT\b', TokenType.POINT),
             (r'(?i)\bDATE\b', TokenType.DATE),
+            (r'(?i)\bPOINT\b', TokenType.POINT),
             (r'(?i)\bREGION\b', TokenType.REGION),
             (r'(?i)\bRECTANGLE\b', TokenType.RECTANGLE),
             (r'(?i)\bIMAGE\b', TokenType.IMAGE),
