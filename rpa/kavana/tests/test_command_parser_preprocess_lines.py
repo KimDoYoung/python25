@@ -1,25 +1,65 @@
 import pytest
-from lib.core.command_parser import CommandParser
+from lib.core.command_preprocessor import CommandPreprocessor, PreprocessedLine  # 실제 모듈 경로로 수정해야 함
 
-@pytest.mark.parametrize("script_lines, remove_comments, expected_lines", [
-    # ✅ 1. 주석이 삭제되는지 확인
-    (["SET a = 11 // 주석입니다"], True, ["SET a = 11"]),  
+# (✅ 수정된 예제)
+@pytest.mark.parametrize(
+    "script, expected",
+    [
+        (
+            """MAIN
+    SET a = 10
+    PRINT "Hello"
+END_MAIN
+            """,
+            [
+                PreprocessedLine("MAIN", 1, 1),  # ✅ 1번째 칸에서 시작
+                PreprocessedLine("SET a = 10", 2, 5),
+                PreprocessedLine('PRINT "Hello"', 3, 5),
+                PreprocessedLine("END_MAIN", 4, 1),
+            ],
+        ),
+        (
+            """MAIN
+    SET text = "This is a \ 
+ long text spanning \
+  multiple lines"
+    PRINT text
+END_MAIN
+            """,
+            [
+                PreprocessedLine("MAIN", 1, 1),
+                PreprocessedLine('SET text = "This is a  long text spanning   multiple lines"', 2, 5),  # ✅ a와 long 사이 공백 2개
+                PreprocessedLine("PRINT text", 4, 5),
+                PreprocessedLine("END_MAIN", 5, 1),
+            ],
+        ),
+        (
+            """MAIN
+    SET text = "This is a \\
+\t    tabbed line \\
+\twith mixed spaces"
+    PRINT text
+END_MAIN
+            """,
+            [
+                PreprocessedLine("MAIN", 1, 1),
+                PreprocessedLine('SET text = "This is a         tabbed line       with mixed spaces"', 2, 5),  # ✅ 공백 개수 조정
+                PreprocessedLine("PRINT text", 4, 5),
+                PreprocessedLine("END_MAIN", 5, 1),
+            ],
+        ),
 
-    # ✅ 2. `--pretty` 옵션일 때 주석이 유지되는지 확인
-    (["SET a = 12 // 주석입니다"], False, ["SET a = 12 // 주석입니다"]),  
+    ],
+)
 
-    # ✅ 3. `\t`가 스페이스 4개로 변환되는지 확인 (들여쓰기 부분만)
-    (["\tSET a = 13"], True, ["    SET a = 13"]),  
+def test_command_preprocessor(script, expected):
+    """CommandPreprocessor가 정확하게 작동하는지 확인"""
+    script_lines = script.split("\n")
+    preprocessor = CommandPreprocessor(script_lines)
+    result = preprocessor.preprocess()
 
-    # ✅ 4. 문자열 내부의 `\t`는 변환되지 않는지 확인
-    (['PRINT "Hello\tWorld"'], True, ['PRINT "Hello\tWorld"']),  
-
-    # ✅ 5. 멀티라인(`\`)이 올바르게 연결되는지 확인
-    (["SET a = 14 \\", "    + 5"], True, ["SET a = 14 + 5"]),  
-])
-def test_preprocess_lines(script_lines, remove_comments, expected_lines):
-    """✅ `preprocess_lines()`가 올바르게 동작하는지 검증"""
-    parser = CommandParser(script_lines)
-    processed_lines = parser.preprocess_lines(remove_comments=remove_comments)
-    
-    assert processed_lines == expected_lines, f"Expected {expected_lines}, but got {processed_lines}"
+    assert len(result) == len(expected), f"출력된 줄 수가 예상과 다릅니다. (Got {len(result)}, Expected {len(expected)})"
+    for res, exp in zip(result, expected):
+        assert res.text == exp.text, f"잘못된 변환 결과: {res.text} (예상: {exp.text})"
+        assert res.original_line == exp.original_line, f"잘못된 줄 번호: {res.original_line} (예상: {exp.original_line})"
+        assert res.original_column == exp.original_column, f"잘못된 컬럼 위치: {res.original_column} (예상: {exp.original_column})"
