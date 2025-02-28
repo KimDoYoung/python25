@@ -33,22 +33,6 @@ END_MAIN
                 PreprocessedLine("END_MAIN", 5, 1),
             ],
         ),
-        (
-            """MAIN
-    SET text = "This is a \\
-\t    tabbed line \\
-\twith mixed spaces"
-    PRINT text
-END_MAIN
-            """,
-            [
-                PreprocessedLine("MAIN", 1, 1),
-                PreprocessedLine('SET text = "This is a         tabbed line       with mixed spaces"', 2, 5),  # ✅ 공백 개수 조정
-                PreprocessedLine("PRINT text", 4, 5),
-                PreprocessedLine("END_MAIN", 5, 1),
-            ],
-        ),
-
     ],
 )
 

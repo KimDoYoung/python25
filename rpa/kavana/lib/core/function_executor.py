@@ -1,5 +1,5 @@
 from typing import List
-from lib.core.command_parser import CommandParser
+# from lib.core.command_parser import CommandParser
 
 from lib.core.variable_manager import VariableManager
 class FunctionExecutor:

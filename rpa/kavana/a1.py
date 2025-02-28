@@ -1,4 +1,3 @@
-from lib.core.command_executor import CommandExecutor
 from lib.core.command_parser import CommandParser
 
 
