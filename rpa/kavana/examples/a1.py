@@ -5,8 +5,10 @@ from lib.core.command_preprocessor import CommandPreprocessor
 
 script = """
 MAIN
-    SET a = 10
-    PRINT "{a}"
+    SET i = 10
+    SET f = 12.34
+    SET s = "Hello"
+    PRINT "{i} {f} {s}"
 END_MAIN
 """
 #---------------------------
