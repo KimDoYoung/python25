@@ -15,7 +15,7 @@ class PreprocessedLine:
 class CommandPreprocessor:
     """스크립트 전처리기: 주석 제거, 줄 병합 등을 수행하면서 원본 줄 번호와 컬럼을 유지"""
     
-    def __init__(self, script_lines):
+    def __init__(self, script_lines=[]):
         self.script_lines = script_lines  # 빈 줄 포함하여 유지
 
     def get_leading_space_info(self, line):
@@ -37,8 +37,10 @@ class CommandPreprocessor:
 
         return column_position, column_position  # **정확한 시작 컬럼 번호를 반환**
 
-    def preprocess(self, remove_comments=True) -> List[ PreprocessedLine ]:
+    def preprocess(self, script_lines=[],remove_comments=True) -> List[ PreprocessedLine ]:
         """스크립트를 전처리하여 줄 병합 및 주석 제거를 수행"""
+        if script_lines:
+            self.script_lines = script_lines
         merged_lines = []
         current_line = ""
         merging = False  # 여러 줄 병합 중인지 여부

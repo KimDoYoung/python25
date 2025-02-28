@@ -6,16 +6,14 @@ from lib.core.command_preprocessor import CommandPreprocessor
 script = """
 MAIN
     SET a = 10
-    FOR i = 1 TO a STEP 2
-        PRINT "{i}"
-    END_FOR
+    PRINT "{a}"
 END_MAIN
 """
 #---------------------------
 # 기본적인 사용
 #---------------------------
 script_lines = script.split("\n")
-command_preprocssed_lines = CommandPreprocessor(script_lines).preprocess( )
+command_preprocssed_lines = CommandPreprocessor().preprocess(script_lines)
 for line in command_preprocssed_lines:
     print(line)
 parser = CommandParser()
@@ -28,5 +26,3 @@ for command in parsed_commands:
     print(command)
     commandExecutor.execute(command)
     print("----------------------")
-
-    

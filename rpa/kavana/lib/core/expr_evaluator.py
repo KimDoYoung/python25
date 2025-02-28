@@ -98,19 +98,11 @@ class ExprEvaluator:
                 stack.append(token)
 
             elif token.type == TokenType.IDENTIFIER:
-                value = self.var_manager.get_variable(token.value)
-                if value is None:
+                valueToken = self.var_manager.get_variable(token.value)
+                if valueToken is None:
                     raise ValueError(f"Undefined variable: {token.value}")
                 
-                token_type = (
-                    TokenType.INTEGER if isinstance(value, int)
-                    else TokenType.FLOAT if isinstance(value, float)
-                    else TokenType.STRING if isinstance(value, str)
-                    else TokenType.BOOLEAN if isinstance(value, bool)
-                    else TokenType.DATE if isinstance(value, datetime)
-                    else TokenType.NONE
-                )
-                stack.append(Token(value, token_type, line=token.line, column=token.column))
+                stack.append(valueToken)
 
             elif token.type == TokenType.OPERATOR:
                 if token.value == "NOT":

@@ -86,9 +86,9 @@ class CommandExecutor:
 
     def eval_express(self, condition_tokens):
         """IF 및 WHILE 조건 평가"""
-        express = " ".join(condition_tokens)
-        exprEvaluator = ExprEvaluator(express, self.variable_manager)
-        b =  exprEvaluator.evaluate()
+        express = condition_tokens
+        exprEvaluator = ExprEvaluator( self.variable_manager)
+        b =  exprEvaluator.evaluate(express)
         return b
 
     def parse_for_args(self, args):

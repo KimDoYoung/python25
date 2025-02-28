@@ -23,7 +23,7 @@ class SetCommand(BaseCommand):
 
         # 수식 평가
         exprEvaluator = ExprEvaluator(executor.variable_manager)
-        value = exprEvaluator.evaluate(expression)
+        result_token = exprEvaluator.evaluate(expression)
 
         # 변수 저장
-        executor.variable_manager.set_variable(var_name, value, local=local_flag)
+        executor.variable_manager.set_variable(var_name, result_token, local=local_flag)
