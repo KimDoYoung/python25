@@ -1,7 +1,15 @@
 import re
 import operator
+from tkinter import Image
 from typing import List, Union
 from datetime import datetime, timedelta
+from lib.core.datatypes.application import Application
+from lib.core.datatypes.kavana_datatype import Boolean, Date, Float, Integer, KavanaDataType, String
+from lib.core.datatypes.point import Point
+from lib.core.datatypes.rectangle import Rectangle
+from lib.core.datatypes.region import Region
+from lib.core.datatypes.window import Window
+from lib.core.exceptions.kavana_exception import ExprEvaluationError
 from lib.core.token_type import TokenType
 from lib.core.function_executor import FunctionExecutor
 from lib.core.function_parser import FunctionParser
@@ -94,9 +102,10 @@ class ExprEvaluator:
         stack = []
 
         for token in tokens:
-            if token.type in {TokenType.INTEGER, TokenType.FLOAT, TokenType.STRING, TokenType.BOOLEAN, TokenType.NONE, TokenType.DATE}:
-                stack.append(token)
 
+            if isinstance(token.value, KavanaDataType):  # ✅ Kavana 데이터 타입이면 그대로 스택에 추가
+                stack.append(token)
+            
             elif token.type == TokenType.IDENTIFIER:
                 valueToken = self.var_manager.get_variable(token.value)
                 if valueToken is None:
@@ -113,34 +122,44 @@ class ExprEvaluator:
                 else:
                     b = stack.pop()
                     a = stack.pop()
-
-                    if token.value == "%" and (a.type != TokenType.INTEGER or b.type != TokenType.INTEGER):
-                        raise ValueError(f"Unsupported operand types for %: {a.type} and {b.type}")
-
+                    result_type = TokenType.UNKNOWN
+                    if token.value == "%":
+                        if not isinstance(a.value, Integer) or not isinstance(b.value, Integer):
+                            raise ValueError(f"Unsupported operand types for %: {a.type} and {b.type}")
+                        result = Integer(a.value.value % b.value.value)
+                        result_type = TokenType.INTEGER
                     elif a.type == TokenType.DATE and b.type == TokenType.INTEGER:
                         result = a.value + timedelta(days=b.value) if token.value == "+" else a.value - timedelta(days=b.value)
-
+                        result = Date(result)
+                        result_type = TokenType.DATE
                     elif a.type == TokenType.DATE and b.type == TokenType.DATE and token.value == "-":
                         result = (a.value - b.value).days
-
+                        result = Date(result)
+                        result_type = TokenType.DATE
                     elif a.type == TokenType.STRING and b.type == TokenType.STRING and token.value == "+":
-                        result = a.value + b.value
-
+                        result = String(a.value + b.value)
+                        result_type = TokenType.STRING
                     elif (a.type == TokenType.NONE or b.type == TokenType.NONE) and token.value in {"==", "!="}:
                         result = self.OPERATORS[token.value][1](a.value, b.value)
-
+                        result_type = TokenType.BOOLEAN
                     elif a.type in {TokenType.INTEGER, TokenType.FLOAT, TokenType.BOOLEAN} and b.type in {TokenType.INTEGER, TokenType.FLOAT, TokenType.BOOLEAN}:
                         result = self.OPERATORS[token.value][1](a.value, b.value)
-                    else:
-                        raise TypeError(f"Unsupported operand types: {a.type} and {b.type}")
+                        # ✅ 비교 연산자일 경우 결과는 항상 BOOLEAN
+                        if token.value in {"==", "!=", ">", "<", ">=", "<="}:
+                            result_type = TokenType.BOOLEAN
 
-                    result_type = (
-                        TokenType.BOOLEAN if isinstance(result, bool)
-                        else TokenType.INTEGER if isinstance(result, int)
-                        else TokenType.FLOAT if isinstance(result, float)
-                        else TokenType.STRING if isinstance(result, str)
-                        else TokenType.NONE
-                    )
+                        # ✅ 산술 연산자는 결과 타입을 결정해야 함
+                        elif token.value in {"+", "-", "*", "/"}:
+                            if isinstance(a.value, Float) or isinstance(b.value, Float):
+                                result_type = TokenType.FLOAT
+                                result = Float(result)  # ✅ Float으로 변환
+                            else:
+                                result_type = TokenType.INTEGER
+                                result = Integer(result)  # ✅ Integer로 변환
+                        else:
+                            raise ExprEvaluationError(f"Unsupported operator: {token.value}")
+                    else:
+                        raise ExprEvaluationError(f"Unsupported operand types: {a.type} and {b.type}")
 
                     stack.append(Token(result, result_type, line=token.line, column=token.column))
 
@@ -150,14 +169,7 @@ class ExprEvaluator:
                 arg_values = [stack.pop().value for _ in range(func_info["arg_count"])][::-1]
                 function_executor = FunctionExecutor(func_info, global_var_manager=self.var_manager, arg_values=arg_values)
                 result = function_executor.execute()
-
-                result_type = (
-                    TokenType.INTEGER if isinstance(result, int)
-                    else TokenType.STRING if isinstance(result, str)
-                    else TokenType.FLOAT if isinstance(result, float)
-                    else TokenType.BOOLEAN if isinstance(result, bool)
-                    else TokenType.NONE
-                )
+                result_type = self.get_token_type(result)
 
                 stack.append(Token(result, result_type, line=token.line, column=token.column))
 
@@ -229,3 +241,38 @@ class ExprEvaluator:
         except Exception as e:
             raise ValueError(f"Error evaluating expression '{self.expression}': {str(e)}")
 
+    def get_token_type(self, value) -> TokenType:
+        """value 로 해당하는 토큰타입을 반환"""
+        if not isinstance(value, KavanaDataType):
+            raise ValueError(f"Unsupported KavanaDataType: {value}")
+        
+        if value is None:
+            return TokenType.NONE
+        if isinstance(value, Integer):
+            return TokenType.INTEGER
+        if isinstance(value, Float):
+            return TokenType.FLOAT
+        if isinstance(value, Boolean):
+            return TokenType.BOOLEAN
+        if isinstance(value, String):
+            return TokenType.STRING
+        if isinstance(value, Date):
+            return TokenType.DATE
+        #Point, Rectangle, Region, window, Application, Image
+        
+        if isinstance(value, Point):
+            return TokenType.POINT
+        if isinstance(value, Rectangle):
+            return TokenType.RECTANGLE
+        if isinstance(value, Region):
+            return TokenType.REGION
+        if isinstance(value, Window):
+            return TokenType.WINDOW
+        if isinstance(value, Application):
+            return TokenType.APPLICATION
+        if isinstance(value, Image):
+            return TokenType.IMAGE
+        
+
+    
+        raise ValueError(f"Unsupported token type: {value}")

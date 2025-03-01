@@ -38,3 +38,4 @@ class Date(KavanaDataType):
     '''날짜 데이터 타입'''
     def __init__(self, value: datetime):
         self.value = value
+

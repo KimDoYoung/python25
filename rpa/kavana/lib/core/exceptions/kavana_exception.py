@@ -23,3 +23,12 @@ class DataTypeError(Exception):
         self.value = value
         error_value = f" (value: {value})" if value is not None else ""
         super().__init__(f"DataTypeError: {message}{error_value}")
+
+class ExprEvaluationError(Exception):
+    """표현식 평가 오류"""
+    def __init__(self, message, line=None, column=None):
+        self.message = message
+        self.line = line
+        self.column = column
+        error_location = f" at line {line}, column {column}" if line is not None and column is not None else ""
+        super().__init__(f"ExprEvaluationError: {message}{error_location}")

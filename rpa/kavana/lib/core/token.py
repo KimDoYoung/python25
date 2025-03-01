@@ -2,11 +2,12 @@ from dataclasses import dataclass
 from datetime import datetime
 from typing import Optional, Union
 
+from lib.core.datatypes.kavana_datatype import KavanaDataType
 from lib.core.token_type import TokenType
 
 @dataclass
 class Token:
-    value: Union[str, int, float, bool, None, datetime]  # ✅ 다양한 타입 지원
+    value: KavanaDataType
     type: TokenType  # ✅ 토큰 유형
     line: Optional[int] = None  # ✅ 기본값을 None으로 설정
     column: Optional[int] = None  # ✅ 기본값을 None으로 설정
