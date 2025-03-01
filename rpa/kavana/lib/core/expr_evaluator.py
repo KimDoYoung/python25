@@ -48,15 +48,16 @@ class ExprEvaluator:
             token = tokens[i]
 
             # ✅ 함수 처리 (PLUSE(3,4) 형태)
-            func_info = FunctionRegistry.get_function(token.value)
-            if func_info is not None:
-                arg_count = func_info["arg_count"]
-                combined_token, i = FunctionParser._parse_function_call(tokens, start_index=i, func=None, arg_count=arg_count)
-                output.append(combined_token)
-                continue
+            if token.type == TokenType.IDENTIFIER :
+                func_info = FunctionRegistry.get_function(token.value)
+                if func_info is not None:
+                    arg_count = func_info["arg_count"]
+                    combined_token, i = FunctionParser._parse_function_call(tokens, start_index=i, func=None, arg_count=arg_count)
+                    output.append(combined_token)
+                    continue
 
-            # ✅ 숫자, Boolean, None, 문자열 처리 (한 줄로 합침)
-            if token.type in {TokenType.INTEGER, TokenType.FLOAT, TokenType.BOOLEAN, TokenType.NONE, TokenType.STRING}:
+            # ✅ token.type 이 KavanaDataType이면 그대로 출력
+            if isinstance(token.value, KavanaDataType):
                 output.append(token)
                 i += 1
                 continue
@@ -143,7 +144,7 @@ class ExprEvaluator:
                         result = self.OPERATORS[token.value][1](a.value, b.value)
                         result_type = TokenType.BOOLEAN
                     elif a.type in {TokenType.INTEGER, TokenType.FLOAT, TokenType.BOOLEAN} and b.type in {TokenType.INTEGER, TokenType.FLOAT, TokenType.BOOLEAN}:
-                        result = self.OPERATORS[token.value][1](a.value, b.value)
+                        result = self.OPERATORS[token.value][1](a.value.value, b.value.value)
                         # ✅ 비교 연산자일 경우 결과는 항상 BOOLEAN
                         if token.value in {"==", "!=", ">", "<", ">=", "<="}:
                             result_type = TokenType.BOOLEAN
@@ -230,7 +231,7 @@ class ExprEvaluator:
             evaluator = ExprEvaluator(VariableManager())  # ✅ 새로운 평가기 생성
             evaluator.var_manager.variables.update(local_vars)  # ✅ 지역 변수 전달
             return evaluator.evaluate(func_body)
-        raise ValueError(f"Unsupported function body: {func_body}")
+        raise ExprEvaluationError(f"Unsupported function body: {func_body}")
 
 
     def evaluate(self, tokens:List[Token]) :
@@ -239,12 +240,12 @@ class ExprEvaluator:
             postfix_tokens = self.to_postfix(tokens)
             return self.evaluate_postfix(postfix_tokens)
         except Exception as e:
-            raise ValueError(f"Error evaluating expression '{self.expression}': {str(e)}")
+            raise ExprEvaluationError(f"Error evaluating : {str(e)}")
 
     def get_token_type(self, value) -> TokenType:
         """value 로 해당하는 토큰타입을 반환"""
         if not isinstance(value, KavanaDataType):
-            raise ValueError(f"Unsupported KavanaDataType: {value}")
+            raise ExprEvaluationError(f"Unsupported KavanaDataType: {value}")
         
         if value is None:
             return TokenType.NONE
@@ -273,6 +274,4 @@ class ExprEvaluator:
         if isinstance(value, Image):
             return TokenType.IMAGE
         
-
-    
-        raise ValueError(f"Unsupported token type: {value}")
+        raise ExprEvaluationError(f"Unsupported token type: {value}")

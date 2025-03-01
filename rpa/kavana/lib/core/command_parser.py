@@ -3,7 +3,7 @@ import re
 import os
 from typing import List
 from lib.core.command_preprocessor import PreprocessedLine
-from lib.core.datatypes.kavana_datatype import KavanaDataType
+from lib.core.datatypes.kavana_datatype import Boolean, Date, Float, Integer, KavanaDataType, NoneType, String
 from lib.core.exceptions.kavana_exception import DataTypeError
 from lib.core.token import Token
 from lib.core.token_type import TokenType
@@ -163,7 +163,6 @@ class CommandParser:
         elif len(header_tokens) > 2:
             params = header_tokens[2:]
 
-        # func_body = "\n".join(func_def_lines[1:])
         func_body = func_def_lines[1:]
         
         # ✅ FunctionRegistry에 등록
@@ -259,7 +258,6 @@ class CommandParser:
                 parsed_commands.append({"cmd": "SET", "args": [key, "=", value]})
 
     @staticmethod
-    # def tokenize(line: str, line_num: int) -> list:
     def tokenize(ppLine: PreprocessedLine) -> list:
         """한 줄을 `Token` 객체 리스트로 변환"""
 
@@ -272,6 +270,14 @@ class CommandParser:
             (r'\bTrue\b', TokenType.BOOLEAN),
             (r'\bFalse\b', TokenType.BOOLEAN),
             (r'\bNone\b', TokenType.NONE),
+            # ✅ 데이터 타입 키워드
+            (r'(?i)\bDATE\b', TokenType.DATE),
+            (r'(?i)\bPOINT\b', TokenType.POINT),
+            (r'(?i)\bREGION\b', TokenType.REGION),
+            (r'(?i)\bRECTANGLE\b', TokenType.RECTANGLE),
+            (r'(?i)\bIMAGE\b', TokenType.IMAGE),
+            (r'(?i)\bWINDOW\b', TokenType.WINDOW),  
+            (r'(?i)\bAPPLICATION\b', TokenType.APPLICATION),            
             
             (r'(?i)\bGLOBAL\b', TokenType.GLOBAL),
 
@@ -307,14 +313,7 @@ class CommandParser:
             (r'(?i)\bBREAK\b', TokenType.BREAK),
             (r'(?i)\bCONTINUE\b', TokenType.CONTINUE),
 
-            # ✅ 데이터 타입 키워드
-            (r'(?i)\bDATE\b', TokenType.DATE),
-            (r'(?i)\bPOINT\b', TokenType.POINT),
-            (r'(?i)\bREGION\b', TokenType.REGION),
-            (r'(?i)\bRECTANGLE\b', TokenType.RECTANGLE),
-            (r'(?i)\bIMAGE\b', TokenType.IMAGE),
-            (r'(?i)\bWINDOW\b', TokenType.WINDOW),  
-            (r'(?i)\bAPPLICATION\b', TokenType.APPLICATION),
+
             # ✅ 연산자
             (r'\(', TokenType.LEFT_PAREN),
             (r'\)', TokenType.RIGHT_PAREN),
@@ -355,8 +354,8 @@ class CommandParser:
                         value = CommandParser.decode_escaped_string(raw_value)  # ✅ 직접 변환 함수 호출
                     else:
                         value = raw_value
-
-                    tokens.append(Token(value=value, type=token_type, line=line_num, column=column_num))
+                    value_datatype_changed = CommandParser.value_by_kavana_type(value, token_type)
+                    tokens.append(Token(value=value_datatype_changed, type=token_type, line=line_num, column=column_num))
 
                     column_num += len(match.group(0))
                     line = line[len(match.group(0)):]  # ✅ `line`을 올바르게 줄임
@@ -368,9 +367,6 @@ class CommandParser:
                 raise SyntaxError(f"Unknown token at line {line_num}, column {column_num}")
 
         return tokens
-
-    @staticmethod
-    def tokenize0(line: str, line_num: int) -> list:
         """한 줄을 `Token` 객체 리스트로 변환"""
         line = line.strip()
         tokens = []
@@ -460,7 +456,7 @@ class CommandParser:
                         value = CommandParser.decode_escaped_string(raw_value)  # ✅ 직접 변환 함수 호출
                     else:
                         value = raw_value
-                    value_datatype_changed = CommandParser.classify_datatype(value, token_type)
+                    value_datatype_changed = CommandParser.value_by_kavana_type(value, token_type)
                     tokens.append(Token(value=value_datatype_changed, type=token_type, line=line_num, column=column))
 
                     column += len(match.group(0))
@@ -501,28 +497,32 @@ class CommandParser:
 
         return "".join(result)
     
-    def classify_datatype(value: str, token_type: TokenType) -> KavanaDataType:
+    def value_by_kavana_type(value: str, token_type: TokenType) -> KavanaDataType:
         """토큰 값을 해당 TokenType에 맞게 변환 (잘못된 값이면 Custom Exception 발생)"""
         try:
             if token_type == TokenType.INTEGER:
                 if not value.isdigit():
                     raise DataTypeError("Invalid integer format", value)
-                return int(value)
+                return Integer(int(value))
 
             elif token_type == TokenType.FLOAT:
                 if not re.match(r'^-?\d+\.\d+$', value):
                     raise DataTypeError("Invalid float format", value)
-                return float(value)
+                return Float(value)
 
             elif token_type == TokenType.BOOLEAN:
                 if value not in {"True", "False"}:
                     raise DataTypeError("Invalid boolean value, expected 'True' or 'False'", value)
-                return value == "True"
+                return Boolean(value == "True")
 
             elif token_type == TokenType.NONE:
                 if value != "None":
                     raise DataTypeError("Invalid None value, expected 'None'", value)
-                return None
+                return NoneType(None)
+            elif token_type == TokenType.STRING:
+                return String(value)
+            elif token_type == TokenType.DATE:
+                return Date(value)
 
             return value  # 나머지는 그대로 반환 (IDENTIFIER, OPERATOR 등)
 

@@ -1,41 +1,40 @@
-from datetime import datetime
+from dataclasses import dataclass
 from typing import Any
+from datetime import datetime
 
+@dataclass
 class KavanaDataType:
     """Kavana의 모든 데이터 타입의 기본 클래스"""
+    
     def __eq__(self, other: Any) -> bool:
         return isinstance(other, self.__class__) and self.__dict__ == other.__dict__
 
-    def __repr__(self) -> str:
-        return f"{self.__class__.__name__}({self.__dict__})"
-
+@dataclass
 class Integer(KavanaDataType):
-    '''정수형 데이터 타입'''
-    def __init__(self, value: int):
-        self.value = value
+    """정수형 데이터 타입"""
+    value: int
 
+@dataclass
 class Float(KavanaDataType):
-    '''실수형 데이터 타입'''
-    def __init__(self, value: float):
-        self.value = value
+    """실수형 데이터 타입"""
+    value: float
 
+@dataclass
 class Boolean(KavanaDataType):
-    '''boolean 데이터 타입'''
-    def __init__(self, value: bool):
-        self.value = value
+    """논리형 데이터 타입"""
+    value: bool
 
+@dataclass
 class String(KavanaDataType):
-    '''문자열 데이터 타입'''
-    def __init__(self, value: str):
-        self.value = value
+    """문자열 데이터 타입"""
+    value: str
 
+@dataclass
 class NoneType(KavanaDataType):
-    '''None 데이터 타입'''
-    def __init__(self):
-        self.value = None
+    """None 데이터 타입"""
+    value: None = None  # 기본값을 None으로 설정
 
+@dataclass
 class Date(KavanaDataType):
-    '''날짜 데이터 타입'''
-    def __init__(self, value: datetime):
-        self.value = value
-
+    """날짜 데이터 타입"""
+    value: datetime
