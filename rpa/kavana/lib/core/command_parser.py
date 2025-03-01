@@ -3,6 +3,8 @@ import re
 import os
 from typing import List
 from lib.core.command_preprocessor import PreprocessedLine
+from lib.core.datatypes.kavana_datatype import KavanaDataType
+from lib.core.exceptions.kavana_exception import DataTypeError
 from lib.core.token import Token
 from lib.core.token_type import TokenType
 from lib.core.function_registry import FunctionRegistry
@@ -471,20 +473,6 @@ class CommandParser:
                 raise SyntaxError(f"Unknown token at line {line_num}, column {column}")
 
         return tokens
-    
-    @staticmethod
-    def classify_datatype( value: str, token_type: TokenType):
-        ''' ✅ 다양한 데이터 타입을 분류하는 함수 '''
-        if token_type == TokenType.BOOLEAN:
-            return True if value == "True" else False
-        elif token_type == TokenType.NONE:
-            return None
-        elif token_type == TokenType.FLOAT:
-            return float(value)
-        elif token_type == TokenType.INTEGER:
-            return int(value)
-        else:
-            return value
 
     @staticmethod
     def decode_escaped_string(s: str) -> str:
@@ -513,7 +501,7 @@ class CommandParser:
 
         return "".join(result)
     
-    def classify_datatype(value: str, token_type: TokenType) -> Union[str, int, float, bool, None, datetime]:
+    def classify_datatype(value: str, token_type: TokenType) -> KavanaDataType:
         """토큰 값을 해당 TokenType에 맞게 변환 (잘못된 값이면 Custom Exception 발생)"""
         try:
             if token_type == TokenType.INTEGER:
@@ -535,17 +523,6 @@ class CommandParser:
                 if value != "None":
                     raise DataTypeError("Invalid None value, expected 'None'", value)
                 return None
-
-            elif token_type == TokenType.DATE:
-                try:
-                    return datetime.strptime(value, "%Y-%m-%d")
-                except ValueError:
-                    raise DataTypeError("Invalid date format, expected YYYY-MM-DD", value)
-
-            elif token_type == TokenType.STRING:
-                if not (value.startswith('"') and value.endswith('"')):
-                    raise DataTypeError("Invalid string format, expected quoted string", value)
-                return value[1:-1]  # 따옴표 제거
 
             return value  # 나머지는 그대로 반환 (IDENTIFIER, OPERATOR 등)
 
