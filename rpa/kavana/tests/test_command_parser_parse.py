@@ -1,7 +1,7 @@
 import pytest
 from lib.core.command_parser import CommandParser
 from lib.core.token import Token
-from lib.core.datatypes.token_type import TokenType
+from lib.core.token_type import TokenType
 
 @pytest.mark.parametrize("script_lines, expected_commands", [
     # ✅ 1. 단순 변수 할당 테스트

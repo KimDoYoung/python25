@@ -1,9 +1,10 @@
 from dataclasses import dataclass
 import cv2
 import numpy as np
+from lib.core.datatypes.kavana_datatype import KavanaDataType
 
 @dataclass
-class Image:
+class Image(KavanaDataType):
     path: str  # 이미지 파일 경로
     data: np.ndarray = None  # OpenCV 이미지 데이터 (lazy loading)
 

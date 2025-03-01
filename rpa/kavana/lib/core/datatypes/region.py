@@ -1,14 +1,9 @@
-
 from dataclasses import dataclass
-
 from lib.actions.enums import PointName
-
+from lib.core.datatypes.kavana_datatype import KavanaDataType
 from lib.core.datatypes.point import Point
-
-
-
 @dataclass
-class Region:
+class Region(KavanaDataType):
     x: int
     y: int
     width: int

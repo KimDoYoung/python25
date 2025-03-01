@@ -1,9 +1,10 @@
 from dataclasses import dataclass
-import pyautogui
 import pygetwindow as gw
 
+from lib.core.datatypes.kavana_datatype import KavanaDataType
+
 @dataclass
-class Window:
+class Window(KavanaDataType):
     title: str
     hwnd: int = None  # Window handle (자동으로 가져옴)
 

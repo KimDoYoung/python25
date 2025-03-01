@@ -1,6 +1,6 @@
 from typing import List
 from lib.core.commands.base_command import BaseCommand
-from lib.core.datatypes.token_type import TokenType
+from lib.core.token_type import TokenType
 from lib.core.expr_evaluator import ExprEvaluator
 from lib.core.token import Token
 

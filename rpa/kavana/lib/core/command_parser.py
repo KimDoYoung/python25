@@ -4,7 +4,7 @@ import os
 from typing import List
 from lib.core.command_preprocessor import PreprocessedLine
 from lib.core.token import Token
-from lib.core.datatypes.token_type import TokenType
+from lib.core.token_type import TokenType
 from lib.core.function_registry import FunctionRegistry
 
 class CommandParser:
@@ -458,8 +458,8 @@ class CommandParser:
                         value = CommandParser.decode_escaped_string(raw_value)  # ✅ 직접 변환 함수 호출
                     else:
                         value = raw_value
-
-                    tokens.append(Token(value=value, type=token_type, line=line_num, column=column))
+                    value_datatype_changed = CommandParser.classify_datatype(value, token_type)
+                    tokens.append(Token(value=value_datatype_changed, type=token_type, line=line_num, column=column))
 
                     column += len(match.group(0))
                     line = line[len(match.group(0)):]  # ✅ `line`을 올바르게 줄임
@@ -472,6 +472,20 @@ class CommandParser:
 
         return tokens
     
+    @staticmethod
+    def classify_datatype( value: str, token_type: TokenType):
+        ''' ✅ 다양한 데이터 타입을 분류하는 함수 '''
+        if token_type == TokenType.BOOLEAN:
+            return True if value == "True" else False
+        elif token_type == TokenType.NONE:
+            return None
+        elif token_type == TokenType.FLOAT:
+            return float(value)
+        elif token_type == TokenType.INTEGER:
+            return int(value)
+        else:
+            return value
+
     @staticmethod
     def decode_escaped_string(s: str) -> str:
         """✅ 1바이트씩 읽어가면서 이스케이프 문자 변환"""
@@ -497,4 +511,45 @@ class CommandParser:
                 result.append(s[i])
                 i += 1
 
-        return "".join(result)        
+        return "".join(result)
+    
+    def classify_datatype(value: str, token_type: TokenType) -> Union[str, int, float, bool, None, datetime]:
+        """토큰 값을 해당 TokenType에 맞게 변환 (잘못된 값이면 Custom Exception 발생)"""
+        try:
+            if token_type == TokenType.INTEGER:
+                if not value.isdigit():
+                    raise DataTypeError("Invalid integer format", value)
+                return int(value)
+
+            elif token_type == TokenType.FLOAT:
+                if not re.match(r'^-?\d+\.\d+$', value):
+                    raise DataTypeError("Invalid float format", value)
+                return float(value)
+
+            elif token_type == TokenType.BOOLEAN:
+                if value not in {"True", "False"}:
+                    raise DataTypeError("Invalid boolean value, expected 'True' or 'False'", value)
+                return value == "True"
+
+            elif token_type == TokenType.NONE:
+                if value != "None":
+                    raise DataTypeError("Invalid None value, expected 'None'", value)
+                return None
+
+            elif token_type == TokenType.DATE:
+                try:
+                    return datetime.strptime(value, "%Y-%m-%d")
+                except ValueError:
+                    raise DataTypeError("Invalid date format, expected YYYY-MM-DD", value)
+
+            elif token_type == TokenType.STRING:
+                if not (value.startswith('"') and value.endswith('"')):
+                    raise DataTypeError("Invalid string format, expected quoted string", value)
+                return value[1:-1]  # 따옴표 제거
+
+            return value  # 나머지는 그대로 반환 (IDENTIFIER, OPERATOR 등)
+
+        except DataTypeError as e:
+            raise e  # 이미 처리된 예외 그대로 전달
+        except Exception as e:
+            raise DataTypeError(f"Unexpected error in classify_datatype: {str(e)}", value)

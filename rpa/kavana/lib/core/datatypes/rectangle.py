@@ -1,11 +1,12 @@
 from dataclasses import dataclass
 
+from lib.core.datatypes.kavana_datatype import KavanaDataType
 from lib.core.datatypes.point import Point
 from lib.core.datatypes.region import Region
 
 
 @dataclass
-class Rectangle:
+class Rectangle(KavanaDataType):
     p1: Point
     p2: Point
 

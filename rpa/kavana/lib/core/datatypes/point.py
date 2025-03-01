@@ -1,12 +1,12 @@
 from dataclasses import dataclass
-
-# from lib.core.datatypes.region import Region
 from typing import TYPE_CHECKING
+from lib.core.datatypes.kavana_datatype import KavanaDataType
+
 if TYPE_CHECKING:
     from lib.core.datatypes.region import Region  # 순환 참조 방지용
 
 @dataclass
-class Point:
+class Point(KavanaDataType):
     x: int
     y: int
 
@@ -19,13 +19,3 @@ class Point:
         return f"({self.x}, {self.y})"
 
 
-# # 사용 예제
-# p1 = Point(10, 20)
-# print(f"초기 좌표: {p1}")
-
-# p1.move(5, -10)
-# print(f"이동 후 좌표: {p1}")
-
-# region1 = Region(0, 0, 50, 50)
-# print(f"Region 정보: {region1}")
-# print(f"Point {p1}이 Region 내부에 있는가? {region1.contains(p1)}")

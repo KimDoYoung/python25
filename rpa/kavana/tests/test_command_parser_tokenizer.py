@@ -2,7 +2,7 @@ import pytest
 from lib.core.command_parser import CommandParser
 from lib.core.command_preprocessor import CommandPreprocessor
 from lib.core.token import Token
-from lib.core.datatypes.token_type import TokenType
+from lib.core.token_type import TokenType
 
 
 @pytest.mark.parametrize("line, expected_tokens", [

@@ -2,7 +2,7 @@ import re
 import operator
 from typing import List, Union
 from datetime import datetime, timedelta
-from lib.core.datatypes.token_type import TokenType
+from lib.core.token_type import TokenType
 from lib.core.function_executor import FunctionExecutor
 from lib.core.function_parser import FunctionParser
 from lib.core.function_registry import FunctionRegistry
@@ -131,7 +131,6 @@ class ExprEvaluator:
 
                     elif a.type in {TokenType.INTEGER, TokenType.FLOAT, TokenType.BOOLEAN} and b.type in {TokenType.INTEGER, TokenType.FLOAT, TokenType.BOOLEAN}:
                         result = self.OPERATORS[token.value][1](a.value, b.value)
-
                     else:
                         raise TypeError(f"Unsupported operand types: {a.type} and {b.type}")
 
