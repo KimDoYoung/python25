@@ -115,7 +115,7 @@ class CommandExecutor:
         end_value = self.eval_express(end_expr)
         step_value = self.eval_express(step_expr)
 
-        return loop_var.data, start_value.data, end_value.data, step_value.data
+        return loop_var.data.value, start_value.data.value, end_value.data.value, step_value.data.value
 
     def find_index(self, tokens, token_type):
         for i, token in enumerate(tokens):

@@ -9,10 +9,10 @@ class SetCommand(BaseCommand):
         """
         SET <varname> = <expression> [GLOBAL]
         """
-        if len(args) < 3 or args[1].data != "=":
+        if len(args) < 3 or args[1].data.value != "=":
             raise SyntaxError("Invalid SET command format. Expected: SET <varname> = <expression> [GLOBAL]")
 
-        var_name = args[0].data
+        var_name = args[0].data.value
         expression = args[2:]  # 수식 부분
         local_flag = executor.in_function_scope  # ✅ 함수 내부면 자동으로 Local
 

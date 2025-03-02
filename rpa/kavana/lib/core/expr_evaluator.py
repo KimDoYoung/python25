@@ -37,6 +37,20 @@ class ExprEvaluator:
     
     def __init__(self,  var_manager: VariableManager):
         self.var_manager = var_manager
+        self.data_token_type = {
+            TokenType.NONE,
+            TokenType.INTEGER,
+            TokenType.FLOAT,
+            TokenType.STRING,
+            TokenType.BOOLEAN,
+            TokenType.DATE,
+            TokenType.POINT,
+            TokenType.REGION,
+            TokenType.RECTANGLE,
+            TokenType.IMAGE,
+            TokenType.WINDOW,
+            TokenType.APPLICATION
+        }            
 
     def to_postfix(self, tokens: List[Token]) -> List[Token]:
         """토큰 리스트를 후위 표기법(RPN)으로 변환"""
@@ -49,7 +63,7 @@ class ExprEvaluator:
 
             # ✅ 함수 처리 (PLUSE(3,4) 형태)
             if token.type == TokenType.IDENTIFIER :
-                func_info = FunctionRegistry.get_function(token.data)
+                func_info = FunctionRegistry.get_function(token.data.value)
                 if func_info is not None:
                     arg_count = func_info["arg_count"]
                     combined_token, i = FunctionParser._parse_function_call(tokens, start_index=i, func=None, arg_count=arg_count)
@@ -57,7 +71,7 @@ class ExprEvaluator:
                     continue
 
             # ✅ token.type 이 KavanaDataType이면 그대로 출력
-            if isinstance(token.data, KavanaDataType):
+            if token.type in self.data_token_type:
                 output.append(token)
                 i += 1
                 continue
@@ -104,28 +118,21 @@ class ExprEvaluator:
 
         for token in tokens:
 
-            if isinstance(token.data, KavanaDataType):  # ✅ Kavana 데이터 타입이면 그대로 스택에 추가
+            
+            if token.type in self.data_token_type:  # ✅ Kavana 데이터 타입이면 그대로 스택에 추가
                 stack.append(token)
             
             elif token.type == TokenType.IDENTIFIER:
                 valueToken = self.var_manager.get_variable(token.data)
                 if valueToken is None:
-                    raise ValueError(f"Undefined variable: {token.data}")
-                
+                    raise ValueError(f"Undefined variable: {token.data}")                
                 stack.append(valueToken)
-
+            
             elif token.type == TokenType.OPERATOR:
                 if token.data == "NOT":
                     a = stack.pop()
                     result = self.OPERATORS[token.data][1](a.data)
                     stack.append(Token(result, TokenType.BOOLEAN, line=token.line, column=token.column))
-                # elif token.value  == "=":
-                #     b = stack.pop()
-                #     a = stack.pop()
-                #     if a.type != TokenType.IDENTIFIER:
-                #         raise ValueError(f"Invalid assignment target: {a.value}")
-                #     self.var_manager.set_variable(a.value, b)
-                #     stack.append(b)
                 else:
                     b = stack.pop()
                     a = stack.pop()

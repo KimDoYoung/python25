@@ -27,6 +27,6 @@ commandExecutor = CommandExecutor()
 for command in parsed_commands:
     print("----------------------")
     print(command)
-    commandExecutor.execute(command)
+    # commandExecutor.execute(command)
     print("----------------------")
 

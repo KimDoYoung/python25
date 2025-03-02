@@ -39,7 +39,7 @@ class CommandParser:
                 i += 1
                 continue
 
-            cmd = tokens[0].data.upper()  # ✅ 명령어는 대문자로 변환
+            cmd = tokens[0].data.value.upper()  # ✅ 명령어는 대문자로 변환
             args = tokens[1:]  # ✅ 나머지는 `Token` 리스트 그대로 유지
 
             # ✅ 블록 명령어 처리
@@ -524,7 +524,7 @@ class CommandParser:
             elif token_type == TokenType.DATE:
                 return Date(value)
 
-            return value  # 나머지는 그대로 반환 (IDENTIFIER, OPERATOR 등)
+            return String(value)  # 나머지는 String (IDENTIFIER, OPERATOR 등)
 
         except DataTypeError as e:
             raise e  # 이미 처리된 예외 그대로 전달

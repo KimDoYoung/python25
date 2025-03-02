@@ -14,4 +14,4 @@ class Token:
 
     def __repr__(self):
         """디버깅을 위한 문자열 표현"""
-        return f"Token(value={self.data}, type={self.type}, line={self.line}, column={self.column})"
+        return f"Token(data={self.data}, type={self.type}, line={self.line}, column={self.column})"
