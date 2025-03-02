@@ -42,3 +42,12 @@ class CommandExecutionError(Exception):
         error_location = f" at line {line}, column {column}" if line is not None and column is not None else ""
         
         super().__init__(f"CommandExecutionError: {message}{error_location}")
+
+class CommandParserError(Exception):
+    """명령어 파싱 오류"""
+    def __init__(self, message, line=None, column=None):
+        self.message = message
+        self.line = line
+        self.column = column
+        error_location = f" at line {line}, column {column}" if line is not None and column is not None else ""
+        super().__init__(f"CommandParserError: {message}{error_location}")

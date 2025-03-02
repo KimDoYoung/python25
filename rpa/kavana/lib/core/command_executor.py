@@ -3,7 +3,8 @@ from lib.core.commands.function_command import FunctionCommand
 from lib.core.commands.print_command import PrintCommand
 from lib.core.commands.return_command import ReturnCommand
 from lib.core.commands.set_command import SetCommand
-from lib.core.exceptions.kavana_exception import BreakException, ContinueException
+from lib.core.datatypes.kavana_datatype import Integer
+from lib.core.exceptions.kavana_exception import BreakException, CommandExecutionError, ContinueException
 from lib.core.expr_evaluator import ExprEvaluator
 from lib.core.token import Token
 from lib.core.token_type import TokenType
@@ -37,7 +38,7 @@ class CommandExecutor:
         # ✅ WHILE 문 처리
         if cmd == "WHILE_BLOCK":
             condition = command["body"][0]["args"]
-            while self.eval_express(condition):
+            while self.eval_express_primitive(condition):
                 try:
                     for sub_command in command["body"][1:]:
                         self.execute(sub_command)
@@ -53,7 +54,8 @@ class CommandExecutor:
             current_value = start_value
 
             while current_value <= end_value:
-                self.variable_manager.set_variable(loop_var, current_value)
+                loop_var_token = Token(Integer(current_value), TokenType.INTEGER)
+                self.variable_manager.set_variable(loop_var, loop_var_token)
                 try:
                     for sub_command in command["body"][1:]:
                         self.execute(sub_command)
@@ -86,24 +88,30 @@ class CommandExecutor:
         else:
             raise ValueError(f"Unknown command: {cmd}")
 
-    def eval_express(self, express: list[Token]):
+    def eval_express(self, express: list[Token])->Token:
         """IF 및 WHILE 조건 평가"""
         exprEvaluator = ExprEvaluator( self.variable_manager)
-        b =  exprEvaluator.evaluate(express)
-        return b
+        result_token =  exprEvaluator.evaluate(express)
+        return result_token
+    
+    def eval_express_primitive(self, express: list[Token]):
+        """IF 및 WHILE 조건 평가"""
+        exprEvaluator = ExprEvaluator(self.variable_manager)
+        result_token =  exprEvaluator.evaluate(express)
+        return result_token.data.value
 
     def parse_for_args(self, args: list[Token]):
         """FOR 루프에서 초기값, 최대값, STEP을 파싱 (조건식과 수식 지원)"""
         
         to_index = self.find_index(args, TokenType.TO)
         if to_index == -1:
-            raise SyntaxError("FOR 문에는 'TO'가 필요합니다.")
+            raise CommandExecutionError("FOR 문에는 'TO'가 필요합니다.", args[0].line, args[0].column)
         step_index = self.find_index(args, TokenType.STEP)
         if step_index != -1 and step_index < to_index:
-            raise SyntaxError("FOR 문에는 'TO'보다 앞에 'STEP'이 올 수 없습니다.")
+            raise CommandExecutionError("FOR 문에는 'TO'보다 앞에 'STEP'이 올 수 없습니다.", args[0].line, args[0].column)
 
-        if args[1].type != TokenType.OPERATOR or args[1].data != "=":
-            raise SyntaxError("FOR 문의 변수 할당이 잘못되었습니다.")
+        if args[1].type != TokenType.OPERATOR or args[1].data.value != "=":
+            raise CommandExecutionError("FOR 문의 변수 할당이 잘못되었습니다.", args[0].line, args[0].column)
 
         loop_var = args[0]  # 반복 변수명
         start_expr = args[2:to_index]  # 초기값 표현식

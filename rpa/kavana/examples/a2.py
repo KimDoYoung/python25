@@ -7,9 +7,22 @@ from lib.core.command_preprocessor import CommandPreprocessor
 script = """
 MAIN
     SET a = 10
+    // for문
     FOR i = 1 TO a STEP 2
         PRINT "{i}"
     END_FOR
+
+    // if문
+    IF a == 10
+        PRINT "a is 10"
+    END_IF
+    
+    // while문
+    WHILE a > 0
+        PRINT "{a}"
+        SET a = a - 1
+    END_WHILE 
+    
 END_MAIN
 """
 #---------------------------
@@ -27,6 +40,6 @@ commandExecutor = CommandExecutor()
 for command in parsed_commands:
     print("----------------------")
     print(command)
-    # commandExecutor.execute(command)
+    commandExecutor.execute(command)
     print("----------------------")
 

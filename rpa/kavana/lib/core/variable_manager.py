@@ -7,7 +7,6 @@ class VariableManager:
     def set_variable(self, var_name: str, token:Token, local=False):
         """변수 설정 (지역/전역 변수 구분), Token을 저장"""
         var_name = var_name.upper()  # ✅ 대소문자 무시
-        # value = self._convert_value(value)  # ✅ Boolean 및 NULL 변환 적용
 
         if local and self.local_vars_stack:
             self.local_vars_stack[-1][var_name] = token  # 지역 변수 저장

@@ -123,7 +123,7 @@ class ExprEvaluator:
                 stack.append(token)
             
             elif token.type == TokenType.IDENTIFIER:
-                valueToken = self.var_manager.get_variable(token.data)
+                valueToken = self.var_manager.get_variable(token.data.value)
                 if valueToken is None:
                     raise ValueError(f"Undefined variable: {token.data}")                
                 stack.append(valueToken)
@@ -157,13 +157,13 @@ class ExprEvaluator:
                         result = self.OPERATORS[token.data][1](a.data.value, b.data.value)
                         result_type = TokenType.BOOLEAN
                     elif a.type in {TokenType.INTEGER, TokenType.FLOAT, TokenType.BOOLEAN} and b.type in {TokenType.INTEGER, TokenType.FLOAT, TokenType.BOOLEAN}:
-                        result = self.OPERATORS[token.data][1](a.data.value, b.data.value)
+                        result = self.OPERATORS[token.data.value][1](a.data.value, b.data.value)
                         # ✅ 비교 연산자일 경우 결과는 항상 BOOLEAN
-                        if token.data in {"==", "!=", ">", "<", ">=", "<="}:
+                        if token.data.value in {"==", "!=", ">", "<", ">=", "<="}:
                             result_type = TokenType.BOOLEAN
 
                         # ✅ 산술 연산자는 결과 타입을 결정해야 함
-                        elif token.data in {"+", "-", "*", "/"}:
+                        elif token.data.value in {"+", "-", "*", "/"}:
                             if a.type == TokenType.FLOAT or b.type == TokenType.FLOAT:
                                 result_type = TokenType.FLOAT
                                 result = Float(result)  # ✅ Float으로 변환
@@ -247,7 +247,7 @@ class ExprEvaluator:
         raise ExprEvaluationError(f"Unsupported function body: {func_body}")
 
 
-    def evaluate(self, tokens:List[Token]) :
+    def evaluate(self, tokens:List[Token]) -> Token:
         """수식을 계산하여 결과 반환 (예외 처리 강화)"""
         try:
             postfix_tokens = self.to_postfix(tokens)

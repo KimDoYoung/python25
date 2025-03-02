@@ -4,7 +4,7 @@ import os
 from typing import List
 from lib.core.command_preprocessor import PreprocessedLine
 from lib.core.datatypes.kavana_datatype import Boolean, Date, Float, Integer, KavanaDataType, NoneType, String
-from lib.core.exceptions.kavana_exception import DataTypeError
+from lib.core.exceptions.kavana_exception import CommandParserError, DataTypeError
 from lib.core.token import Token
 from lib.core.token_type import TokenType
 from lib.core.function_registry import FunctionRegistry
@@ -119,7 +119,7 @@ class CommandParser:
                 i += 1
                 continue
 
-            cmd = tokens[0].data.upper()
+            cmd = tokens[0].data.value.upper()
             args = tokens[1:]
 
             # ✅ 중첩된 블록 처리 (IF, WHILE, FOR)
@@ -321,6 +321,14 @@ class CommandParser:
             (r'\]', TokenType.RIGHT_BRACKET),
             (r',', TokenType.COMMA),
 
+            # ✅ OPERATOR
+            # ✅ 2글자 연산자를 먼저 매칭해야 함 (순서 중요!)
+            # (r'==|!=|>=|<=|>|<', TokenType.OPERATOR),  # ✅ 비교연산자
+            # (r'[+\-*/=%]', TokenType.OPERATOR),
+
+            # ✅ 연산자 (두 글자 연산자 먼저 매칭)
+            (r'==|!=|>=|<=|[+\-*/=%<>]', TokenType.OPERATOR),
+
             # ✅ 일반 식별자  
             (r'[a-zA-Z_\$][a-zA-Z0-9_]*', TokenType.IDENTIFIER),
 
@@ -328,8 +336,7 @@ class CommandParser:
             (r'\b\d+\.\d+|\.\d+|\d+\.\b', TokenType.FLOAT),  # 🔥 소수점만 있는 경우도 포함
             (r'\b\d+\b', TokenType.INTEGER),         # 정수 (예: 10, 42, 1000)
 
-            # ✅ OPERATOR
-            (r'[+\-*/=%]', TokenType.OPERATOR),
+
 
             # ✅ 모든 유니코드 문자 포함          
             (r'"((?:\\.|[^"\\])*)"', TokenType.STRING),  # ✅ 문자열 정규식 수정
@@ -364,7 +371,7 @@ class CommandParser:
                     break
 
             if not matched and line:  # ✅ 더 이상 처리할 수 없는 문자가 있으면 예외 발생
-                raise SyntaxError(f"Unknown token at line {line_num}, column {column_num}")
+                CommandParserError(f"Unknown token at line {line_num}, column {column_num} : {line}")
 
         return tokens
         """한 줄을 `Token` 객체 리스트로 변환"""
