@@ -39,7 +39,7 @@ class CommandParser:
                 i += 1
                 continue
 
-            cmd = tokens[0].value.upper()  # ✅ 명령어는 대문자로 변환
+            cmd = tokens[0].data.upper()  # ✅ 명령어는 대문자로 변환
             args = tokens[1:]  # ✅ 나머지는 `Token` 리스트 그대로 유지
 
             # ✅ 블록 명령어 처리
@@ -59,7 +59,7 @@ class CommandParser:
             if cmd == "INCLUDE":
                 if not args:
                     raise SyntaxError("INCLUDE 문에 파일 경로가 필요합니다.")
-                include_path = args[0].value.strip('"')  # ✅ Token 객체에서 값 추출
+                include_path = args[0].data.strip('"')  # ✅ Token 객체에서 값 추출
                 self._process_include(include_path, parsed_commands)
                 i += 1
                 continue
@@ -119,7 +119,7 @@ class CommandParser:
                 i += 1
                 continue
 
-            cmd = tokens[0].value.upper()
+            cmd = tokens[0].data.upper()
             args = tokens[1:]
 
             # ✅ 중첩된 블록 처리 (IF, WHILE, FOR)
@@ -355,7 +355,7 @@ class CommandParser:
                     else:
                         value = raw_value
                     value_datatype_changed = CommandParser.value_by_kavana_type(value, token_type)
-                    tokens.append(Token(value=value_datatype_changed, type=token_type, line=line_num, column=column_num))
+                    tokens.append(Token(data=value_datatype_changed, type=token_type, line=line_num, column=column_num))
 
                     column_num += len(match.group(0))
                     line = line[len(match.group(0)):]  # ✅ `line`을 올바르게 줄임
@@ -457,7 +457,7 @@ class CommandParser:
                     else:
                         value = raw_value
                     value_datatype_changed = CommandParser.value_by_kavana_type(value, token_type)
-                    tokens.append(Token(value=value_datatype_changed, type=token_type, line=line_num, column=column))
+                    tokens.append(Token(data=value_datatype_changed, type=token_type, line=line_num, column=column))
 
                     column += len(match.group(0))
                     line = line[len(match.group(0)):]  # ✅ `line`을 올바르게 줄임

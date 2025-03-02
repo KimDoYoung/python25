@@ -32,3 +32,13 @@ class ExprEvaluationError(Exception):
         self.column = column
         error_location = f" at line {line}, column {column}" if line is not None and column is not None else ""
         super().__init__(f"ExprEvaluationError: {message}{error_location}")
+
+class CommandExecutionError(Exception):
+    """명령어 실행 오류"""
+    def __init__(self, message, line=None, column=None):
+        self.message = message
+        self.line = line
+        self.column = column
+        error_location = f" at line {line}, column {column}" if line is not None and column is not None else ""
+        
+        super().__init__(f"CommandExecutionError: {message}{error_location}")

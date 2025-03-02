@@ -11,7 +11,7 @@ class PrintCommand(BaseCommand):
             raise SyntaxError("PRINT command requires at least one argument.")
 
         # ✅ 여러 인자를 공백으로 결합하여 문자열 생성
-        output = " ".join(token.value.value for token in args)
+        output = " ".join(token.data.value for token in args)
 
         # ✅ `{}` 내부 표현을 평가하는 함수
         def evaluate_match(match):
@@ -24,7 +24,7 @@ class PrintCommand(BaseCommand):
             
             # ✅ 평가 후 문자열 반환
             result_token = evaluator.evaluate(tokens)
-            return str(result_token.value.value)
+            return str(result_token.data.value)
 
         # ✅ `{}` 패턴을 찾아 `ExprEvaluator`를 사용하여 해석
         output = re.sub(r"\{(.*?)\}", evaluate_match, output)

@@ -2,6 +2,7 @@ from lib.core.command_executor import CommandExecutor
 from lib.core.command_parser import CommandParser
 from lib.core.command_preprocessor import CommandPreprocessor
 
+# 대입
 script = """
 MAIN
     SET i = (10 + 20) * 30

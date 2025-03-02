@@ -49,7 +49,7 @@ class ExprEvaluator:
 
             # ✅ 함수 처리 (PLUSE(3,4) 형태)
             if token.type == TokenType.IDENTIFIER :
-                func_info = FunctionRegistry.get_function(token.value)
+                func_info = FunctionRegistry.get_function(token.data)
                 if func_info is not None:
                     arg_count = func_info["arg_count"]
                     combined_token, i = FunctionParser._parse_function_call(tokens, start_index=i, func=None, arg_count=arg_count)
@@ -57,20 +57,20 @@ class ExprEvaluator:
                     continue
 
             # ✅ token.type 이 KavanaDataType이면 그대로 출력
-            if isinstance(token.value, KavanaDataType):
+            if isinstance(token.data, KavanaDataType):
                 output.append(token)
                 i += 1
                 continue
 
             # ✅ 연산자 처리
             if token.type == TokenType.OPERATOR:
-                if token.value == "NOT":
+                if token.data == "NOT":
                     # NOT은 오른쪽 결합, 우선순위가 더 높은 연산자만 pop
-                    while stack and stack[-1].type == TokenType.OPERATOR and self.OPERATORS[token.value][0] < self.OPERATORS[stack[-1].value][0]:
+                    while stack and stack[-1].type == TokenType.OPERATOR and self.OPERATORS[token.data][0] < self.OPERATORS[stack[-1].data][0]:
                         output.append(stack.pop())
                 else:
                     # 일반 이항 연산자는 왼쪽 결합, 우선순위가 같거나 높은 연산자 pop
-                    while stack and stack[-1].type == TokenType.OPERATOR and self.OPERATORS[token.value][0] <= self.OPERATORS[stack[-1].value][0]:
+                    while stack and stack[-1].type == TokenType.OPERATOR and self.OPERATORS[token.data][0] <= self.OPERATORS[stack[-1].data][0]:
                         output.append(stack.pop())
                 stack.append(token)
                 i += 1
@@ -104,70 +104,76 @@ class ExprEvaluator:
 
         for token in tokens:
 
-            if isinstance(token.value, KavanaDataType):  # ✅ Kavana 데이터 타입이면 그대로 스택에 추가
+            if isinstance(token.data, KavanaDataType):  # ✅ Kavana 데이터 타입이면 그대로 스택에 추가
                 stack.append(token)
             
             elif token.type == TokenType.IDENTIFIER:
-                valueToken = self.var_manager.get_variable(token.value)
+                valueToken = self.var_manager.get_variable(token.data)
                 if valueToken is None:
-                    raise ValueError(f"Undefined variable: {token.value}")
+                    raise ValueError(f"Undefined variable: {token.data}")
                 
                 stack.append(valueToken)
 
             elif token.type == TokenType.OPERATOR:
-                if token.value == "NOT":
+                if token.data == "NOT":
                     a = stack.pop()
-                    result = self.OPERATORS[token.value][1](a.value)
+                    result = self.OPERATORS[token.data][1](a.data)
                     stack.append(Token(result, TokenType.BOOLEAN, line=token.line, column=token.column))
-
+                # elif token.value  == "=":
+                #     b = stack.pop()
+                #     a = stack.pop()
+                #     if a.type != TokenType.IDENTIFIER:
+                #         raise ValueError(f"Invalid assignment target: {a.value}")
+                #     self.var_manager.set_variable(a.value, b)
+                #     stack.append(b)
                 else:
                     b = stack.pop()
                     a = stack.pop()
                     result_type = TokenType.UNKNOWN
-                    if token.value == "%":
-                        if not isinstance(a.value, Integer) or not isinstance(b.value, Integer):
-                            raise ValueError(f"Unsupported operand types for %: {a.type} and {b.type}")
-                        result = Integer(a.value.value % b.value.value)
+                    if token.data == "%":
+                        if not a.type == TokenType.INTEGER or not b.type == TokenType.INTEGER:
+                            raise ExprEvaluationError(f"Unsupported operand types for %: {a.type} and {b.type}")
+                        result = Integer(a.data.value % b.data.value)
                         result_type = TokenType.INTEGER
                     elif a.type == TokenType.DATE and b.type == TokenType.INTEGER:
-                        result = a.value + timedelta(days=b.value) if token.value == "+" else a.value - timedelta(days=b.value)
+                        result = a.data.value + timedelta(days=b.data.value) if token.data == "+" else a.data.value - timedelta(days=b.data.value)
                         result = Date(result)
                         result_type = TokenType.DATE
-                    elif a.type == TokenType.DATE and b.type == TokenType.DATE and token.value == "-":
-                        result = (a.value - b.value).days
+                    elif a.type == TokenType.DATE and b.type == TokenType.DATE and token.data == "-":
+                        result = (a.data.value - b.data.value).days
                         result = Date(result)
                         result_type = TokenType.DATE
-                    elif a.type == TokenType.STRING and b.type == TokenType.STRING and token.value == "+":
-                        result = String(a.value + b.value)
+                    elif a.type == TokenType.STRING and b.type == TokenType.STRING and token.data == "+":
+                        result = String(a.data.value + b.data.value)
                         result_type = TokenType.STRING
-                    elif (a.type == TokenType.NONE or b.type == TokenType.NONE) and token.value in {"==", "!="}:
-                        result = self.OPERATORS[token.value][1](a.value, b.value)
+                    elif (a.type == TokenType.NONE or b.type == TokenType.NONE) and token.data in {"==", "!="}:
+                        result = self.OPERATORS[token.data][1](a.data.value, b.data.value)
                         result_type = TokenType.BOOLEAN
                     elif a.type in {TokenType.INTEGER, TokenType.FLOAT, TokenType.BOOLEAN} and b.type in {TokenType.INTEGER, TokenType.FLOAT, TokenType.BOOLEAN}:
-                        result = self.OPERATORS[token.value][1](a.value.value, b.value.value)
+                        result = self.OPERATORS[token.data][1](a.data.value, b.data.value)
                         # ✅ 비교 연산자일 경우 결과는 항상 BOOLEAN
-                        if token.value in {"==", "!=", ">", "<", ">=", "<="}:
+                        if token.data in {"==", "!=", ">", "<", ">=", "<="}:
                             result_type = TokenType.BOOLEAN
 
                         # ✅ 산술 연산자는 결과 타입을 결정해야 함
-                        elif token.value in {"+", "-", "*", "/"}:
-                            if isinstance(a.value, Float) or isinstance(b.value, Float):
+                        elif token.data in {"+", "-", "*", "/"}:
+                            if a.type == TokenType.FLOAT or b.type == TokenType.FLOAT:
                                 result_type = TokenType.FLOAT
                                 result = Float(result)  # ✅ Float으로 변환
                             else:
                                 result_type = TokenType.INTEGER
                                 result = Integer(result)  # ✅ Integer로 변환
                         else:
-                            raise ExprEvaluationError(f"Unsupported operator: {token.value}")
+                            raise ExprEvaluationError(f"Unsupported operator: {token.data}")
                     else:
                         raise ExprEvaluationError(f"Unsupported operand types: {a.type} and {b.type}")
 
                     stack.append(Token(result, result_type, line=token.line, column=token.column))
 
-            elif self.is_function(token.value):
-                func_info = FunctionRegistry.get_function(token.value)
-                func_tokens = self.split_function_token(token.value)
-                arg_values = [stack.pop().value for _ in range(func_info["arg_count"])][::-1]
+            elif self.is_function(token):
+                func_info = FunctionRegistry.get_function(token.data.value)
+                func_tokens = self.split_function_token(token.data)
+                arg_values = [stack.pop().data.value for _ in range(func_info["arg_count"])][::-1]
                 function_executor = FunctionExecutor(func_info, global_var_manager=self.var_manager, arg_values=arg_values)
                 result = function_executor.execute()
                 result_type = self.get_token_type(result)
@@ -215,9 +221,9 @@ class ExprEvaluator:
 
         return [func_name] + args
 
-    def isFunction(self, token: Token) -> bool:
+    def is_function(self, token: Token) -> bool:
         """토큰이 함수인지 확인 PLUS(3,4)"""
-        func_name = token.value.upper()
+        func_name = token.data.value.upper()
         func_info = FunctionRegistry.get_function(func_name)
         return func_info != None
 
