@@ -1,5 +1,6 @@
 from lib.core.command_executor import CommandExecutor
 from lib.core.command_parser import CommandParser
+from lib.core.command_preprocessor import CommandPreprocessor
 
 
 script = """
@@ -26,7 +27,8 @@ main
 end_main
 """
 script_lines = script.split("\n")
-parser = CommandParser(script_lines)
+ppLines = CommandPreprocessor(script_lines).preprocess()
+parser = CommandParser(ppLines)
 parsed_commands = parser.parse()
 
 for command in parsed_commands:
