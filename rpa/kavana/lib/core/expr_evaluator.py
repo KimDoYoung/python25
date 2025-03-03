@@ -80,11 +80,11 @@ class ExprEvaluator:
             if token.type == TokenType.OPERATOR:
                 if token.data == "NOT":
                     # NOT은 오른쪽 결합, 우선순위가 더 높은 연산자만 pop
-                    while stack and stack[-1].type == TokenType.OPERATOR and self.OPERATORS[token.data][0] < self.OPERATORS[stack[-1].data][0]:
+                    while stack and stack[-1].type == TokenType.OPERATOR and self.OPERATORS[token.data.value][0] < self.OPERATORS[stack[-1].data.value][0]:
                         output.append(stack.pop())
                 else:
                     # 일반 이항 연산자는 왼쪽 결합, 우선순위가 같거나 높은 연산자 pop
-                    while stack and stack[-1].type == TokenType.OPERATOR and self.OPERATORS[token.data][0] <= self.OPERATORS[stack[-1].data][0]:
+                    while stack and stack[-1].type == TokenType.OPERATOR and self.OPERATORS[token.data.value][0] <= self.OPERATORS[stack[-1].data.value][0]:
                         output.append(stack.pop())
                 stack.append(token)
                 i += 1
@@ -160,16 +160,17 @@ class ExprEvaluator:
                         result = self.OPERATORS[token.data.value][1](a.data.value, b.data.value)
                         # ✅ 비교 연산자일 경우 결과는 항상 BOOLEAN
                         if token.data.value in {"==", "!=", ">", "<", ">=", "<="}:
+                            result = Boolean(result)
                             result_type = TokenType.BOOLEAN
 
                         # ✅ 산술 연산자는 결과 타입을 결정해야 함
                         elif token.data.value in {"+", "-", "*", "/"}:
                             if a.type == TokenType.FLOAT or b.type == TokenType.FLOAT:
-                                result_type = TokenType.FLOAT
                                 result = Float(result)  # ✅ Float으로 변환
+                                result_type = TokenType.FLOAT
                             else:
-                                result_type = TokenType.INTEGER
                                 result = Integer(result)  # ✅ Integer로 변환
+                                result_type = TokenType.INTEGER
                         else:
                             raise ExprEvaluationError(f"Unsupported operator: {token.data}")
                     else:
@@ -177,10 +178,12 @@ class ExprEvaluator:
 
                     stack.append(Token(result, result_type, line=token.line, column=token.column))
 
-            elif self.is_function(token):
-                func_info = FunctionRegistry.get_function(token.data.value)
-                func_tokens = self.split_function_token(token.data)
-                arg_values = [stack.pop().data.value for _ in range(func_info["arg_count"])][::-1]
+            elif token.type == TokenType.FUNCTION:
+                func_desc = token.data.value # PLUS(1,2)
+                func_name = func_desc[:func_desc.index("(")] # PLUS
+                func_info = FunctionRegistry.get_function(func_name)
+                func_tokens = self.split_function_token(token.data.value)
+                arg_values = func_tokens[1:]
                 function_executor = FunctionExecutor(func_info, global_var_manager=self.var_manager, arg_values=arg_values)
                 result = function_executor.execute()
                 result_type = self.get_token_type(result)
@@ -189,7 +192,10 @@ class ExprEvaluator:
 
         return stack[0]
 
-
+    def get_function_name(self, function_token:str) -> str:
+        """function_token PLUS(3,4) -> PLUS 함수명만 추출"""
+        return function_token[:function_token.index("(")]
+    
     def split_function_token(self, function_token:str) -> List[str]:
         """function_token PLUS(3,4) -> PLUS,3,4 함수명과 인자로 분리"""
         if "(" not in function_token or not function_token.endswith(")"):

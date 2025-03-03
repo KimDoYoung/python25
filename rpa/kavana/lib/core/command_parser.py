@@ -145,8 +145,8 @@ class CommandParser:
             func_def_lines.append(ppLines[i])
             i += 1
 
-        if i >= len(ppLines) or ppLines[i].strip().upper() != "END_FUNCTION":
-            raise SyntaxError("함수 정의에서 END_FUNCTION이 누락되었습니다.")
+        if i >= len(ppLines) or ppLines[i].text.strip().upper() != "END_FUNCTION":
+            raise CommandParserError("함수 정의에서 END_FUNCTION이 누락되었습니다.", start_line, 0)
         i += 1  # ✅ END_FUNCTION 스킵
 
         # ✅ 함수 헤더 파싱
@@ -154,11 +154,12 @@ class CommandParser:
         if len(header_tokens) < 2:
             raise SyntaxError("함수 정의 헤더가 올바르지 않습니다.")
 
-        func_name = header_tokens[1]
+        func_name = header_tokens[1].data.value
         params = []
         
-        if len(header_tokens) > 2 and header_tokens[2] == "(":
-            param_str = " ".join(header_tokens[3:]).rstrip(")")
+        if len(header_tokens) > 2 and header_tokens[2].data.value == "(":
+            # index 2부터 header_tokens의 끝까지를 가져와서 ")"를 제거 function plus a b 
+            param_str = " ".join([t.data.value for t in header_tokens[3:]]).rstrip(")")
             params = [p.strip() for p in param_str.split(",")]
         elif len(header_tokens) > 2:
             params = header_tokens[2:]
