@@ -66,7 +66,8 @@ class ExprEvaluator:
                 func_info = FunctionRegistry.get_function(token.data.value)
                 if func_info is not None:
                     arg_count = func_info["arg_count"]
-                    combined_token, i = FunctionParser._func_tokens_to_string(tokens, start_index=i, func=None, arg_count=arg_count)
+                    # combined_token, i = FunctionParser._func_tokens_to_string(tokens, start_index=i, func=None, arg_count=arg_count)
+                    combined_token, i = FunctionParser.make_function_token(tokens, start_index=i)
                     output.append(combined_token)
                     continue
 
@@ -179,22 +180,22 @@ class ExprEvaluator:
                     stack.append(Token(result, result_type, line=token.line, column=token.column))
 
             elif token.type == TokenType.FUNCTION:
-                func_desc = token.data.value # PLUS(1,2)
-                func_name = func_desc[:func_desc.index("(")] # PLUS
+                func_name = token.function_name.upper()
                 func_info = FunctionRegistry.get_function(func_name)
-                func_tokens = self.split_function_token(token.data.value)
-                arg_values = func_tokens[1:]
+                # 인자의 값을 구한다.
+                arg_values = []
+                for arg_tokens in token.arguments:  # ✅ 각 인자는 List[Token] 형태
+                    evaluator = ExprEvaluator(self.var_manager)
+                    result_token = evaluator.evaluate(arg_tokens)  # ✅ 표현식을 평가
+                    arg_values.append(result_token)  # ✅ 평가 결과 저장
+                # 함수 수행
                 function_executor = FunctionExecutor(func_info, global_var_manager=self.var_manager, arg_values=arg_values)
                 result_token = function_executor.execute()
-
+                # 결과 토큰 저장
                 stack.append(result_token)
 
         return stack[0]
 
-    def get_function_name(self, function_token:str) -> str:
-        """function_token PLUS(3,4) -> PLUS 함수명만 추출"""
-        return function_token[:function_token.index("(")]
-    
     def split_function_token(self, function_token:str) -> List[str]:
         """function_token PLUS(3,4) -> PLUS,3,4 함수명과 인자로 분리"""
         if "(" not in function_token or not function_token.endswith(")"):

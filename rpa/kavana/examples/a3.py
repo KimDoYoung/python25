@@ -10,7 +10,7 @@ MAIN
         set c = 2+3+(4*5)
         return a + b + c - 10
     END_FUNCTION
-    SET d = plus(1, 2)
+    SET d = plus(1, 2) + 12
     print "{d}"
 END_MAIN
 """
