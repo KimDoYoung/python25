@@ -70,15 +70,9 @@ class ExprEvaluator:
                     output.append(combined_token)
                     continue
 
-            # ✅ token.type 이 KavanaDataType이면 그대로 출력
-            if token.type in self.data_token_type:
-                output.append(token)
-                i += 1
-                continue
-
             # ✅ 연산자 처리
-            if token.type == TokenType.OPERATOR:
-                if token.data == "NOT":
+            if token.type == TokenType.OPERATOR or token.type == TokenType.LOGICAL_OPERATOR:
+                if token.data.value.upper() == "NOT":
                     # NOT은 오른쪽 결합, 우선순위가 더 높은 연산자만 pop
                     while stack and stack[-1].type == TokenType.OPERATOR and self.OPERATORS[token.data.value][0] < self.OPERATORS[stack[-1].data.value][0]:
                         output.append(stack.pop())
@@ -87,6 +81,12 @@ class ExprEvaluator:
                     while stack and stack[-1].type == TokenType.OPERATOR and self.OPERATORS[token.data.value][0] <= self.OPERATORS[stack[-1].data.value][0]:
                         output.append(stack.pop())
                 stack.append(token)
+                i += 1
+                continue
+
+            # ✅ token.type 이 KavanaDataType이면 그대로 출력
+            if token.type in self.data_token_type:
+                output.append(token)
                 i += 1
                 continue
 
@@ -118,7 +118,6 @@ class ExprEvaluator:
 
         for token in tokens:
 
-            
             if token.type in self.data_token_type:  # ✅ Kavana 데이터 타입이면 그대로 스택에 추가
                 stack.append(token)
             
@@ -128,11 +127,12 @@ class ExprEvaluator:
                     raise ExprEvaluationError(f"Undefined variable: {token.data}", token.line, token.column)                
                 stack.append(valueToken)
             
-            elif token.type == TokenType.OPERATOR:
-                if token.data.value == "NOT":
+            elif token.type == TokenType.OPERATOR or token.type == TokenType.LOGICAL_OPERATOR:
+                if token.data.value.upper() == "NOT":
                     a = stack.pop()
-                    result = self.OPERATORS[token.data][1](a.data)
-                    stack.append(Token(result, TokenType.BOOLEAN, line=token.line, column=token.column))
+                    logical_op = token.data.value.upper()
+                    result = self.OPERATORS[logical_op][1](a.data.value)
+                    stack.append(Token(Boolean(result), TokenType.BOOLEAN, line=token.line, column=token.column))
                 else:
                     b = stack.pop()
                     a = stack.pop()

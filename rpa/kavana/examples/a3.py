@@ -3,7 +3,7 @@ from lib.core.command_parser import CommandParser
 from lib.core.command_preprocessor import CommandPreprocessor
 
 
-# 제어문
+# 사용자 함수처리
 script = """
 MAIN
     function plus(a, b)

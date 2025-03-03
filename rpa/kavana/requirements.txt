@@ -11,3 +11,4 @@ xlrd
 openpyxl
 Pillow
 pywinauto
+pytest-asyncio
