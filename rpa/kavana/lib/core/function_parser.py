@@ -16,7 +16,7 @@ class FunctionParser:
                 # ✅ 함수 호출 감지
                 func = None
                 arg_count = func_info["arg_count"]
-                combined_token, new_index = FunctionParser._parse_function_call(tokens, i, func, arg_count)
+                combined_token, new_index = FunctionParser._func_tokens_to_string(tokens, i, func, arg_count)
                 stack.append(combined_token)
                 i = new_index  # ✅ 함수 호출 후 다음 토큰 위치로 이동
             else:
@@ -26,8 +26,8 @@ class FunctionParser:
         return stack
 
     @staticmethod
-    def _parse_function_call(tokens, start_index, func, arg_count):
-        """함수 호출을 파싱하여 하나의 토큰으로 합침"""
+    def _func_tokens_to_string(tokens, start_index, func, arg_count):
+        """함수 호출을 파싱하여 하나의 토큰으로 합침 tokens plus,(,1,2,) -> plus(1,2)"""
         func_name = tokens[start_index].data.value.upper()
         i = start_index + 1
         args = []
@@ -46,7 +46,7 @@ class FunctionParser:
                     if func_info:
                         # ✅ 중첩된 함수 호출 처리
                         nested_arg_count = func_info["arg_count"]
-                        nested_token, i = FunctionParser._parse_function_call(tokens, i - 1, None, nested_arg_count)
+                        nested_token, i = FunctionParser._func_tokens_to_string(tokens, i - 1, None, nested_arg_count)
                         args.append(nested_token)
                         i -= 1
                         # current_arg의 마지막을 삭제
@@ -82,7 +82,7 @@ class FunctionParser:
                 if func_info:
                     # ✅ 중첩된 함수 호출 처리
                     nested_arg_count = func_info["arg_count"]
-                    nested_token, i = FunctionParser._parse_function_call(tokens, i, None, nested_arg_count)
+                    nested_token, i = FunctionParser._func_tokens_to_string(tokens, i, None, nested_arg_count)
                     args.append(nested_token)
                 else:
                     args.append(tokens[i].data.value)

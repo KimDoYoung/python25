@@ -8,7 +8,8 @@ MAIN
     SET i = (10 + 20) * 30
     SET f = 12.34
     SET s = "Hello"
-    PRINT "{i} {f} {s}"
+    SET b = not True
+    PRINT "{i} {f} {s} {b}"
 END_MAIN
 """
 #---------------------------

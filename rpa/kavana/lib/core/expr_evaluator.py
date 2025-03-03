@@ -66,7 +66,7 @@ class ExprEvaluator:
                 func_info = FunctionRegistry.get_function(token.data.value)
                 if func_info is not None:
                     arg_count = func_info["arg_count"]
-                    combined_token, i = FunctionParser._parse_function_call(tokens, start_index=i, func=None, arg_count=arg_count)
+                    combined_token, i = FunctionParser._func_tokens_to_string(tokens, start_index=i, func=None, arg_count=arg_count)
                     output.append(combined_token)
                     continue
 
@@ -125,11 +125,11 @@ class ExprEvaluator:
             elif token.type == TokenType.IDENTIFIER:
                 valueToken = self.var_manager.get_variable(token.data.value)
                 if valueToken is None:
-                    raise ValueError(f"Undefined variable: {token.data}")                
+                    raise ExprEvaluationError(f"Undefined variable: {token.data}", token.line, token.column)                
                 stack.append(valueToken)
             
             elif token.type == TokenType.OPERATOR:
-                if token.data == "NOT":
+                if token.data.value == "NOT":
                     a = stack.pop()
                     result = self.OPERATORS[token.data][1](a.data)
                     stack.append(Token(result, TokenType.BOOLEAN, line=token.line, column=token.column))
@@ -137,7 +137,7 @@ class ExprEvaluator:
                     b = stack.pop()
                     a = stack.pop()
                     result_type = TokenType.UNKNOWN
-                    if token.data == "%":
+                    if token.data.value == "%":
                         if not a.type == TokenType.INTEGER or not b.type == TokenType.INTEGER:
                             raise ExprEvaluationError(f"Unsupported operand types for %: {a.type} and {b.type}")
                         result = Integer(a.data.value % b.data.value)
@@ -172,7 +172,7 @@ class ExprEvaluator:
                                 result = Integer(result)  # ✅ Integer로 변환
                                 result_type = TokenType.INTEGER
                         else:
-                            raise ExprEvaluationError(f"Unsupported operator: {token.data}")
+                            raise ExprEvaluationError(f"Unsupported operator: {token.data.value}")
                     else:
                         raise ExprEvaluationError(f"Unsupported operand types: {a.type} and {b.type}")
 
@@ -185,10 +185,9 @@ class ExprEvaluator:
                 func_tokens = self.split_function_token(token.data.value)
                 arg_values = func_tokens[1:]
                 function_executor = FunctionExecutor(func_info, global_var_manager=self.var_manager, arg_values=arg_values)
-                result = function_executor.execute()
-                result_type = self.get_token_type(result)
+                result_token = function_executor.execute()
 
-                stack.append(Token(result, result_type, line=token.line, column=token.column))
+                stack.append(result_token)
 
         return stack[0]
 
