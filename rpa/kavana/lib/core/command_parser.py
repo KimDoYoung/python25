@@ -137,7 +137,7 @@ class CommandParser:
         raise SyntaxError(f"{end_keyword}가 없습니다.")  # ✅ 종료 키워드가 없으면 오류 발생
 
     def parse_function(self, ppLines:List[PreprocessedLine], start_line):
-        """FUNCTION 블록을 파싱하는 함수"""
+        """FUNCTION 블록을 파싱하여  header를 제외하고 FunctionRegistry에 저장"""
         func_def_lines = [ppLines[start_line]]
         i = start_line + 1
 
@@ -164,42 +164,14 @@ class CommandParser:
         elif len(header_tokens) > 2:
             params = header_tokens[2:]
 
-        func_body = func_def_lines[1:]
-        
-        # ✅ FunctionRegistry에 등록
-        FunctionRegistry.register_function(func_name, params, func_body)
-        return i  # ✅ 함수 정의 후 새로운 인덱스 반환
+        # ✅ `CommandParser`를 사용하여 함수 본문을 미리 파싱하여 저장
+        parser = CommandParser()
+        parser.ignore_main_check = True  # ✅ MAIN 블록 검사 무시
+        parsed_commands = parser.parse(func_def_lines[1:])
 
-
-    def parse_function_definition(self, lines: List[str]) -> dict:
-        """
-        함수 정의 블록을 파싱하여 함수 이름, 매개변수, 본문을 추출.
-        예)
-        FUNCTION plus(a, b)
-            set c = a + b
-            return c
-        END_FUNCTION
-        """
-        header_line = lines[0].strip()
-        header_tokens = self.tokenize(header_line)
-        if len(header_tokens) < 2:
-            raise SyntaxError("함수 정의 헤더가 올바르지 않습니다.")
-        func_name = header_tokens[1]
-        params = []
-        # 헤더에 괄호가 있으면 파라미터 추출: FUNCTION plus(a, b) 또는 FUNCTION plus ( a, b )
-        if len(header_tokens) > 2 and header_tokens[2] == "(":
-            i = 3
-            while i < len(header_tokens) and header_tokens[i] != ")":
-                params.append(header_tokens[i])
-                i += 1
-        elif len(header_tokens) > 2:
-            # 괄호 없이 바로 매개변수가 나오는 경우: FUNCTION plus a, b
-            params = header_tokens[2:]
-        # 함수 본문: 헤더와 END_FUNCTION을 제외한 부분
-        body_lines = lines[1:-1]
-        func_body = "\n".join(body_lines)
-        return {"name": func_name, "params": params, "body": func_body}
-
+        # ✅ FunctionRegistry에 저장
+        FunctionRegistry.register_function(func_name, params, parsed_commands)
+        return i  # ✅ 함수 정의 후 새로운 라인 번호 반환
 
     def _process_include(self, include_path, parsed_commands):
         """INCLUDE 문을 처리하여 외부 KVS 파일을 불러온다."""

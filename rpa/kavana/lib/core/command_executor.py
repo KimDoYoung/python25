@@ -86,7 +86,7 @@ class CommandExecutor:
         if cmd in self.command_map:
             self.command_map[cmd].execute(args, self)  # 명령어 객체에 실행 위임
         else:
-            raise ValueError(f"Unknown command: {cmd}")
+            raise CommandExecutionError(f"Unknown command: {cmd}")
 
     def eval_express(self, express: list[Token])->Token:
         """IF 및 WHILE 조건 평가"""

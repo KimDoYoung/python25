@@ -55,14 +55,13 @@ class FunctionExecutor:
         executor.variable_manager = self.global_var_manager  # ✅ 지역 변수로 설정
         executor.in_function_scope = True  # ✅ 함수 내부 실행 중 표시        
         
-        # parsing
-        script_lines = self.func_body
-        parser = CommandParser(script_lines)
-        parser.ignore_main_check = True  # ✅ main 함수 체크 무시
-        parsed_commands = parser.parse()
-        # 실행
-        for line in parsed_commands:
-            executor.execute(line)
+        # ✅ 저장된 `commands` 가져오기 (이미 `CommandParser.parse()`를 거친 상태)
+        script_commands = self.func_body  # ✅ `commands` 리스트가 저장됨
+
+        # ✅ 이미 파싱된 `commands`을 바로 실행, function 정의 1번째줄 제외
+        for command in script_commands:
+            executor.execute(command)
+
         result = self.global_var_manager.get_variable("return_value")
         return result
     
