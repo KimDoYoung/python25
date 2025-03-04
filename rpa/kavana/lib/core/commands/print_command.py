@@ -24,8 +24,8 @@ class PrintCommand(BaseCommand):
             
             # ✅ 평가 후 문자열 반환
             result_token = evaluator.evaluate(tokens)
-            return result_token.data.to_string
-
+            return result_token.data.string
+        
         # ✅ `{}` 패턴을 찾아 `ExprEvaluator`를 사용하여 해석
         output = re.sub(r"\{(.*?)\}", evaluate_match, output)
 

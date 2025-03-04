@@ -1,24 +1,19 @@
-from dataclasses import dataclass, field
 import cv2
 import numpy as np
 from lib.core.datatypes.kavana_datatype import KavanaDataType
 
-@dataclass
 class Image(KavanaDataType):
-    path: str  # 이미지 파일 경로
-    data: np.ndarray = None  # OpenCV 이미지 데이터 (lazy loading)
-    value: str = field(init=False, default=None)
-
-    def __post_init__(self):
-        """초기화 시 이미지 로드"""
-        if self.path and self.data is None:
-            self.load()
+    def __init__(self, path: str):
+        self.path = path  # 이미지 파일 경로
+        self.data = None  # OpenCV 이미지 데이터 (lazy loading)
+        self.value = path  # ✅ value를 path로 설정
 
     def load(self):
-        """이미지 파일 로드"""
-        self.data = cv2.imread(self.path, cv2.IMREAD_UNCHANGED)
+        """이미지 파일 로드 (lazy loading)"""
         if self.data is None:
-            raise ValueError(f"이미지를 불러올 수 없습니다: {self.path}")
+            self.data = cv2.imread(self.path, cv2.IMREAD_UNCHANGED)
+            if self.data is None:
+                raise ValueError(f"이미지를 불러올 수 없습니다: {self.path}")
 
     def save(self, save_path: str):
         """이미지 저장"""
@@ -28,8 +23,10 @@ class Image(KavanaDataType):
 
     def compare(self, other: "Image", threshold: float = 0.9) -> bool:
         """두 이미지가 유사한지 비교"""
-        if self.data is None or other.data is None:
-            raise ValueError("비교할 이미지 데이터가 없습니다.")
+        if self.data is None:
+            self.load()
+        if other.data is None:
+            other.load()
 
         # 템플릿 매칭을 사용한 비교 (유사도 기반)
         res = cv2.matchTemplate(self.data, other.data, cv2.TM_CCOEFF_NORMED)
@@ -39,13 +36,13 @@ class Image(KavanaDataType):
     def __str__(self):
         return f"Image(path={self.path})"
 
-    def __post_init__(self):
-        self.value = self.path
-    
     @property
-    def to_string(self):
-        return f"{self.path}"
-    
+    def string(self):
+        """이미지 경로를 문자열로 변환"""
+        return self.path
+
     @property
-    def to_python_type(self):
-        return f"{self.path}"
+    def primitive(self):
+        """Python 기본 타입 변환 (이미지는 경로 문자열로 변환)"""
+        return self.path
+

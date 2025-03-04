@@ -1,9 +1,9 @@
 import re
 import operator
-from tkinter import Image
 from typing import List, Union
 from datetime import datetime, timedelta
 from lib.core.datatypes.application import Application
+from lib.core.datatypes.image import Image
 from lib.core.datatypes.kavana_datatype import Boolean, Date, Float, Integer, KavanaDataType, String
 from lib.core.datatypes.list_type import ListType
 from lib.core.datatypes.point import Point
@@ -149,7 +149,7 @@ class ExprEvaluator:
                             raise ExprEvaluationError(f"Unsupported operand types for %: {a.type} and {b.type}")
                         result = Integer(a.data.value % b.data.value)
                         result_type = TokenType.INTEGER
-                    if token.data.value == '+' and a.type == TokenType.List and b.type == TokenType.List:
+                    if token.data.value == '+' and a.type == TokenType.LIST and b.type == TokenType.LIST:
                         # list + list
                         if a.element_type != b.element_type:
                             raise ExprEvaluationError("Cannot add lists of different types", token.line, token.column)
@@ -199,7 +199,7 @@ class ExprEvaluator:
                 arg_values = []
                 for arg_tokens in token.arguments:  # ✅ 각 인자는 List[Token] 형태
                     evaluator = ExprEvaluator(self.var_manager)
-                    result_token = evaluator.evaluate([arg_tokens])  # ✅ 표현식을 평가
+                    result_token = evaluator.evaluate(arg_tokens)  # ✅ 표현식을 평가
                     arg_values.append(result_token)  # ✅ 평가 결과 저장
                 # 함수 수행
                 function_executor = FunctionExecutor(func_info, global_var_manager=self.var_manager, arg_values=arg_values)
@@ -211,7 +211,7 @@ class ExprEvaluator:
                 for arg_tokens in token.arguments:  # ✅ 각 인자는 List[Token] 형태
                     evaluator = ExprEvaluator(self.var_manager)
                     result_token = evaluator.evaluate(arg_tokens)  # ✅ 표현식을 평가
-                    arg_values.append(result_token)  # ✅ 평가 결과 저장
+                    arg_values.append(result_token.data.value)  # ✅ 평가 결과 저장
                 if token.object_type == TokenType.POINT:
                     result_token = Token(data=Point(*arg_values), type=TokenType.POINT)
                 elif token.object_type == TokenType.RECTANGLE:

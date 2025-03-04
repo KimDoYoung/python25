@@ -89,11 +89,16 @@ class CustomTokenMaker:
 
         arguments = []
 
-        # ✅ x, y, width, height 개별 체크
+        # ✅ x, y, width, height 개별 체크 & List[List[Token]] 형태 유지
         for param in ["x", "y", "width", "height"]:
             if i >= len(tokens) or tokens[i].type != TokenType.INTEGER:
-                raise CustomTokenMakerError(f"Invalid RECTANGLE syntax: Expected {param} at position {i}", tokens[start_idx].line, tokens[start_idx].column)
-            arguments.append(tokens[i])
+                raise CustomTokenMakerError(
+                    f"Invalid RECTANGLE syntax: Expected {param} at position {i}",
+                    tokens[start_idx].line,
+                    tokens[start_idx].column
+                )
+
+            arguments.append([tokens[i]])  # ✅ 개별 리스트로 감싸기
             i += 1
 
             if param != "height" and i < len(tokens) and tokens[i].type == TokenType.COMMA:
@@ -101,11 +106,20 @@ class CustomTokenMaker:
 
         if has_parentheses:
             if i >= len(tokens) or tokens[i].type != TokenType.RIGHT_PAREN:
-                raise CustomTokenMakerError(f"Invalid RECTANGLE syntax: Expected ')' at position {i}", tokens[start_idx].line, tokens[start_idx].column)
+                raise CustomTokenMakerError(
+                    f"Invalid RECTANGLE syntax: Expected ')' at position {i}",
+                    tokens[start_idx].line,
+                    tokens[start_idx].column
+                )
             i += 1  # `)` 스킵
 
-        return CustomToken(object_type=TokenType.RECTANGLE, arguments=arguments, line=tokens[start_idx].line, column=tokens[start_idx].column), i
-
+        return CustomToken(
+            object_type=TokenType.RECTANGLE,
+            arguments=arguments,  # ✅ List[List[Token]] 구조 유지
+            line=tokens[start_idx].line,
+            column=tokens[start_idx].column
+        ), i
+    
     @staticmethod
     def image_token(tokens, start_idx):
         """✅ `Image("path")` 또는 `Image "path"` 형식을 처리"""
@@ -117,17 +131,52 @@ class CustomTokenMaker:
             i += 1  # `(` 스킵
 
         if i >= len(tokens) or tokens[i].type != TokenType.STRING:
-            raise CustomTokenMakerError(f"Invalid IMAGE syntax: Expected string at position {i}", tokens[start_idx].line, tokens[start_idx].column)
+            raise CustomTokenMakerError(
+                f"Invalid IMAGE syntax: Expected string at position {i}",
+                tokens[start_idx].line, tokens[start_idx].column
+            )
 
-        arguments = [tokens[i]]
+        arguments = [[tokens[i]]]  # ✅ List[List[Token]] 구조 유지
         i += 1
 
         if has_parentheses:
             if i >= len(tokens) or tokens[i].type != TokenType.RIGHT_PAREN:
-                raise CustomTokenMakerError(f"Invalid IMAGE syntax: Expected ')' at position {i}", tokens[start_idx].line, tokens[start_idx].column)
+                raise CustomTokenMakerError(
+                    f"Invalid IMAGE syntax: Expected ')' at position {i}",
+                    tokens[start_idx].line, tokens[start_idx].column
+                )
             i += 1  # `)` 스킵
 
-        return CustomToken(object_type=TokenType.IMAGE, arguments=arguments, line=tokens[start_idx].line, column=tokens[start_idx].column), i
+        return CustomToken(
+            object_type=TokenType.IMAGE,
+            arguments=arguments,  # ✅ List[List[Token]] 구조 유지
+            line=tokens[start_idx].line,
+            column=tokens[start_idx].column
+        ), i
+
+
+    # @staticmethod
+    # def image_token(tokens, start_idx):
+    #     """✅ `Image("path")` 또는 `Image "path"` 형식을 처리"""
+    #     i = start_idx + 1
+    #     has_parentheses = False
+
+    #     if i < len(tokens) and tokens[i].type == TokenType.LEFT_PAREN:
+    #         has_parentheses = True
+    #         i += 1  # `(` 스킵
+
+    #     if i >= len(tokens) or tokens[i].type != TokenType.STRING:
+    #         raise CustomTokenMakerError(f"Invalid IMAGE syntax: Expected string at position {i}", tokens[start_idx].line, tokens[start_idx].column)
+
+    #     arguments = [tokens[i]]
+    #     i += 1
+
+    #     if has_parentheses:
+    #         if i >= len(tokens) or tokens[i].type != TokenType.RIGHT_PAREN:
+    #             raise CustomTokenMakerError(f"Invalid IMAGE syntax: Expected ')' at position {i}", tokens[start_idx].line, tokens[start_idx].column)
+    #         i += 1  # `)` 스킵
+
+    #     return CustomToken(object_type=TokenType.IMAGE, arguments=arguments, line=tokens[start_idx].line, column=tokens[start_idx].column), i
 
     @staticmethod
     def window_token(tokens, start_idx):
@@ -150,17 +199,51 @@ class CustomTokenMaker:
             i += 1  # `(` 스킵
 
         if i >= len(tokens) or tokens[i].type != TokenType.STRING:
-            raise CustomTokenMakerError(f"Invalid {object_type.name} syntax: Expected string at position {i}",  tokens[start_idx].line, tokens[start_idx].column)
+            raise CustomTokenMakerError(
+                f"Invalid {object_type.name} syntax: Expected string at position {i}",
+                tokens[start_idx].line, tokens[start_idx].column
+            )
 
-        arguments = [tokens[i]]
+        arguments = [[tokens[i]]]  # ✅ List[List[Token]] 구조로 변경
         i += 1
 
         if has_parentheses:
             if i >= len(tokens) or tokens[i].type != TokenType.RIGHT_PAREN:
-                raise CustomTokenMakerError(f"Invalid {object_type.name} syntax: Expected ')' at position {i}", tokens[start_idx].line, tokens[start_idx].column)
+                raise CustomTokenMakerError(
+                    f"Invalid {object_type.name} syntax: Expected ')' at position {i}",
+                    tokens[start_idx].line, tokens[start_idx].column
+                )
             i += 1  # `)` 스킵
 
-        return CustomToken(object_type=object_type, arguments=arguments, line=tokens[start_idx].line, column=tokens[start_idx].column), i
+        return CustomToken(
+            object_type=object_type,
+            arguments=arguments,  # ✅ List[List[Token]] 구조 유지
+            line=tokens[start_idx].line,
+            column=tokens[start_idx].column
+        ), i
+
+    # @staticmethod
+    # def _parse_single_string(tokens, start_idx, object_type):
+    #     """✅ 공통 문자열 처리"""
+    #     i = start_idx + 1
+    #     has_parentheses = False
+
+    #     if i < len(tokens) and tokens[i].type == TokenType.LEFT_PAREN:
+    #         has_parentheses = True
+    #         i += 1  # `(` 스킵
+
+    #     if i >= len(tokens) or tokens[i].type != TokenType.STRING:
+    #         raise CustomTokenMakerError(f"Invalid {object_type.name} syntax: Expected string at position {i}",  tokens[start_idx].line, tokens[start_idx].column)
+
+    #     arguments = [tokens[i]]
+    #     i += 1
+
+    #     if has_parentheses:
+    #         if i >= len(tokens) or tokens[i].type != TokenType.RIGHT_PAREN:
+    #             raise CustomTokenMakerError(f"Invalid {object_type.name} syntax: Expected ')' at position {i}", tokens[start_idx].line, tokens[start_idx].column)
+    #         i += 1  # `)` 스킵
+
+    #     return CustomToken(object_type=object_type, arguments=arguments, line=tokens[start_idx].line, column=tokens[start_idx].column), i
 
     @staticmethod
     def region_token(tokens, start_idx):
@@ -174,11 +257,16 @@ class CustomTokenMaker:
 
         arguments = []
 
-        # ✅ x, y, width, height 개별 체크
+        # ✅ x, y, width, height 개별 체크 & List[List[Token]] 형태 유지
         for param in ["x", "y", "width", "height"]:
             if i >= len(tokens) or tokens[i].type != TokenType.INTEGER:
-                raise CustomTokenMakerError(f"Invalid REGION syntax: Expected {param} at position {i}", tokens[start_idx].line, tokens[start_idx].column)
-            arguments.append(tokens[i])
+                raise CustomTokenMakerError(
+                    f"Invalid REGION syntax: Expected {param} at position {i}",
+                    tokens[start_idx].line,
+                    tokens[start_idx].column
+                )
+
+            arguments.append([tokens[i]])  # ✅ 개별 리스트로 감싸기
             i += 1
 
             if param != "height" and i < len(tokens) and tokens[i].type == TokenType.COMMA:
@@ -186,7 +274,16 @@ class CustomTokenMaker:
 
         if has_parentheses:
             if i >= len(tokens) or tokens[i].type != TokenType.RIGHT_PAREN:
-                raise CustomTokenMakerError(f"Invalid REGION syntax: Expected ')' at position {i}", tokens[start_idx].line, tokens[start_idx].column)
+                raise CustomTokenMakerError(
+                    f"Invalid REGION syntax: Expected ')' at position {i}",
+                    tokens[start_idx].line,
+                    tokens[start_idx].column
+                )
             i += 1  # `)` 스킵
 
-        return CustomToken(object_type=TokenType.REGION, arguments=arguments, line=tokens[start_idx].line, column=tokens[start_idx].column), i
+        return CustomToken(
+            object_type=TokenType.REGION,
+            arguments=arguments,  # ✅ List[List[Token]] 구조 유지
+            line=tokens[start_idx].line,
+            column=tokens[start_idx].column
+        ), i
