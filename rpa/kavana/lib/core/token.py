@@ -1,6 +1,7 @@
 from dataclasses import dataclass, field
 from typing import List, Optional
 from lib.core.datatypes.kavana_datatype import KavanaDataType, String
+from lib.core.datatypes.list_type import ListType
 from lib.core.token_type import TokenType
 
 @dataclass(frozen=True)
@@ -29,3 +30,10 @@ class FunctionToken(Token):
         """디버깅을 위한 문자열 표현"""
         arg_str = ", ".join([repr(arg) for arg in self.arguments])
         return f"FunctionToken(function_name={self.function_name}, arguments=[{arg_str}], line={self.line}, column={self.column})"
+
+@dataclass(frozen=True)
+class ListToken(Token):
+
+    def __post_init__(self):
+        if not isinstance(self.data, ListType):
+            raise TypeError("ListToken must contain a ListType")

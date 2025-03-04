@@ -1,4 +1,4 @@
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 
 from lib.core.datatypes.kavana_datatype import KavanaDataType
 from lib.core.datatypes.point import Point
@@ -9,7 +9,8 @@ from lib.core.datatypes.region import Region
 class Rectangle(KavanaDataType):
     p1: Point
     p2: Point
-
+    value: str = field(init=False)
+    
     def width(self) -> int:
         """사각형의 너비 계산"""
         return abs(self.p2.x - self.p1.x)
@@ -34,3 +35,6 @@ class Rectangle(KavanaDataType):
 
     def __str__(self):
         return f"Rectangle({self.p1}, {self.p2})"
+    
+    def __post_init__(self):
+        self.value = f"({self.p1}, {self.p2})"  # ✅ 문자열로 변환하여 저장

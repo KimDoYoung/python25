@@ -5,6 +5,7 @@ from typing import List, Union
 from datetime import datetime, timedelta
 from lib.core.datatypes.application import Application
 from lib.core.datatypes.kavana_datatype import Boolean, Date, Float, Integer, KavanaDataType, String
+from lib.core.datatypes.list_type import ListType
 from lib.core.datatypes.point import Point
 from lib.core.datatypes.rectangle import Rectangle
 from lib.core.datatypes.region import Region
@@ -143,6 +144,13 @@ class ExprEvaluator:
                             raise ExprEvaluationError(f"Unsupported operand types for %: {a.type} and {b.type}")
                         result = Integer(a.data.value % b.data.value)
                         result_type = TokenType.INTEGER
+                    if token.data.value == '+' and a.type == TokenType.List and b.type == TokenType.List:
+                        # list + list
+                        if a.element_type != b.element_type:
+                            raise ExprEvaluationError("Cannot add lists of different types", token.line, token.column)
+                        new_list = ListType(*(a.data.to_list() + b.data.to_list()))
+                        result = new_list
+                        result_type = TokenType.LIST
                     elif a.type == TokenType.DATE and b.type == TokenType.INTEGER:
                         result = a.data.value + timedelta(days=b.data.value) if token.data == "+" else a.data.value - timedelta(days=b.data.value)
                         result = Date(result)
@@ -193,6 +201,10 @@ class ExprEvaluator:
                 result_token = function_executor.execute()
                 # 결과 토큰 저장
                 stack.append(result_token)
+            elif token.type == TokenType.LIST:
+                stack.append(token)
+            else:
+                raise ExprEvaluationError(f"Unsupported token type: {token.data.value} {token.type}")  
 
         return stack[0]
 
@@ -258,7 +270,7 @@ class ExprEvaluator:
         try:
             postfix_tokens = self.to_postfix(tokens)
             return self.evaluate_postfix(postfix_tokens)
-        except Exception as e:
+        except Exception as e: #TODO : Exception 처리 강화
             raise ExprEvaluationError(f"Error evaluating : {str(e)}")
 
     def get_token_type(self, value) -> TokenType:

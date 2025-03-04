@@ -1,11 +1,12 @@
-import codecs
 import re
 import os
-from typing import List
+from typing import Any, List
 from lib.core.command_preprocessor import PreprocessedLine
 from lib.core.datatypes.kavana_datatype import Boolean, Date, Float, Integer, KavanaDataType, NoneType, String
+from lib.core.datatypes.list_type import ListType
+from lib.core.datatypes.point import Point
 from lib.core.exceptions.kavana_exception import CommandParserError, DataTypeError
-from lib.core.token import Token
+from lib.core.token import ListToken, Token
 from lib.core.token_type import TokenType
 from lib.core.function_registry import FunctionRegistry
 
@@ -287,6 +288,9 @@ class CommandParser:
             (r'(?i)\bCONTINUE\b', TokenType.CONTINUE),
 
 
+            # ✅ 리스트 리터럴 패턴 추가
+            (r'\[(\s*\d+\s*(,\s*\d+\s*)*)\]', TokenType.LIST),
+
             # ✅ 연산자
             (r'\(', TokenType.LEFT_PAREN),
             (r'\)', TokenType.RIGHT_PAREN),
@@ -332,10 +336,17 @@ class CommandParser:
 
                     if token_type == TokenType.STRING:
                         value = CommandParser.decode_escaped_string(raw_value)  # ✅ 직접 변환 함수 호출
+                        value_datatype_changed = CommandParser.value_by_kavana_type(value, token_type)
+                        tokens.append(Token(data=value_datatype_changed, type=token_type, line=line_num, column=column_num))
+                    elif token_type == TokenType.LIST:
+                        list_values = [int(v.strip()) for v in raw_value.strip("[]").split(",")]
+                        value_datatype_changed = ListType(*list_values)
+                        token = ListToken(data=value_datatype_changed, type=token_type, line=line_num, column=column_num)
+                        tokens.append(token)
                     else:
                         value = raw_value
-                    value_datatype_changed = CommandParser.value_by_kavana_type(value, token_type)
-                    tokens.append(Token(data=value_datatype_changed, type=token_type, line=line_num, column=column_num))
+                        value_datatype_changed = CommandParser.value_by_kavana_type(value, token_type)
+                        tokens.append(Token(data=value_datatype_changed, type=token_type, line=line_num, column=column_num))
 
                     column_num += len(match.group(0))
                     line = line[len(match.group(0)):]  # ✅ `line`을 올바르게 줄임
@@ -345,108 +356,6 @@ class CommandParser:
 
             if not matched and line:  # ✅ 더 이상 처리할 수 없는 문자가 있으면 예외 발생
                 CommandParserError(f"Unknown token at line {line_num}, column {column_num} : {line}")
-
-        return tokens
-        """한 줄을 `Token` 객체 리스트로 변환"""
-        line = line.strip()
-        tokens = []
-
-        token_patterns = [
-
-            # ✅ 논리 값
-            (r'\bTrue\b', TokenType.BOOLEAN),
-            (r'\bFalse\b', TokenType.BOOLEAN),
-            (r'\bNone\b', TokenType.NONE),
-
-            # ✅ 제어문 키워드
-            (r'(?i)\bIF\b', TokenType.IF),
-            (r'(?i)\bELSE\b', TokenType.ELSE),
-            (r'(?i)\bELIF\b', TokenType.ELIF),
-            (r'(?i)\bWHILE\b', TokenType.WHILE),
-            (r'(?i)\bFOR\b', TokenType.FOR),
-            (r'(?i)\bTO\b', TokenType.TO),  
-            (r'(?i)\bSTEP\b', TokenType.STEP), 
-            (r'(?i)\bEND_IF\b', TokenType.END_IF),
-            (r'(?i)\bEND_WHILE\b', TokenType.END_WHILE),
-            (r'(?i)\bEND_FOR\b', TokenType.END_FOR),
-
-            # ✅ 함수 관련 키워드
-            (r'(?i)\bFUNCTION\b', TokenType.FUNCTION),
-            (r'(?i)\bEND_FUNCTION\b', TokenType.END_FUNCTION),
-            (r'(?i)\bRETURN\b', TokenType.RETURN),
-
-            # ✅ 스크립트 실행 관련 키워드
-            (r'(?i)\bINCLUDE\b', TokenType.INCLUDE),
-            (r'(?i)\bLOAD\b', TokenType.LOAD),
-            (r'(?i)\bMAIN\b', TokenType.MAIN),
-            (r'(?i)\bEND_MAIN\b', TokenType.END_MAIN),
-
-            # ✅ 논리 연산자
-            (r'(?i)\bAND\b', TokenType.LOGICAL_OPERATOR), 
-            (r'(?i)\bOR\b', TokenType.LOGICAL_OPERATOR), 
-            (r'(?i)\bNOT\b', TokenType.LOGICAL_OPERATOR),
-
-            # ✅ 루프 제어 키워드
-            (r'(?i)\bBREAK\b', TokenType.BREAK),
-            (r'(?i)\bCONTINUE\b', TokenType.CONTINUE),
-
-            # ✅ 데이터 타입 키워드
-            (r'(?i)\bDATE\b', TokenType.DATE),
-            (r'(?i)\bPOINT\b', TokenType.POINT),
-            (r'(?i)\bREGION\b', TokenType.REGION),
-            (r'(?i)\bRECTANGLE\b', TokenType.RECTANGLE),
-            (r'(?i)\bIMAGE\b', TokenType.IMAGE),
-            (r'(?i)\bWINDOW\b', TokenType.WINDOW),  
-            (r'(?i)\bAPPLICATION\b', TokenType.APPLICATION),
-            # ✅ 연산자
-            (r'\(', TokenType.LEFT_PAREN),
-            (r'\)', TokenType.RIGHT_PAREN),
-            (r'\[', TokenType.LEFT_BRACKET),
-            (r'\]', TokenType.RIGHT_BRACKET),
-            (r',', TokenType.COMMA),
-
-            # ✅ 일반 식별자  
-            (r'[a-zA-Z_\$][a-zA-Z0-9_]*', TokenType.IDENTIFIER),
-
-            # ✅ float, integer
-            (r'\b\d+\.\d+|\.\d+|\d+\.\b', TokenType.FLOAT),  # 🔥 소수점만 있는 경우도 포함
-            (r'\b\d+\b', TokenType.INTEGER),         # 정수 (예: 10, 42, 1000)
-
-            # ✅ OPERATOR
-            (r'[+\-*/=%]', TokenType.OPERATOR),
-
-            # ✅ 모든 유니코드 문자 포함          
-            (r'"((?:\\.|[^"\\])*)"', TokenType.STRING),  # ✅ 문자열 정규식 수정
-        ]
-        column = 0
-        while line:
-            matched = False
-
-            # 🔥 공백을 건너뛰고 column 조정
-            while line and line[0] == " ":
-                column += 1
-                line = line[1:]
-
-            for pattern, token_type in token_patterns:
-                match = re.match(pattern, line)
-                if match:
-                    raw_value = match.group(1) if token_type == TokenType.STRING else match.group(0)
-
-                    if token_type == TokenType.STRING:
-                        value = CommandParser.decode_escaped_string(raw_value)  # ✅ 직접 변환 함수 호출
-                    else:
-                        value = raw_value
-                    value_datatype_changed = CommandParser.value_by_kavana_type(value, token_type)
-                    tokens.append(Token(data=value_datatype_changed, type=token_type, line=line_num, column=column))
-
-                    column += len(match.group(0))
-                    line = line[len(match.group(0)):]  # ✅ `line`을 올바르게 줄임
-
-                    matched = True
-                    break
-
-            if not matched and line:  # ✅ 더 이상 처리할 수 없는 문자가 있으면 예외 발생
-                raise SyntaxError(f"Unknown token at line {line_num}, column {column}")
 
         return tokens
 
@@ -477,36 +386,80 @@ class CommandParser:
 
         return "".join(result)
     
-    def value_by_kavana_type(value: str, token_type: TokenType) -> KavanaDataType:
+    @staticmethod        
+    def value_by_kavana_type(value: Any, token_type: TokenType) -> KavanaDataType:
         """토큰 값을 해당 TokenType에 맞게 변환 (잘못된 값이면 Custom Exception 발생)"""
         try:
             if token_type == TokenType.INTEGER:
-                if not value.isdigit():
+                if not isinstance(value, int) and not str(value).isdigit():
                     raise DataTypeError("Invalid integer format", value)
                 return Integer(int(value))
 
             elif token_type == TokenType.FLOAT:
-                if not re.match(r'^-?\d+\.\d+$', value):
+                if not isinstance(value, float) and not re.match(r'^-?\d+\.\d+$', str(value)):
                     raise DataTypeError("Invalid float format", value)
-                return Float(value)
+                return Float(float(value))
 
             elif token_type == TokenType.BOOLEAN:
-                if value not in {"True", "False"}:
+                if value not in {"True", "False", True, False}:
                     raise DataTypeError("Invalid boolean value, expected 'True' or 'False'", value)
-                return Boolean(value == "True")
+                return Boolean(value == "True" or value is True)
 
             elif token_type == TokenType.NONE:
-                if value != "None":
+                if value not in {"None", None}:
                     raise DataTypeError("Invalid None value, expected 'None'", value)
                 return NoneType(None)
+
             elif token_type == TokenType.STRING:
-                return String(value)
+                return String(str(value))
+
             elif token_type == TokenType.DATE:
                 return Date(value)
 
-            return String(value)  # 나머지는 String (IDENTIFIER, OPERATOR 등)
+            elif token_type == TokenType.LIST:
+                if isinstance(value, list):  # ✅ 이미 리스트인 경우
+                    return ListType(*value)
+                if isinstance(value, str) and value.startswith("[") and value.endswith("]"):
+                    elements = [int(v.strip()) for v in value.strip("[]").split(",")]
+                    return ListType(*elements)
+            #TODO : 추가 타입 추가
+
+            return String(str(value))  # 나머지는 String (IDENTIFIER, OPERATOR 등)
 
         except DataTypeError as e:
             raise e  # 이미 처리된 예외 그대로 전달
         except Exception as e:
             raise DataTypeError(f"Unexpected error in classify_datatype: {str(e)}", value)
+        
+    @staticmethod
+    def get_kavana_datatype(value: Any) -> KavanaDataType | None:
+        """
+        주어진 value에서 KavanaDataType의 요소 타입을 추출하는 함수
+        - 리스트일 경우 내부 요소의 공통 타입을 반환
+        - 단일 값일 경우 해당 타입 반환
+        - 리스트가 비어 있으면 None 반환
+        """
+        if isinstance(value, list):  # 리스트 타입이면 내부 요소 확인
+            if len(value) == 0:
+                return None  # 빈 리스트이면 타입 미정
+
+            first_type = CommandParser.get_kavana_datatype(value[0])  # 첫 번째 요소 타입 결정
+            return first_type
+
+        # 개별 값에 대한 타입 결정
+        if isinstance(value, int):
+            return Integer
+        elif isinstance(value, float):
+            return Float
+        elif isinstance(value, bool):
+            return Boolean
+        elif value is None:
+            return NoneType
+        elif isinstance(value, str):
+            return String
+        elif isinstance(value, Date):
+            return Date
+        elif isinstance(value, Point):
+            return Point
+        #TODO : 추가 타입 추가
+        return None  # 알 수 없는 타입
