@@ -10,7 +10,8 @@ from lib.core.datatypes.point import Point
 from lib.core.datatypes.rectangle import Rectangle
 from lib.core.datatypes.region import Region
 from lib.core.datatypes.window import Window
-from lib.core.exceptions.kavana_exception import ExprEvaluationError
+from lib.core.exceptions.kavana_exception import ExprEvaluationError, KavanaException
+from lib.core.custom_token_maker import CustomTokenMaker
 from lib.core.token_type import TokenType
 from lib.core.function_executor import FunctionExecutor
 from lib.core.function_parser import FunctionParser
@@ -54,7 +55,7 @@ class ExprEvaluator:
         }            
 
     def to_postfix(self, tokens: List[Token]) -> List[Token]:
-        """토큰 리스트를 후위 표기법(RPN)으로 변환"""
+        """토큰 리스트를  후위 표기법(RPN)으로 변환"""
         output = []
         stack = []
 
@@ -86,6 +87,10 @@ class ExprEvaluator:
                 i += 1
                 continue
 
+            if token.type in {TokenType.POINT, TokenType.RECTANGLE, TokenType.REGION, TokenType.IMAGE, TokenType.WINDOW, TokenType.APPLICATION}:
+                custom_token, i = CustomTokenMaker.custom_object_token(tokens, i, token.type)
+                stack.append(custom_token)
+                continue
             # ✅ token.type 이 KavanaDataType이면 그대로 출력
             if token.type in self.data_token_type:
                 output.append(token)
@@ -194,13 +199,35 @@ class ExprEvaluator:
                 arg_values = []
                 for arg_tokens in token.arguments:  # ✅ 각 인자는 List[Token] 형태
                     evaluator = ExprEvaluator(self.var_manager)
-                    result_token = evaluator.evaluate(arg_tokens)  # ✅ 표현식을 평가
+                    result_token = evaluator.evaluate([arg_tokens])  # ✅ 표현식을 평가
                     arg_values.append(result_token)  # ✅ 평가 결과 저장
                 # 함수 수행
                 function_executor = FunctionExecutor(func_info, global_var_manager=self.var_manager, arg_values=arg_values)
                 result_token = function_executor.execute()
                 # 결과 토큰 저장
                 stack.append(result_token)
+            elif token.type == TokenType.CUSTOM_TYPE:
+                arg_values = []
+                for arg_tokens in token.arguments:  # ✅ 각 인자는 List[Token] 형태
+                    evaluator = ExprEvaluator(self.var_manager)
+                    result_token = evaluator.evaluate(arg_tokens)  # ✅ 표현식을 평가
+                    arg_values.append(result_token)  # ✅ 평가 결과 저장
+                if token.object_type == TokenType.POINT:
+                    result_token = Token(data=Point(*arg_values), type=TokenType.POINT)
+                elif token.object_type == TokenType.RECTANGLE:
+                    result_token = Token(data=Rectangle(*arg_values), type=TokenType.RECTANGLE)
+                elif token.object_type == TokenType.REGION:
+                    result_token = Token(data=Region(*arg_values), type=TokenType.REGION)
+                elif token.object_type == TokenType.IMAGE:
+                    result_token = Token(data=Image(*arg_values), type=TokenType.IMAGE)
+                elif token.object_type == TokenType.WINDOW:
+                    result_token = Token(data=Window(*arg_values), type=TokenType.WINDOW)
+                elif token.object_type == TokenType.APPLICATION:
+                    result_token = Token(data=Application(*arg_values), type=TokenType.APPLICATION)
+                else:
+                    raise ExprEvaluationError(f"Unsupported custom object type: {token.object_type}")
+                stack.append(result_token)
+
             elif token.type == TokenType.LIST:
                 stack.append(token)
             else:
@@ -270,8 +297,13 @@ class ExprEvaluator:
         try:
             postfix_tokens = self.to_postfix(tokens)
             return self.evaluate_postfix(postfix_tokens)
-        except Exception as e: #TODO : Exception 처리 강화
-            raise ExprEvaluationError(f"Error evaluating : {str(e)}")
+        except KavanaException as ke:
+            # ✅ Kavana 예외는 그대로 전달
+            raise ke
+
+        except Exception as e:
+            # ✅ 기타 예외는 ExprEvaluationError로 변환하여 감싸기
+            raise ExprEvaluationError(f"Error evaluate express: {str(e)}")        
 
     def get_token_type(self, value) -> TokenType:
         """value 로 해당하는 토큰타입을 반환"""

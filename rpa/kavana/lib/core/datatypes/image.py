@@ -1,4 +1,4 @@
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 import cv2
 import numpy as np
 from lib.core.datatypes.kavana_datatype import KavanaDataType
@@ -7,6 +7,7 @@ from lib.core.datatypes.kavana_datatype import KavanaDataType
 class Image(KavanaDataType):
     path: str  # 이미지 파일 경로
     data: np.ndarray = None  # OpenCV 이미지 데이터 (lazy loading)
+    value: str = field(init=False, default=None)
 
     def __post_init__(self):
         """초기화 시 이미지 로드"""
@@ -37,3 +38,14 @@ class Image(KavanaDataType):
 
     def __str__(self):
         return f"Image(path={self.path})"
+
+    def __post_init__(self):
+        self.value = self.path
+    
+    @property
+    def to_string(self):
+        return f"{self.path}"
+    
+    @property
+    def to_python_type(self):
+        return f"{self.path}"

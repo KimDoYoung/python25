@@ -56,3 +56,5 @@ class TokenType(Enum):
     MAIN = "MAIN"
     END_MAIN = "END_MAIN"
     EOF = "EOF"
+
+    CUSTOM_TYPE = "CUSTOM_TYPE" # 사용자 정의 데이터 타입

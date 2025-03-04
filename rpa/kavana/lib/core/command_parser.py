@@ -287,6 +287,8 @@ class CommandParser:
             (r'(?i)\bBREAK\b', TokenType.BREAK),
             (r'(?i)\bCONTINUE\b', TokenType.CONTINUE),
 
+            # ✅ 작은따옴표 사용 감지 (문법 오류 처리)
+            (r"'([^']*)'", None),  # ❌ 작은따옴표가 감지되면 예외 발생
 
             # ✅ 리스트 리터럴 패턴 추가
             (r'\[(\s*\d+\s*(,\s*\d+\s*)*)\]', TokenType.LIST),
@@ -313,8 +315,6 @@ class CommandParser:
             (r'\b\d+\.\d+|\.\d+|\d+\.\b', TokenType.FLOAT),  # 🔥 소수점만 있는 경우도 포함
             (r'\b\d+\b', TokenType.INTEGER),         # 정수 (예: 10, 42, 1000)
 
-
-
             # ✅ 모든 유니코드 문자 포함          
             (r'"((?:\\.|[^"\\])*)"', TokenType.STRING),  # ✅ 문자열 정규식 수정
         ]
@@ -334,6 +334,11 @@ class CommandParser:
                 if match:
                     raw_value = match.group(1) if token_type == TokenType.STRING else match.group(0)
 
+                    # ❌ 작은따옴표(`' '`) 사용 감지 시 `SyntaxError` 발생
+                    if token_type is None:
+                        raise SyntaxError(
+                            f"Invalid string format: Use double quotes (\") instead of single quotes (') at line {line_num}, column {column_num}"
+                        )
                     if token_type == TokenType.STRING:
                         value = CommandParser.decode_escaped_string(raw_value)  # ✅ 직접 변환 함수 호출
                         value_datatype_changed = CommandParser.value_by_kavana_type(value, token_type)

@@ -1,4 +1,4 @@
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 import pygetwindow as gw
 
 from lib.core.datatypes.kavana_datatype import KavanaDataType
@@ -7,6 +7,7 @@ from lib.core.datatypes.kavana_datatype import KavanaDataType
 class Window(KavanaDataType):
     title: str
     hwnd: int = None  # Window handle (자동으로 가져옴)
+    value : str = field(init=False, default=None)
 
     def __post_init__(self):
         """창을 찾고 핸들을 저장"""
@@ -53,3 +54,11 @@ class Window(KavanaDataType):
 
     def __str__(self):
         return f"Window(title={self.title}, hwnd={self.hwnd})"
+
+    @property
+    def to_string(self):
+        return f"{self.title}"
+    
+    @property
+    def to_python_type(self):
+        return f"{self.title}"

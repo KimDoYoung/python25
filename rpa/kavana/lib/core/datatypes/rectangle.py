@@ -9,7 +9,7 @@ from lib.core.datatypes.region import Region
 class Rectangle(KavanaDataType):
     p1: Point
     p2: Point
-    value: str = field(init=False)
+    value: tuple = field(init=False)
     
     def width(self) -> int:
         """사각형의 너비 계산"""
@@ -37,4 +37,12 @@ class Rectangle(KavanaDataType):
         return f"Rectangle({self.p1}, {self.p2})"
     
     def __post_init__(self):
-        self.value = f"({self.p1}, {self.p2})"  # ✅ 문자열로 변환하여 저장
+        self.value = ({self.p1}, {self.p2})
+    
+    @property
+    def to_string(self):
+        return f"[{self.p1.x}, {self.p1.y}, {self.p2.x}, {self.p2.y}]"
+    
+    @property
+    def to_python_type(self):
+        return self.value

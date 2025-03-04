@@ -1,4 +1,4 @@
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from lib.actions.enums import PointName
 from lib.core.datatypes.kavana_datatype import KavanaDataType
 from lib.core.datatypes.point import Point
@@ -8,6 +8,7 @@ class Region(KavanaDataType):
     y: int
     width: int
     height: int
+    value : tuple = field(init=False)
 
     def contains(self, point: Point) -> bool:
         """해당 Region이 특정 Point를 포함하는지 여부"""
@@ -44,3 +45,14 @@ class Region(KavanaDataType):
     
     def __str__(self):
         return f"Region(x={self.x}, y={self.y}, width={self.width}, height={self.height})"
+    
+    def __post_init__(self):
+        self.value = (self.x, self.y, self.width, self.height)
+    
+    @property
+    def to_string(self):
+        return f"[{self.x}, {self.y}, {self.width}, {self.height}]"
+    
+    @property
+    def to_python_type(self):
+        return (self.x, self.y, self.width, self.height)
