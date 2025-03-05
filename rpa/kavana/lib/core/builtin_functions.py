@@ -1,7 +1,8 @@
 import random
-from datetime import datetime
+from datetime import date, datetime
+from typing import Optional
 
-from lib.core.token import YmdTimeToken
+from lib.core.token import YmdTimeToken, YmdToken
 
 class BuiltinFunctions:
     @staticmethod
@@ -26,14 +27,48 @@ class BuiltinFunctions:
     def DATE_FORMAT(date_obj: datetime, format_str: str) -> str:
         return date_obj.strftime(format_str)
 
-    def YMDTIME(y: int, m: int, d: int, hh: int = 0, mm: int = 0, ss: int = 0) -> "YmdTimeToken":
+    @staticmethod
+    def YMDTIME(y: Optional[int] = None, m: Optional[int] = None, d: Optional[int] = None, 
+                hh: Optional[int] = None, mm: Optional[int] = None, ss: Optional[int] = None) -> "YmdTimeToken":
+        """현재 시간 또는 지정된 날짜를 YmdTimeToken으로 변환"""
+
         try:
+            if y is None or m is None or d is None:
+                now = datetime.now()
+                y, m, d = now.year, now.month, now.day  # 현재 날짜로 설정
+                hh = now.hour if hh is None else hh  # 현재 시 가져오기 (없으면 기본값 사용)
+                mm = now.minute if mm is None else mm  # 현재 분 가져오기
+                ss = now.second if ss is None else ss  # 현재 초 가져오기
+            else:
+                hh = 0 if hh is None else hh
+                mm = 0 if mm is None else mm
+                ss = 0 if ss is None else ss
+
             ymd = datetime(y, m, d, hh, mm, ss)  # 유효한 날짜인지 검증
         except ValueError as e:
             raise ValueError(f"잘못된 날짜 형식입니다: {e}")
 
         args = [y, m, d, hh, mm, ss]
         return YmdTimeToken(arguments=args)
+
+    @staticmethod
+    def YMD(y: Optional[int] = None, m: Optional[int] = None, d: Optional[int] = None) -> "YmdToken":
+        """✅ 현재 날짜 또는 지정된 날짜를 YmdToken으로 변환"""
+
+        try:
+            if y is None or m is None or d is None:
+                today = date.today()
+                y, m, d = today.year, today.month, today.day  # ✅ 현재 날짜로 설정
+
+            # ✅ 유효한 날짜인지 검증 (date 객체 생성)
+            ymd = date(y, m, d)
+
+        except ValueError as e:
+            raise ValueError(f"잘못된 날짜 형식입니다: {e}")
+
+        args = [y, m, d]
+        return YmdToken(arguments=args)
+
 
 
 # 내장 함수의 인자 개수 정보
@@ -43,7 +78,8 @@ BuiltinFunctions.arg_counts = {
     "CURRENT_DATETIME": 0,  # CURRENT_DATETIME 함수는 인자를 받지 않음
     "RANDOM": 2,  # RANDOM 함수는 2개의 인자를 받음
     "DATE_FORMAT": 2,  # DATE_FORMAT 함수는 2개의 인자를 받음
-    "YMDTIME": 6  # YMDTIME 함수는 6개의 인자를 받음
+    "YMDTIME": 6,  # YMDTIME 함수는 6개의 인자를 받음
+    "YMD": 3,  # YMD 함수는 3개의 인자를 받음
 }
 
 # 테스트 코드

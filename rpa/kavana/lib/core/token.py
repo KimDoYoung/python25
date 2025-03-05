@@ -2,7 +2,7 @@ from dataclasses import dataclass, field
 from typing import List, Optional
 from lib.core.datatypes.kavana_datatype import KavanaDataType, String
 from lib.core.datatypes.list_type import ListType
-from lib.core.datatypes.ymd_time import YmdTime
+from lib.core.datatypes.ymd_time import Ymd, YmdTime
 from lib.core.token_type import TokenType
 
 @dataclass(frozen=True)
@@ -79,3 +79,24 @@ class YmdTimeToken(Token):
         """디버깅을 위한 문자열 표현"""
         arg_str = ", ".join(map(str, self.arguments))
         return f"YmdTimeToken(arguments=[{arg_str}], data={self.data}, line={self.line}, column={self.column})"
+
+@dataclass(frozen=True)
+class YmdToken(Token):
+    """✅ Ymd 함수 호출을 표현하는 토큰"""
+    arguments: List[int] = field(default_factory=list)  # ✅ 생성자에서 리스트 형태로 받음
+    data: Ymd = field(init=False)  # ✅ `data`는 `Ymd` 객체
+    type: TokenType = field(default=TokenType.YMD, init=False)  # ✅ `type`을 YMD로 고정
+
+    def __post_init__(self):
+        values = self.arguments[:]  # 리스트 복사하여 불변성 유지
+
+        # ✅ `Ymd`는 3개의 인자만 허용
+        if len(values) != 3:
+            raise ValueError(f"Ymd 인자 개수 오류: {values} (필수: 3개)")
+
+        object.__setattr__(self, "data", Ymd(*values))  # ✅ `data`를 Ymd 객체로 설정
+
+    def __repr__(self):
+        """디버깅을 위한 문자열 표현"""
+        arg_str = ", ".join(map(str, self.arguments))
+        return f"YmdToken(arguments=[{arg_str}], data={self.data}, line={self.line}, column={self.column})"

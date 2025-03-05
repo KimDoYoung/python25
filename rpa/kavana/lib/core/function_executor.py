@@ -49,7 +49,8 @@ class FunctionExecutor:
         if self.function_name == "YMDTIME":
             converted_args = [arg.data.value for arg in self.arg_values]    
             return func(*converted_args)
-        converted_args = [self.argument_evaluation(arg) for arg in self.arg_values]
+        # converted_args = [self.argument_evaluation(arg) for arg in self.arg_values]
+        converted_args = [arg.data.value for arg in self.arg_values]    
         return func(*converted_args)
     
     def argument_evaluation(self, arg):

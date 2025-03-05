@@ -1,4 +1,4 @@
-from datetime import datetime, timedelta
+from datetime import date, datetime, timedelta
 from dataclasses import dataclass
 
 from lib.core.datatypes.kavana_datatype import KavanaDataType
@@ -38,3 +38,40 @@ class YmdTime(KavanaDataType):
     def from_datetime(cls, dt: datetime) -> "YmdTime":
         """datetime 객체를 YmdTime으로 변환"""
         return cls(dt.year, dt.month, dt.day, dt.hour, dt.minute, dt.second)
+    
+
+@dataclass
+class Ymd(KavanaDataType):
+    """✅ YMD(년-월-일)만 포함한 데이터 타입"""
+    value: date  # ✅ 시간 정보 없이 `date` 타입만 사용
+
+    def __init__(self, year: int, month: int, day: int):
+        self.value = date(year, month, day)
+
+    @property
+    def string(self) -> str:
+        """✅ 항상 문자열(str)로 변환"""
+        return self.value.strftime("%Y-%m-%d")
+
+    @property
+    def primitive(self) -> date:
+        """✅ Python 기본 타입 변환"""
+        return self.value
+
+    def __add__(self, days: int):
+        """✅ Ymd + int 지원 (N일 추가)"""
+        if isinstance(days, int):
+            new_date = self.value + timedelta(days=days)
+            return Ymd(new_date.year, new_date.month, new_date.day)
+        raise TypeError(f"Ymd + {type(days)} 지원되지 않음")
+
+    def __sub__(self, other):
+        """✅ Ymd - Ymd 지원 (일 단위 차이 반환)"""
+        if isinstance(other, Ymd):
+            return (self.value - other.value).days
+        raise TypeError(f"Ymd - {type(other)} 지원되지 않음")
+
+    @classmethod
+    def from_date(cls, dt: date) -> "Ymd":
+        """✅ `date` 객체를 `Ymd`로 변환"""
+        return cls(dt.year, dt.month, dt.day)

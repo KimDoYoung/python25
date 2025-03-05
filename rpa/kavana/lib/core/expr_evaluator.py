@@ -10,7 +10,7 @@ from lib.core.datatypes.point import Point
 from lib.core.datatypes.rectangle import Rectangle
 from lib.core.datatypes.region import Region
 from lib.core.datatypes.window import Window
-from lib.core.datatypes.ymd_time import YmdTime
+from lib.core.datatypes.ymd_time import Ymd, YmdTime
 from lib.core.exceptions.kavana_exception import ExprEvaluationError, KavanaException
 from lib.core.custom_token_maker import CustomTokenMaker
 from lib.core.token_type import TokenType
@@ -157,16 +157,30 @@ class ExprEvaluator:
                         new_list = ListType(*(a.data.to_list() + b.data.to_list()))
                         result = new_list
                         result_type = TokenType.LIST
-
+                    # YmdTime 연산 : Ymd + Integer, Ymd - Integer, Ymd - Ymd
                     elif a.type == TokenType.YMDTIME and b.type == TokenType.INTEGER:
                         dt = a.data.value + timedelta(days=b.data.value) if token.data.value == "+" else a.data.value - timedelta(days=b.data.value)
                         result = YmdTime.from_datetime(dt)
                         result_type = TokenType.YMDTIME
                     elif a.type == TokenType.YMDTIME and b.type == TokenType.YMDTIME and token.data.value == "-":
                         # YMDTIME - YMDTIME
-                        diffday =  (a.data.value - b.data.value).days
-                        result = Integer(diffday)
+                        diffday =  (a.data.value - b.data.value).seconds // 86400
+                        result = Float(diffday)
+                        result_type = TokenType.FLOAT
+                    # Ymd연산 : Ymd + Integer, Ymd - Integer, Ymd - Ymd
+                    elif a.type == TokenType.YMD and b.type == TokenType.INTEGER:
+                        # ✅ YMD + int 또는 YMD - int (N일 더하거나 빼기)
+                        dt = a.data.value + timedelta(days=b.data.value) if token.data.value == "+" else a.data.value - timedelta(days=b.data.value)
+                        result = Ymd.from_date(dt)  
+                        result_type = TokenType.YMD
+
+                    elif a.type == TokenType.YMD and b.type == TokenType.YMD and token.data.value == "-":
+                        # ✅ YMD - YMD (날짜 차이 반환)
+                        diff_days = (a.data.value - b.data.value).days  # ✅ `days` 속성은 이미 `일 단위`이므로 `// 86400` 불필요
+                        result = Integer(diff_days)
                         result_type = TokenType.INTEGER
+
+
                     elif a.type == TokenType.STRING and b.type == TokenType.STRING and token.data.value == "+":
                         result = String(a.data.value + b.data.value)
                         result_type = TokenType.STRING
