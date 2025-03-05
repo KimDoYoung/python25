@@ -45,7 +45,7 @@ class NoneType(KavanaDataType):
     """None 데이터 타입"""
     value: None = None  # 기본값을 None으로 설정
 
-@dataclass
-class Date(KavanaDataType):
-    """날짜 데이터 타입"""
-    value: datetime
+# @dataclass
+# class Date(KavanaDataType):
+#     """날짜 데이터 타입"""
+#     value: datetime

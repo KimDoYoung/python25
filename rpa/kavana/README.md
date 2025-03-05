@@ -17,5 +17,6 @@
 - builtin함수 추가.
 - DATE :
 SET d = Date(2025,10,12,10,00,00)
-SET today = date_format( current_day(), "%y-%m-%d")
+SET today = date_format( current_date(), "%y-%m-%d")
 SET time = current_time()
+Ymd(2025-03-05)

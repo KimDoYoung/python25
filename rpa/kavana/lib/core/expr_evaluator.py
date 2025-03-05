@@ -156,14 +156,14 @@ class ExprEvaluator:
                         new_list = ListType(*(a.data.to_list() + b.data.to_list()))
                         result = new_list
                         result_type = TokenType.LIST
-                    elif a.type == TokenType.DATE and b.type == TokenType.INTEGER:
+                    elif a.type == TokenType.DATETIME and b.type == TokenType.INTEGER:
                         result = a.data.value + timedelta(days=b.data.value) if token.data == "+" else a.data.value - timedelta(days=b.data.value)
                         result = Date(result)
-                        result_type = TokenType.DATE
-                    elif a.type == TokenType.DATE and b.type == TokenType.DATE and token.data == "-":
+                        result_type = TokenType.DATETIME
+                    elif a.type == TokenType.DATETIME and b.type == TokenType.DATETIME and token.data == "-":
                         result = (a.data.value - b.data.value).days
                         result = Date(result)
-                        result_type = TokenType.DATE
+                        result_type = TokenType.DATETIME
                     elif a.type == TokenType.STRING and b.type == TokenType.STRING and token.data == "+":
                         result = String(a.data.value + b.data.value)
                         result_type = TokenType.STRING

@@ -245,7 +245,7 @@ class CommandParser:
             (r'\bFalse\b', TokenType.BOOLEAN),
             (r'\bNone\b', TokenType.NONE),
             # ✅ 데이터 타입 키워드
-            (r'(?i)\bDATE\b', TokenType.DATE),
+            (r'(?i)\bDATETIME\b', TokenType.DATE),
             (r'(?i)\bPOINT\b', TokenType.POINT),
             (r'(?i)\bREGION\b', TokenType.REGION),
             (r'(?i)\bRECTANGLE\b', TokenType.RECTANGLE),
