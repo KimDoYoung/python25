@@ -4,12 +4,13 @@ from typing import List, Union
 from datetime import datetime, timedelta
 from lib.core.datatypes.application import Application
 from lib.core.datatypes.image import Image
-from lib.core.datatypes.kavana_datatype import Boolean, Date, Float, Integer, KavanaDataType, String
+from lib.core.datatypes.kavana_datatype import Boolean,  Float, Integer, KavanaDataType, String
 from lib.core.datatypes.list_type import ListType
 from lib.core.datatypes.point import Point
 from lib.core.datatypes.rectangle import Rectangle
 from lib.core.datatypes.region import Region
 from lib.core.datatypes.window import Window
+from lib.core.datatypes.ymd_time import YmdTime
 from lib.core.exceptions.kavana_exception import ExprEvaluationError, KavanaException
 from lib.core.custom_token_maker import CustomTokenMaker
 from lib.core.token_type import TokenType
@@ -45,7 +46,7 @@ class ExprEvaluator:
             TokenType.FLOAT,
             TokenType.STRING,
             TokenType.BOOLEAN,
-            TokenType.DATE,
+            TokenType.YMDTIME,
             TokenType.POINT,
             TokenType.REGION,
             TokenType.RECTANGLE,
@@ -156,20 +157,23 @@ class ExprEvaluator:
                         new_list = ListType(*(a.data.to_list() + b.data.to_list()))
                         result = new_list
                         result_type = TokenType.LIST
-                    elif a.type == TokenType.DATETIME and b.type == TokenType.INTEGER:
-                        result = a.data.value + timedelta(days=b.data.value) if token.data == "+" else a.data.value - timedelta(days=b.data.value)
-                        result = Date(result)
-                        result_type = TokenType.DATETIME
-                    elif a.type == TokenType.DATETIME and b.type == TokenType.DATETIME and token.data == "-":
-                        result = (a.data.value - b.data.value).days
-                        result = Date(result)
-                        result_type = TokenType.DATETIME
-                    elif a.type == TokenType.STRING and b.type == TokenType.STRING and token.data == "+":
+
+                    elif a.type == TokenType.YMDTIME and b.type == TokenType.INTEGER:
+                        dt = a.data.value + timedelta(days=b.data.value) if token.data.value == "+" else a.data.value - timedelta(days=b.data.value)
+                        result = YmdTime.from_datetime(dt)
+                        result_type = TokenType.YMDTIME
+                    elif a.type == TokenType.YMDTIME and b.type == TokenType.YMDTIME and token.data.value == "-":
+                        # YMDTIME - YMDTIME
+                        diffday =  (a.data.value - b.data.value).days
+                        result = Integer(diffday)
+                        result_type = TokenType.INTEGER
+                    elif a.type == TokenType.STRING and b.type == TokenType.STRING and token.data.value == "+":
                         result = String(a.data.value + b.data.value)
                         result_type = TokenType.STRING
                     elif (a.type == TokenType.NONE or b.type == TokenType.NONE) and token.data in {"==", "!="}:
                         result = self.OPERATORS[token.data][1](a.data.value, b.data.value)
                         result_type = TokenType.BOOLEAN
+
                     elif a.type in {TokenType.INTEGER, TokenType.FLOAT, TokenType.BOOLEAN} and b.type in {TokenType.INTEGER, TokenType.FLOAT, TokenType.BOOLEAN}:
                         result = self.OPERATORS[token.data.value][1](a.data.value, b.data.value)
                         # ✅ 비교 연산자일 경우 결과는 항상 BOOLEAN
@@ -186,9 +190,9 @@ class ExprEvaluator:
                                 result = Integer(result)  # ✅ Integer로 변환
                                 result_type = TokenType.INTEGER
                         else:
-                            raise ExprEvaluationError(f"Unsupported operator: {token.data.value}")
+                            raise ExprEvaluationError(f"Unsupported operator: {token.data.value}", token.line, token.column)
                     else:
-                        raise ExprEvaluationError(f"Unsupported operand types: {a.type} and {b.type}")
+                        raise ExprEvaluationError(f"Unsupported operand types: {a.type} and {b.type}", token.line, token.column)
 
                     stack.append(Token(result, result_type, line=token.line, column=token.column))
 
@@ -320,8 +324,8 @@ class ExprEvaluator:
             return TokenType.BOOLEAN
         if isinstance(value, String):
             return TokenType.STRING
-        if isinstance(value, Date):
-            return TokenType.DATE
+        if isinstance(value, datetime):
+            return TokenType.YMDTIME
         #Point, Rectangle, Region, window, Application, Image
         
         if isinstance(value, Point):

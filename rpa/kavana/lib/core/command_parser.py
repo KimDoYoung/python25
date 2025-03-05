@@ -2,9 +2,10 @@ import re
 import os
 from typing import Any, List
 from lib.core.command_preprocessor import PreprocessedLine
-from lib.core.datatypes.kavana_datatype import Boolean, Date, Float, Integer, KavanaDataType, NoneType, String
+from lib.core.datatypes.kavana_datatype import Boolean,  Float, Integer, KavanaDataType, NoneType, String
 from lib.core.datatypes.list_type import ListType
 from lib.core.datatypes.point import Point
+from lib.core.datatypes.ymd_time import YmdTime
 from lib.core.exceptions.kavana_exception import CommandParserError, DataTypeError
 from lib.core.token import ListToken, Token
 from lib.core.token_type import TokenType
@@ -245,7 +246,6 @@ class CommandParser:
             (r'\bFalse\b', TokenType.BOOLEAN),
             (r'\bNone\b', TokenType.NONE),
             # ✅ 데이터 타입 키워드
-            (r'(?i)\bDATETIME\b', TokenType.DATE),
             (r'(?i)\bPOINT\b', TokenType.POINT),
             (r'(?i)\bREGION\b', TokenType.REGION),
             (r'(?i)\bRECTANGLE\b', TokenType.RECTANGLE),
@@ -286,6 +286,9 @@ class CommandParser:
             # ✅ 루프 제어 키워드
             (r'(?i)\bBREAK\b', TokenType.BREAK),
             (r'(?i)\bCONTINUE\b', TokenType.CONTINUE),
+            # ✅ YmdTime 패턴 추가 (괄호 필수)
+            (r"(?i)\bYmdTime\b", TokenType.IDENTIFIER),
+            (r"(?i)\bYmd\b", TokenType.IDENTIFIER),
 
             # ✅ 작은따옴표 사용 감지 (문법 오류 처리)
             (r"'([^']*)'", None),  # ❌ 작은따옴표가 감지되면 예외 발생
@@ -418,8 +421,8 @@ class CommandParser:
             elif token_type == TokenType.STRING:
                 return String(str(value))
 
-            elif token_type == TokenType.DATE:
-                return Date(value)
+            # elif token_type == TokenType.YMDTIME:
+            #     return YmdTime.data.primitive
 
             elif token_type == TokenType.LIST:
                 if isinstance(value, list):  # ✅ 이미 리스트인 경우

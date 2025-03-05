@@ -6,11 +6,11 @@ from lib.core.command_preprocessor import CommandPreprocessor
 script = """
 main
 	
-	SET d1 = Date(2025, 3, 5)
-    Set d2 = Date(2025, 3, 4, 10, 20, 30)
+	SET d1 = YmdTime(2025, 3, 5)
+    Set d2 = YmdTime(2025, 3, 4, 10, 20, 30)
     Set d3 = d1 + 3
-    set d4 = d3 - d2
-	print "{d1}, {d2}, {d3}, {d4}"
+    set diff = d3 - d2
+	print "{d1}, {d2}, {d3}, {diff}"
 	
 end_main
 
