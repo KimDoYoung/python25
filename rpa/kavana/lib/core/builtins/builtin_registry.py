@@ -19,4 +19,12 @@ BUILTIN_FUNCTIONS = {
 
     # ✅ 숫자 관련 함수 추가
     "RANDOM": (NumericFunctions.RANDOM, 2),
+    "ABS": (NumericFunctions.ABS, 1),
+    "MAX": (NumericFunctions.MAX, 2),
+    "MIN": (NumericFunctions.MIN, 2),
+    "ROUND": (NumericFunctions.ROUND, 1),
+    "FLOOR": (NumericFunctions.FLOOR, 1),
+    "CEIL": (NumericFunctions.CEIL, 1),
+    "TRUNC" : (NumericFunctions.TRUNC, 1),
+
 }

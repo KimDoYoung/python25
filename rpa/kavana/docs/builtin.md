@@ -69,3 +69,39 @@ list의 요소를 delimiter로 이어붙인 문자열 반환
 
 문자열 S에서 substring의 첫 번째 등장 위치 반환 (0-based, 없으면 -1)
 예: INDEX_OF("hello world", "world") → 6
+
+## 숫자함수
+
+### ABS(N)
+
+N의 절대값을 반환
+예: ABS(-5) → 5
+
+### MAX(N1,N2)
+
+N1,N2 둘 중 큰 수를 리턴
+
+### MIN(N1, N2)
+
+N1,N2 둘 중 작은 수를 리턴
+
+### ROUND(N, decimals)
+
+N을 decimals 소수점 자리에서 반올림 (기본값 0)
+예: ROUND(3.14159, 2) → 3.14
+
+### FLOOR(N)
+
+N을 내림(소수점 이하 버림)
+예: FLOOR(3.9) → 3
+
+### CEIL(N)
+
+N을 올림(소수점 이하 올림)
+예: CEIL(3.1) → 4
+
+### TRUNC(N, decimals)
+
+N을 decimals 소수점 자리에서 잘라냄
+예: TRUNC(3.14159, 2) → 3.14
+예: TRUNC(3.14159, 0) → 3
