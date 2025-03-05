@@ -1,6 +1,9 @@
 from enum import Enum
 
 class TokenType(Enum):
+    # COMMAND
+    COMMAND = "COMMAND"
+    
     UNKNOWN = "UNKNOWN"
     GLOBAL = "GLOBAL"
     # 기존 타입

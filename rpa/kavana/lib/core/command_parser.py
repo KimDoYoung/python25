@@ -1,7 +1,8 @@
+from datetime import date, datetime
 import re
 import os
 from typing import Any, List
-from lib.core.command_preprocessor import PreprocessedLine
+from lib.core.command_preprocessor import CommandPreprocessor, PreprocessedLine
 from lib.core.datatypes.kavana_datatype import Boolean,  Float, Integer, KavanaDataType, NoneType, String
 from lib.core.datatypes.list_type import ListType
 from lib.core.datatypes.point import Point
@@ -61,8 +62,8 @@ class CommandParser:
             if cmd == "INCLUDE":
                 if not args:
                     raise SyntaxError("INCLUDE 문에 파일 경로가 필요합니다.")
-                include_path = args[0].data.strip('"')  # ✅ Token 객체에서 값 추출
-                self._process_include(include_path, parsed_commands)
+                include_path = args[0].data.value.strip('"')  # ✅ Token 객체에서 값 추출
+                self._include_process(include_path, parsed_commands)
                 i += 1
                 continue
 
@@ -70,7 +71,7 @@ class CommandParser:
             if cmd == "ENV_LOAD":
                 if not args:
                     raise SyntaxError("ENV_LOAD 문에 .env 파일 경로가 필요합니다.")
-                env_path = args[0].value.strip('"')  # ✅ Token 객체에서 값 추출
+                env_path = args[0].data.value.strip('"')  # ✅ Token 객체에서 값 추출
                 self._env_load(env_path, parsed_commands)
                 i += 1
                 continue
@@ -175,24 +176,27 @@ class CommandParser:
         FunctionRegistry.register_function(func_name, params, parsed_commands)
         return i  # ✅ 함수 정의 후 새로운 라인 번호 반환
 
-    def _process_include(self, include_path, parsed_commands):
+    def _include_process(self, include_path, parsed_commands):
         """INCLUDE 문을 처리하여 외부 KVS 파일을 불러온다."""
-        full_path = os.path.join(self.base_path, include_path)
+        """✅ `INCLUDE "파일.kvs"` 처리 (상대 경로 지원)"""
+        file_path = os.path.join(self.base_path, include_path)  # ✅ 상대 경로 → 절대 경로 변환
+        full_path = os.path.abspath(file_path)  # ✅ 최종 절대 경로 변환
 
-        if not os.path.exists(full_path):
-            raise FileNotFoundError(f"INCLUDE 파일을 찾을 수 없습니다: {full_path}")
+        if not os.path.exists(file_path):
+            raise FileNotFoundError(f"INCLUDE 파일을 찾을 수 없음: {file_path}")
 
         with open(full_path, "r", encoding="utf-8") as file:
             included_lines = file.readlines()
 
         # ✅ 기존 상태 저장
-        original_main_state = self.in_main_block
         original_ignore_main_check = getattr(self, "ignore_main_check", False)
 
         # ✅ INCLUDE 실행 중에는 MAIN 블록 여부를 무시하도록 설정
         self.ignore_main_check = True
+        preprocessor = CommandPreprocessor()
+        ppLines = preprocessor.preprocess(included_lines)
 
-        included_parser = CommandParser(included_lines, self.base_path)
+        included_parser = CommandParser(ppLines, self.base_path)
         included_parser.ignore_main_check = True  # ✅ 서브 파서에서도 MAIN 블록 검사 무시
 
         included_commands = included_parser.parse()
@@ -203,34 +207,48 @@ class CommandParser:
         parsed_commands.extend(included_commands)  # INCLUDE된 명령어 추가
 
     def _env_load(self, env_path, parsed_commands):
-        """ENV_LOAD 문을 처리하여 .env 파일을 변수로 변환"""
-        full_path = os.path.join(self.base_path, env_path)
+    
+        # ✅ 상대 경로를 절대 경로로 변환
+        full_path = os.path.abspath(os.path.join(self.base_path, env_path))
 
         if not os.path.exists(full_path):
-            raise FileNotFoundError(f"LOAD 파일을 찾을 수 없습니다: {full_path}")
+            raise FileNotFoundError(f"ENV_LOAD 파일을 찾을 수 없습니다: {full_path}")
 
         with open(full_path, "r", encoding="utf-8") as file:
             for line in file:
                 line = line.strip()
-                if not line or line.startswith("#"):  # 주석 및 빈 줄 무시
+                if not line or line.startswith("#"):  # ✅ 주석 및 빈 줄 무시
                     continue
-                
+
                 if "=" not in line:
                     raise SyntaxError(f"잘못된 환경 변수 형식: {line}")
 
                 key, value = line.split("=", 1)
-                key = key.strip()
+                key = key.strip().upper()  # ✅ `$KEY` 형태로 저장
                 value = value.strip()
 
-                # ✅ 숫자, 불리언, 문자열 구분
+                # ✅ 값의 타입을 판별하여 Token으로 변환
                 if value.lower() in ["true", "false"]:
-                    value = value.lower()
+                    value_token = Token(data=Boolean(value.lower() == "true"), type=TokenType.BOOLEAN)
                 elif value.isdigit():
-                    value = int(value)
+                    value_token = Token(data=Integer(int(value)), type=TokenType.INTEGER)
+                elif value.replace(".", "", 1).isdigit():  # ✅ Float 판별
+                    value_token = Token(data=Float(float(value), type=TokenType.FLOAT))
                 else:
-                    value = f'"{value}"'  # ✅ 문자열로 처리
+                    value_token = Token(data=String(value), type=TokenType.STRING)
 
-                parsed_commands.append({"cmd": "SET", "args": [key, "=", value]})
+                # ✅ "=" 연산자 토큰 추가
+                equals_token = Token(data=String("="), type=TokenType.OPERATOR)
+
+                key_token = Token(data=String(f"${key}"), type=TokenType.IDENTIFIER)
+                # ✅ `parsed_commands`에 추가하여 추적 가능
+                const_token = Token(data=String("const"), type=TokenType.COMMAND)
+                parsed_commands.append({
+                    "cmd": "CONST",
+                    "args": [key_token, equals_token, value_token]
+                })
+
+    
 
     @staticmethod
     def tokenize(ppLine: PreprocessedLine) -> list:
@@ -465,8 +483,10 @@ class CommandParser:
             return NoneType
         elif isinstance(value, str):
             return String
-        elif isinstance(value, Date):
-            return Date
+        elif isinstance(value, datetime):
+            return datetime
+        elif isinstance(value, date):
+            return date
         elif isinstance(value, Point):
             return Point
         #TODO : 추가 타입 추가

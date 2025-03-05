@@ -47,6 +47,7 @@ class ExprEvaluator:
             TokenType.STRING,
             TokenType.BOOLEAN,
             TokenType.YMDTIME,
+            TokenType.YMD,
             TokenType.POINT,
             TokenType.REGION,
             TokenType.RECTANGLE,
@@ -67,6 +68,8 @@ class ExprEvaluator:
             # ✅ 함수 처리 (PLUSE(3,4) 형태)
             if token.type == TokenType.IDENTIFIER :
                 func_info = FunctionRegistry.get_function(token.data.value)
+                if func_info is None:
+                    raise ExprEvaluationError(f"Undefined function: {token.data.value}", token.line, token.column)
                 if func_info is not None:
                     arg_count = func_info["arg_count"]
                     # combined_token, i = FunctionParser._func_tokens_to_string(tokens, start_index=i, func=None, arg_count=arg_count)
@@ -249,7 +252,7 @@ class ExprEvaluator:
             elif token.type == TokenType.LIST:
                 stack.append(token)
             else:
-                raise ExprEvaluationError(f"Unsupported token type: {token.data.value} {token.type}")  
+                raise ExprEvaluationError(f"Unsupported token type: {token.data.value} {token.type}", token.line, token.column)  
 
         return stack[0]
 

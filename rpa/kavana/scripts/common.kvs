@@ -1,2 +1,5 @@
 // common.kvs
-SET name = "홍길동"
+CONST name = "홍길동"
+function plus(a,b)
+    c = a + b
+end_function

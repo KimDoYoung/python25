@@ -1,3 +1,4 @@
+from lib.core.commands.const_command import ConstCommand
 from lib.core.commands.endfunction_command import EndFunctionCommand
 from lib.core.commands.function_command import FunctionCommand
 from lib.core.commands.print_command import PrintCommand
@@ -23,7 +24,8 @@ class CommandExecutor:
             "PRINT": PrintCommand(),
             "FUNCTION": FunctionCommand(),
             "END_FUNCTION": EndFunctionCommand(),
-            "RETURN": ReturnCommand()  # RETURN은 END_FUNCTION으로 처리
+            "RETURN": ReturnCommand() ,
+            "CONST" : ConstCommand()
         }
     def execute(self, command):
         cmd = command["cmd"]

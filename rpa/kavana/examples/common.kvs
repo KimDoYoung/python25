@@ -1,0 +1,6 @@
+const global_name = "홍길동"
+function plus(a,b)
+ set c = a + b
+ return c
+end_function
+
