@@ -1,0 +1,106 @@
+from typing import Any, List
+
+from lib.core.datatypes.kavana_datatype import Boolean, Integer, String
+from lib.core.datatypes.list_type import ListType
+from lib.core.token import ListToken, Token
+from lib.core.token_type import TokenType
+
+
+class StringFunctions:
+    @staticmethod
+    def LENGTH(s: Any) -> int:
+        if isinstance(s, str):
+            i = len(s)
+            return Token(data=Integer(i), type=TokenType.INTEGER)
+        elif isinstance(s, List):
+            i = len(s)
+            return Token(data=Integer(len(s)), type=TokenType.INTEGER)
+        raise TypeError("LENGTH()는 문자열과 리스트 타입에만 적용됩니다")
+
+    @staticmethod
+    def SUBSTR(s: str, start: int, length: int) -> str:
+        if isinstance(s, str) and isinstance(start, int) and isinstance(length, int):
+            result = s[start:start + length]
+            return Token(data=String(result), type=TokenType.STRING)
+        raise TypeError("형식은 SUBSTR(문자열, 시작인덱스, 길이)로 되어 있습니다")
+    
+    @staticmethod
+    def UPPER(s: str) -> str:
+        if isinstance(s, str):
+            result = s.upper()
+            return Token(data=String(result), type=TokenType.STRING)
+        raise TypeError("UPPER()는 문자열에만 적용됩니다")
+    
+    @staticmethod
+    def LOWER(s: str) -> str:
+        if isinstance(s, str):
+            result = s.lower()
+            return Token(data=String(result), type=TokenType.STRING)
+        raise TypeError("LOWER()는 문자열에만 적용됩니다")
+    
+    @staticmethod
+    def TRIM(s: str) -> str:
+        if isinstance(s, str):
+            result = s.strip()
+            return Token(data=String(result), type=TokenType.STRING)
+        raise TypeError("TRIM()는 문자열에만 적용됩니다")
+    
+    @staticmethod
+    def LTRIM(s: str) -> str:
+        if isinstance(s, str):
+            result = s.lstrip()
+            return Token(data=String(result), type=TokenType.STRING)
+        raise TypeError("LTRIM()는 문자열에만 적용됩니다")
+    
+    @staticmethod
+    def RTRIM(s: str) -> str:
+        if isinstance(s, str):
+            result = s.rstrip()
+            return Token(data=String(result), type=TokenType.STRING)
+        raise TypeError("RTRIM()는 문자열에만 적용됩니다")
+    
+    @staticmethod
+    def REPLACE(s: str, old: str, new: str) -> str:
+        if isinstance(s, str) and isinstance(old, str) and isinstance(new, str):
+            result = s.replace(old, new)
+            return Token(data=String(result), type=TokenType.STRING)
+        raise TypeError("사용형식 : REPLACE(문자열, 바꿀문자열 , 새로운문자열)")
+    
+    @staticmethod
+    def SPLIT(s: str, sep: str) -> List[str]:
+        if isinstance(s, str) and isinstance(sep, str):
+            result = s.split(sep)
+            list_type = ListType(result)
+            return ListToken(data=list_type, type=TokenType.LIST)
+        raise TypeError("사용형식 : SPLIT(문자열, 구분자)")
+    
+    @staticmethod
+    def JOIN(s: List[str], sep: str) -> str:
+        if isinstance(s, List) and isinstance(sep, str):
+            result = sep.join(s)
+            return Token(data=String(result), type=TokenType.STRING)
+        raise TypeError("사용형식 : JOIN(리스트, 구분자)")
+    
+    @staticmethod
+    def STARTSWITH(s: str, prefix: str) -> bool:
+        if isinstance(s, str) and isinstance(prefix, str):
+            return Token(data=Integer(s.startswith(prefix)),type=TokenType.INTEGER)
+        raise TypeError("사용형식 : STARTSWITH(문자열, 접두사)")
+    
+    @staticmethod
+    def ENDSWITH(s: str, suffix: str) -> bool:
+        if isinstance(s, str) and isinstance(suffix, str):
+            return Token(data=Integer(s.endswith(suffix)), type=TokenType.INTEGER)
+        raise TypeError("사용형식 : ENDSWITH(문자열, 접미사)")
+    
+    @staticmethod
+    def CONTAINS(s: str, sub: str) -> bool:
+        if isinstance(s, str) and isinstance(sub, str):
+            return Token(data=Boolean(sub in s), type=TokenType.BOOLEAN)
+        raise TypeError("사용형식 : CONTAINS(문자열, 포함문자열)")
+    
+    @staticmethod
+    def INDEX_OF(s: str, sub: str) -> int:
+        if isinstance(s, str) and isinstance(sub, str):
+            return Token(data=Integer(s.find(sub)), type=TokenType.INTEGER)
+        raise TypeError("사용형식 : INDEX_OF(문자열, 찾을문자열), 못찾았을 때 -1 반환")

@@ -1,15 +1,9 @@
-import re
-import operator
-from typing import List, Union
-from datetime import datetime, timedelta
-from lib.core.command_preprocessor import PreprocessedLine
-from lib.core.token import Token
-from lib.core.variable_manager import VariableManager
-from lib.core.builtin_functions import BuiltinFunctions
+from typing import List
+from lib.core.builtins.builtin_registry import BUILTIN_FUNCTIONS
 
 class FunctionRegistry:
     """사용자함수의 본체를 저장"""
-    builtin_functions = {name.upper(): (func, BuiltinFunctions.arg_counts[name]) for name, func in BuiltinFunctions.__dict__.items() if callable(func)}
+    builtin_functions = BUILTIN_FUNCTIONS.copy()
     user_functions = {}
 
     @staticmethod
