@@ -6,7 +6,7 @@ def format_pretty(parsed_commands):
     - 블록 구조(IF, FOR, WHILE 등)는 들여쓰기 적용
     """
     formatted_lines = []
-    keywords = {"IF", "ELSE", "WHILE", "FOR", "FUNCTION", "RETURN", "INCLUDE", "LOAD", 
+    keywords = {"IF", "ELSE", "WHILE", "FOR", "FUNCTION", "RETURN", "INCLUDE", "ENV_LOAD", 
                 "BREAK", "CONTINUE", "MAIN", "END_MAIN", "END_IF", "END_WHILE", "END_FOR"}
     indentation_level = 0  # ✅ 들여쓰기 레벨 (Depth)
 

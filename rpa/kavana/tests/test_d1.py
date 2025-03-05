@@ -17,7 +17,7 @@ def test_script_execution():
     end_main
     """
     
-    expected_output = "2025-03-05 00:00:00, 2025-03-04 10:20:30, 2025-03-08 00:00:00, 3"
+    expected_output = "2025-03-05 00:00:00, 2025-03-04 10:20:30, 2025-03-08 00:00:00, 308370"
     
     script_lines = script.split("\n")
     command_preprocessed_lines = CommandPreprocessor().preprocess(script_lines)

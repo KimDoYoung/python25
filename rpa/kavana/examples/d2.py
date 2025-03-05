@@ -6,7 +6,7 @@ from lib.core.command_preprocessor import CommandPreprocessor
 script = """
 main
 	SET today = Ymd()
-    SET d1 = Ymd(2025,3,5)
+    SET d1 = Ymd (2025,3,5)
     SET d2 = d1 - 3
     SET d3 = d1 + 3
     SET diff = d3 - d2

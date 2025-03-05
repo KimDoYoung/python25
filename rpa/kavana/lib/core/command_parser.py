@@ -16,7 +16,7 @@ class CommandParser:
     Kavana 스크립트의 명령어를 분석하는 파서.
     - `main ... end_main` 블록 안에서 실행
     - `INCLUDE` → 외부 KVS 파일 포함
-    - `LOAD` → .env 파일을 불러와 `SET`으로 변환
+    - `ENV_LOAD` → .env 파일을 불러와 `SET`으로 변환
     """
     def __init__(self, script_lines=[], base_path="."):
         self.script_lines = script_lines
@@ -67,11 +67,11 @@ class CommandParser:
                 continue
 
             # ✅ LOAD 처리
-            if cmd == "LOAD":
+            if cmd == "ENV_LOAD":
                 if not args:
-                    raise SyntaxError("LOAD 문에 .env 파일 경로가 필요합니다.")
+                    raise SyntaxError("ENV_LOAD 문에 .env 파일 경로가 필요합니다.")
                 env_path = args[0].value.strip('"')  # ✅ Token 객체에서 값 추출
-                self._process_env(env_path, parsed_commands)
+                self._env_load(env_path, parsed_commands)
                 i += 1
                 continue
 
@@ -202,8 +202,8 @@ class CommandParser:
 
         parsed_commands.extend(included_commands)  # INCLUDE된 명령어 추가
 
-    def _process_env(self, env_path, parsed_commands):
-        """LOAD 문을 처리하여 .env 파일을 변수로 변환"""
+    def _env_load(self, env_path, parsed_commands):
+        """ENV_LOAD 문을 처리하여 .env 파일을 변수로 변환"""
         full_path = os.path.join(self.base_path, env_path)
 
         if not os.path.exists(full_path):
@@ -274,7 +274,7 @@ class CommandParser:
 
             # ✅ 스크립트 실행 관련 키워드
             (r'(?i)\bINCLUDE\b', TokenType.INCLUDE),
-            (r'(?i)\bLOAD\b', TokenType.LOAD),
+            (r'(?i)\bENV_LOAD\b', TokenType.ENV_LOAD),
             (r'(?i)\bMAIN\b', TokenType.MAIN),
             (r'(?i)\bEND_MAIN\b', TokenType.END_MAIN),
 

@@ -164,9 +164,9 @@ class ExprEvaluator:
                         result_type = TokenType.YMDTIME
                     elif a.type == TokenType.YMDTIME and b.type == TokenType.YMDTIME and token.data.value == "-":
                         # YMDTIME - YMDTIME
-                        diffday =  (a.data.value - b.data.value).seconds // 86400
-                        result = Float(diffday)
-                        result_type = TokenType.FLOAT
+                        diff_seconds = (a.data.value - b.data.value).total_seconds()  # ✅ 초 단위 차이 계산
+                        result = Integer(int(diff_seconds))  # ✅ 결과를 정수(Integer)로 변환
+                        result_type = TokenType.INTEGER
                     # Ymd연산 : Ymd + Integer, Ymd - Integer, Ymd - Ymd
                     elif a.type == TokenType.YMD and b.type == TokenType.INTEGER:
                         # ✅ YMD + int 또는 YMD - int (N일 더하거나 빼기)

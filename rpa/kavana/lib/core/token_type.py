@@ -47,7 +47,7 @@ class TokenType(Enum):
     END_FUNCTION = "END_FUNCTION"
     RETURN = "RETURN"
     INCLUDE = "INCLUDE"
-    LOAD = "LOAD"
+    ENV_LOAD = "ENV_LOAD"
 
     # ✅ 루프 제어문
     BREAK = "BREAK"

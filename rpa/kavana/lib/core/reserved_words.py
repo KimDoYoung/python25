@@ -1,7 +1,7 @@
 class ReservedWords:
     _keywords = {
         "True", "False", "None",
-        "INCLUDE", "LOAD", "MAIN", "END_MAIN",
+        "INCLUDE", "ENV_LOAD", "MAIN", "END_MAIN",
         "SET","GLOBAL",
         "AND", "OR", "NOT",
         "IF", "ELSE", "ELSEIF", "END_IF", "WHILE", "END_WHILE",
