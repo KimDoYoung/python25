@@ -11,6 +11,7 @@ MAIN
     print "PASSWORD: {$PASSWORD}, USERNAME: {$USERNAME}"
     SET c = plus(1, 2)
     print "c = {c}"
+    print "1 + 2 = {plus(1, 2)}"
 END_MAIN
 """
 #---------------------------

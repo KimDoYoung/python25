@@ -23,7 +23,6 @@ class CommandPreprocessor:
         탭을 변환하면서 실제 앞쪽 공백 개수 및 시작 컬럼 위치 반환
         - 탭(`\t`)은 공백 4개로 변환
         """
-        space_count = 0
         column_position = 1  # 실제 시작 컬럼 위치
         
         for char in line:
@@ -35,7 +34,7 @@ class CommandPreprocessor:
             else:
                 break  # 처음 공백이 끝나면 종료
 
-        return column_position, column_position  # **정확한 시작 컬럼 번호를 반환**
+        return  column_position  # **정확한 시작 컬럼 번호를 반환**
 
     def preprocess(self, script_lines=[],remove_comments=True) -> List[ PreprocessedLine ]:
         """스크립트를 전처리하여 줄 병합 및 주석 제거를 수행"""
@@ -50,7 +49,7 @@ class CommandPreprocessor:
         for i, line in enumerate(self.script_lines):
             original_line_num = i + 1  # 줄 번호를 1부터 유지 (빈 줄 포함)
 
-            space_count, original_column_start = self.get_leading_space_info(line)  # 정확한 컬럼 정보 가져오기
+            original_column_start = self.get_leading_space_info(line)  # 정확한 컬럼 정보 가져오기
 
             # 주석 제거
             if remove_comments:

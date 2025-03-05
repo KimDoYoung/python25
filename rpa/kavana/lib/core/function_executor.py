@@ -38,7 +38,7 @@ class FunctionExecutor:
         for command in script_commands:
             executor.execute(command)
 
-        result = self.global_var_manager.get_variable("return_value")
+        result = self.global_var_manager.get_variable("$$return_value$$")
         return result
     
     def builtin_execute(self):

@@ -36,7 +36,6 @@ class CommandParser:
         i = 0  
 
         while i < len(processed_lines):
-            # tokens = self.tokenize(processed_lines[i], i+1)  # ✅ `Token` 객체 리스트 반환
             tokens = self.tokenize(processed_lines[i])  # ✅ `Token` 객체 리스트 반환
             if not tokens:
                 i += 1
@@ -80,29 +79,29 @@ class CommandParser:
             if cmd == "MAIN":
                 if not getattr(self, "ignore_main_check", False):
                     if self.in_main_block:
-                        raise SyntaxError("Nested 'MAIN' blocks are not allowed. line : {i+1}")
+                        raise CommandParserError("중복된 MAIN문은 허용되지 않습니다. ", line = i+1)
                     self.in_main_block = True
                 i += 1
                 continue
-
+            # ✅ END_MAIN 처리
             if cmd == "END_MAIN":
                 if not getattr(self, "ignore_main_check", False):
                     if not self.in_main_block:
-                        raise SyntaxError("'END_MAIN' found without 'MAIN'.")
+                        raise CommandParserError("'END_MAIN'이 'MAIN' 문 없이 사용되었습니다.", line = i+1)
                     self.in_main_block = False
                 i += 1
                 break
 
             # ✅ MAIN 블록 외부에서 명령어 사용 제한
             if not self.in_main_block and not getattr(self, "ignore_main_check", False):
-                raise SyntaxError("Commands must be inside a 'MAIN' block. line : {i+1}")
+                raise CommandParserError("명렁어는 MAIN 블록 내에서만 사용할 수 있습니다.", line = i+1)
 
             # ✅ 일반 명령어 추가
             parsed_commands.append({"cmd": cmd, "args": args})  # ✅ `args`도 `Token` 리스트로 저장
             i += 1  
 
         if self.in_main_block:
-            raise SyntaxError("Missing 'END_MAIN' at the end of the script.")
+            raise CommandParserError("'END_MAIN'문이 빠졌습니다.", line = i+1)
 
         return parsed_commands
 
@@ -137,7 +136,7 @@ class CommandParser:
             block_body.append({"cmd": cmd, "args": args})
             i += 1
 
-        raise SyntaxError(f"{end_keyword}가 없습니다.")  # ✅ 종료 키워드가 없으면 오류 발생
+        raise CommandParserError(f"{end_keyword}가 없습니다.")  # ✅ 종료 키워드가 없으면 오류 발생
 
     def parse_function(self, ppLines:List[PreprocessedLine], start_line):
         """FUNCTION 블록을 파싱하여  header를 제외하고 FunctionRegistry에 저장"""
@@ -155,7 +154,7 @@ class CommandParser:
         # ✅ 함수 헤더 파싱
         header_tokens = self.tokenize(func_def_lines[0])
         if len(header_tokens) < 2:
-            raise SyntaxError("함수 정의 헤더가 올바르지 않습니다.")
+            raise CommandParserError("함수 정의 헤더가 올바르지 않습니다.", start_line, 0)
 
         func_name = header_tokens[1].data.value
         params = []
@@ -221,7 +220,7 @@ class CommandParser:
                     continue
 
                 if "=" not in line:
-                    raise SyntaxError(f"잘못된 환경 변수 형식: {line}")
+                    raise CommandParserError(f"잘못된 환경 변수 형식 env line : {line}")
 
                 key, value = line.split("=", 1)
                 key = key.strip().upper()  # ✅ `$KEY` 형태로 저장
@@ -442,9 +441,6 @@ class CommandParser:
             elif token_type == TokenType.STRING:
                 return String(str(value))
 
-            # elif token_type == TokenType.YMDTIME:
-            #     return YmdTime.data.primitive
-
             elif token_type == TokenType.LIST:
                 if isinstance(value, list):  # ✅ 이미 리스트인 경우
                     return ListType(*value)
@@ -492,5 +488,4 @@ class CommandParser:
             return date
         elif isinstance(value, Point):
             return Point
-        #TODO : 추가 타입 추가
         return None  # 알 수 없는 타입
