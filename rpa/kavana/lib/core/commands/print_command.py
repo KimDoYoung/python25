@@ -30,6 +30,6 @@ class PrintCommand(BaseCommand):
         output = re.sub(r"\{(.*?)\}", evaluate_match, output)
 
         # ✅ 특수 문자(\n, \t) 지원 (Pythonic한 방식으로 변환)
-        output = output.encode().decode("unicode_escape")
+        # output = output.encode().decode("unicode_escape")
 
         print(output)

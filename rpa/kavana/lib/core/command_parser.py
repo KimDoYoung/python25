@@ -234,6 +234,9 @@ class CommandParser:
                     value_token = Token(data=Integer(int(value)), type=TokenType.INTEGER)
                 elif value.replace(".", "", 1).isdigit():  # ✅ Float 판별
                     value_token = Token(data=Float(float(value), type=TokenType.FLOAT))
+                elif  (value.startswith('"') and value.endswith('"')) or (value.startswith("'") and value.endswith("'")):
+                    value =value[1:-1]  # 앞뒤 따옴표 제거
+                    value_token = Token(data=String(value), type=TokenType.STRING)
                 else:
                     value_token = Token(data=String(value), type=TokenType.STRING)
 

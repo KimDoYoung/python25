@@ -1,4 +1,4 @@
-const global_name = "홍길동"
+const global_name = "홍길동\tABC"
 function plus(a,b)
  set c = a + b
  return c

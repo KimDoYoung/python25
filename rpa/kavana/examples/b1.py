@@ -8,6 +8,9 @@ INCLUDE "./examples/common.kvs"
 ENV_LOAD "./examples/env.test"
 MAIN
     print "{global_name}"
+    print "PASSWORD: {$PASSWORD}, USERNAME: {$USERNAME}"
+    SET c = plus(1, 2)
+    print "c = {c}"
 END_MAIN
 """
 #---------------------------
@@ -25,5 +28,5 @@ commandExecutor = CommandExecutor()
 for command in parsed_commands:
     print("----------------------")
     print(command)
-    commandExecutor.execute(command)
     print("----------------------")
+    commandExecutor.execute(command)

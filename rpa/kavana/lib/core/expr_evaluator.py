@@ -68,8 +68,6 @@ class ExprEvaluator:
             # ✅ 함수 처리 (PLUSE(3,4) 형태)
             if token.type == TokenType.IDENTIFIER :
                 func_info = FunctionRegistry.get_function(token.data.value)
-                if func_info is None:
-                    raise ExprEvaluationError(f"Undefined function: {token.data.value}", token.line, token.column)
                 if func_info is not None:
                     arg_count = func_info["arg_count"]
                     # combined_token, i = FunctionParser._func_tokens_to_string(tokens, start_index=i, func=None, arg_count=arg_count)
