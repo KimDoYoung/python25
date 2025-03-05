@@ -104,3 +104,42 @@ class StringFunctions:
         if isinstance(s, str) and isinstance(sub, str):
             return Token(data=Integer(s.find(sub)), type=TokenType.INTEGER)
         raise TypeError("사용형식 : INDEX_OF(문자열, 찾을문자열), 못찾았을 때 -1 반환")
+
+    @staticmethod
+    def TO_INT(s: str) -> int:
+        '''
+        문자열을 정수로 변환합니다.
+        
+        예:
+        TO_INT("42") → 42
+        TO_INT("-10") → -10
+        
+        잘못된 입력 예:
+        TO_INT("abc") → 오류 발생
+        '''
+        if not isinstance(s, str):
+            raise TypeError("TO_INT() 함수는 문자열 인자만 받을 수 있습니다")
+        try:
+            return Token(data=Integer(int(s)), type="INTEGER")
+        except ValueError:
+            raise ValueError("TO_INT() 함수는 정수형 문자열만 받을 수 있습니다")
+        
+    @staticmethod
+    def TO_FLOAT(s: str) -> float:
+        '''
+        문자열을 실수(float)로 변환합니다.
+        
+        예:
+        TO_FLOAT("3.14") → 3.14
+        TO_FLOAT("-2.5") → -2.5
+        
+        잘못된 입력 예:
+        TO_FLOAT("hello") → 오류 발생
+        '''
+        if not isinstance(s, str):
+            raise TypeError("TO_FLOAT() 함수는 문자열 인자만 받을 수 있습니다")
+        try:
+            return Token(data=Integer(float(s)), type="FLOAT")
+        except ValueError:
+            raise ValueError("TO_FLOAT() 함수는 실수형 문자열만 받을 수 있습니다")
+    

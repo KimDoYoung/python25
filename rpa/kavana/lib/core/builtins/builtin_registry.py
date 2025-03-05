@@ -16,6 +16,8 @@ BUILTIN_FUNCTIONS = {
     "ENDSWITH": (StringFunctions.ENDSWITH, 2),
     "CONTAINS": (StringFunctions.CONTAINS, 2),
     "INDEX_OF": (StringFunctions.INDEX_OF, 2),
+    "TO_INT" : (StringFunctions.TO_INT, 1),
+    "TO_FLOAT" : (StringFunctions.TO_FLOAT, 1),
 
     # ✅ 숫자 관련 함수 추가
     "RANDOM": (NumericFunctions.RANDOM, 2),
@@ -26,5 +28,7 @@ BUILTIN_FUNCTIONS = {
     "FLOOR": (NumericFunctions.FLOOR, 1),
     "CEIL": (NumericFunctions.CEIL, 1),
     "TRUNC" : (NumericFunctions.TRUNC, 1),
+    "TO_EVEN" : (NumericFunctions.TO_EVEN, 1),
+    "TO_ODD" : (NumericFunctions.TO_ODD, 1),
 
 }
