@@ -16,9 +16,10 @@
 - LOAD, INCLUDE 구현
 - CLICK, MOVE, WAIT_IMAGE, SLEEP 등 RPA 명령어 구현
 - builtin함수 추가.
-    - date함수
-    - 네트워크함수: FTP, SFTP, HTTP
+  - date함수
+  - 네트워크함수: FTP, SFTP, HTTP
 - vscode에서 kvs지원
+- for in test
 
 ## RPA commands
 
@@ -28,5 +29,5 @@
 - SLEEP
 - WAIT_IMAGE
 - CLICK, CLICK_RIGHT, CLICK_DOUBLE
-- MOVE_TO 
-- 
+- MOVE_TO
+-
