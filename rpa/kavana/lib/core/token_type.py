@@ -2,6 +2,7 @@ from enum import Enum
 
 class TokenType(Enum):
     # COMMAND
+    LIST_INDEX = "LIST_INDEX"
     COMMAND = "COMMAND"
     
     UNKNOWN = "UNKNOWN"

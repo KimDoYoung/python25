@@ -32,13 +32,6 @@ class FunctionToken(Token):
         arg_str = ", ".join([repr(arg) for arg in self.arguments])
         return f"FunctionToken(function_name={self.function_name}, arguments=[{arg_str}], line={self.line}, column={self.column})"
 
-@dataclass(frozen=True)
-class ListToken(Token):
-
-    def __post_init__(self):
-        if not isinstance(self.data, ListType):
-            raise TypeError("ListToken must contain a ListType")
-
 
 @dataclass(frozen=True)
 class CustomToken(Token):
@@ -100,3 +93,32 @@ class YmdToken(Token):
         """디버깅을 위한 문자열 표현"""
         arg_str = ", ".join(map(str, self.arguments))
         return f"YmdToken(arguments=[{arg_str}], data={self.data}, line={self.line}, column={self.column})"
+
+
+@dataclass(frozen=True)
+class ListToken(Token):
+    data: ListType  # ✅ `data`는 ListType 타입
+    type: TokenType = field(default=TokenType.LIST, init=False)  # ✅ `type`을 LIST로 고정
+    element_type : TokenType = field(default=TokenType.UNKNOWN) # element token type
+    def __post_init__(self):
+        if not isinstance(self.data, ListType):
+            raise TypeError("ListToken must contain a ListType")
+        
+        # ✅ `frozen=True`에서 값을 변경하려면 `object.__setattr__` 사용
+        object.__setattr__(self, "type", TokenType.LIST)
+
+@dataclass(frozen=True)
+class ListIndexToken(Token):
+    """✅ 리스트에 접근하기 위한 인덱스 토큰"""
+    express: List[Token] = field(default_factory=list)  # ✅ 리스트 형태로 받음
+    data: String  # ✅ `data`는 String 타입 (생성 시 반드시 입력해야 함)
+    type: TokenType = field(default=TokenType.LIST_INDEX, init=False)  # ✅ `type`을 LIST_INDEX 고정
+
+    def __post_init__(self):
+        """추가적인 유효성 검사"""
+        if not isinstance(self.data, String):
+            raise TypeError(f"data 필드는 String 타입이어야 합니다. (현재 타입: {type(self.data)})")
+
+    def __repr__(self) -> str:
+        express_str = ", ".join(repr(e) for e in self.express)  # express 리스트의 요소를 문자열로 변환
+        return f"ListIndexToken(express=[{express_str}], data={repr(self.data)}, type={self.type})"

@@ -1,7 +1,8 @@
 import re
 import operator
-from typing import List, Union
+from typing import List, Tuple, Union
 from datetime import datetime, timedelta
+from lib.core.command_parser import CommandParser
 from lib.core.datatypes.application import Application
 from lib.core.datatypes.image import Image
 from lib.core.datatypes.kavana_datatype import Boolean,  Float, Integer, KavanaDataType, String
@@ -17,7 +18,8 @@ from lib.core.token_type import TokenType
 from lib.core.function_executor import FunctionExecutor
 from lib.core.function_parser import FunctionParser
 from lib.core.function_registry import FunctionRegistry
-from lib.core.token import Token
+from lib.core.token import ListIndexToken, Token
+from lib.core.token_util import TokenUtil
 from lib.core.variable_manager import VariableManager
 
 class ExprEvaluator:
@@ -74,6 +76,19 @@ class ExprEvaluator:
                     combined_token, i = FunctionParser.make_function_token(tokens, start_index=i)
                     output.append(combined_token)
                     continue
+                else: # list[express]과 같은 형태
+                    var_token = self.var_manager.get_variable(token.data.value)
+
+                    if var_token is not None and var_token.type == TokenType.LIST:
+                        list_index_token,i = self.make_list_index_token(tokens, i)
+                        if list_index_token is not None and len(list_index_token) > 0:
+                            output.append(list_index_token)
+                            continue
+                        else: # 아무것도 없이 단독으로 사용된 변수
+                            output.append(var_token)
+                            i += 1
+                            continue    
+
 
             # ✅ 연산자 처리
             if token.type == TokenType.OPERATOR or token.type == TokenType.LOGICAL_OPERATOR:
@@ -249,8 +264,28 @@ class ExprEvaluator:
 
             elif token.type == TokenType.LIST:
                 stack.append(token)
+            elif token.type == TokenType.LIST_INDEX: # list[express] 형태
+                var_name = token.data.value
+                express = token.express
+                list_var_token = self.var_manager.get_variable(var_name)
+                if list_var_token is None or list_var_token.type != TokenType.LIST:
+                    ExprEvaluationError(f"리스트 변수가 없거나 변수가 리스트 타입이 아닙니다: {var_name}", token.line, token.column)
+                # 인덱스 값 계산
+                index_evaluator = ExprEvaluator(self.var_manager)
+                index_value_token = index_evaluator.evaluate(express)
+                if index_value_token.type != TokenType.INTEGER:
+                    ExprEvaluationError(f"인덱스는 정수여야 합니다: {index_value_token.data}", token.line, token.column)
+                index_value = index_value_token.data.value
+                o_list = list_var_token.data.primitive
+                if index_value < 0 or index_value >= len(o_list):
+                    ExprEvaluationError(f"인덱스가 범위를 벗어났습니다: {index_value}", token.line, token.column)
+                primitive_value = o_list[index_value]
+                kavana_data = TokenUtil.get_kavana_datatype(primitive_value)
+                index_value_token = Token(data=kavana_data, type=list_var_token.element_type)
+                stack.append(index_value_token)
+             
             else:
-                raise ExprEvaluationError(f"Unsupported token type: {token.data.value} {token.type}", token.line, token.column)  
+                raise ExprEvaluationError(f"지원하지 않는 Token타입입니다.: {token.data.value} {token.type}", token.line, token.column)  
 
         return stack[0]
 
@@ -304,7 +339,7 @@ class ExprEvaluator:
         - 현재는 간단한 RETURN 문만 지원
         """
         if func_body.startswith("RETURN "):
-            expr = func_body[len("RETURN "):].strip()
+            # expr = func_body[len("RETURN "):].strip()
             evaluator = ExprEvaluator(VariableManager())  # ✅ 새로운 평가기 생성
             evaluator.var_manager.variables.update(local_vars)  # ✅ 지역 변수 전달
             return evaluator.evaluate(func_body)
@@ -357,3 +392,37 @@ class ExprEvaluator:
             return TokenType.IMAGE
         
         raise ExprEvaluationError(f"Unsupported token type: {value}")
+
+
+    def make_list_index_token(self, tokens: List[Token], start_index: int) -> Tuple[Token, int]:
+        """ 리스트 인덱싱 토큰을 파싱하는 함수 (중첩 인덱싱 지원) """
+        
+        if start_index + 2 >= len(tokens):  # 최소한 list[0] 형태가 있어야 함
+            return [], start_index  # 인덱스 초과 방지
+
+        var_token = tokens[start_index]  # 리스트 변수
+
+        if tokens[start_index + 1].value == "[":  # 리스트 접근 시작
+            express = []
+            i = start_index + 2
+
+            bracket_count = 1  # `[` 개수를 추적하여 중첩된 인덱싱 확인
+            while i < len(tokens) and bracket_count > 0:
+                if tokens[i].value == "[":
+                    bracket_count += 1
+                elif tokens[i].value == "]":
+                    bracket_count -= 1
+                    if bracket_count == 0:  # 마지막 `]`을 찾았으면 종료
+                        break
+                express.append(tokens[i])
+                i += 1
+
+            if bracket_count > 0:  # 닫는 `]`가 부족하면 오류
+                raise ExprEvaluationError("리스트 인덱스의 `]`가 부족합니다.", tokens[start_index].line, tokens[start_index].column)
+
+            # 리스트 인덱스 토큰 생성
+            list_index_token = ListIndexToken(express=express, data=String(var_token.value))
+
+            return list_index_token, i + 1  # 생성한 토큰과 새로운 위치 반환
+        
+        return None, start_index  # 리스트 인덱스가 아니라면 원래 위치 유지
