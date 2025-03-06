@@ -70,7 +70,17 @@ class CommandExecutor:
                         break  # 반복문 종료
                     current_value += step_value
             elif  self.find_index(args, TokenType.IN) != -1: # for i in range(1,10)
-                pass
+                loop_var_name, iterable = self.parse_for_in_args(args)
+                for current_value in iterable:
+                    loop_var_token = Token(data=Integer(current_value), type=TokenType.INTEGER)
+                    self.variable_manager.set_variable(loop_var_name, loop_var_token)
+                    try:
+                        for sub_command in command["body"][1:]:
+                            self.execute(sub_command)
+                    except ContinueException:
+                        continue  # 다음 반복으로 이동
+                    except BreakException:
+                        break  # 반복문 종료               
             return
 
         # ✅ BREAK 처리
@@ -105,6 +115,26 @@ class CommandExecutor:
         exprEvaluator = ExprEvaluator(self.variable_manager)
         result_token =  exprEvaluator.evaluate(express)
         return result_token.data.value
+    
+    def find_index(self, tokens, token_type):
+        ''' token list에서 token_type의 index를 찾는다. 못찾으면 -1'''
+        for i, token in enumerate(tokens):
+            if token.type == token_type:
+                return i
+        return -1
+    def parse_for_in_args(self, args: list[Token]):
+        """FOR 루프에서 초기값, 최대값, STEP을 파싱 (조건식과 수식 지원)"""
+        in_index = self.find_index(args, TokenType.IN)
+        if in_index == -1:
+            raise CommandExecutionError("FOR 문에는 'IN'이 필요합니다.", args[0].line, args[0].column)
+        loop_var = args[0]
+        iterable_express = args[in_index + 1:]
+        list_token = self.eval_express(iterable_express)
+        if list_token.type != TokenType.LIST:
+            raise CommandExecutionError("FOR 문의 IN 다음은 리스트여야 합니다.", args[0].line, args[0].column)
+        iterable = list_token.data.primitive
+        return loop_var.data.value, iterable
+
 
     def parse_for_args(self, args: list[Token]):
         """FOR 루프에서 초기값, 최대값, STEP을 파싱 (조건식과 수식 지원)"""
@@ -131,9 +161,3 @@ class CommandExecutor:
 
         return loop_var.data.value, start_value.data.value, end_value.data.value, step_value.data.value
 
-    def find_index(self, tokens, token_type):
-        ''' token list에서 token_type의 index를 찾는다. 못찾으면 -1'''
-        for i, token in enumerate(tokens):
-            if token.type == token_type:
-                return i
-        return -1
