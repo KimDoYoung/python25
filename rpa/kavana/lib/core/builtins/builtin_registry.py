@@ -31,6 +31,7 @@ BUILTIN_FUNCTIONS = {
     "TRUNC" : (NumericFunctions.TRUNC, 1),
     "IS_EVEN" : (NumericFunctions.IS_EVEN, 1),
     "IS_ODD" : (NumericFunctions.IS_ODD, 1),
+    "RANGE" : (NumericFunctions.RANGE, 2),
 
     # ✅ 날짜 관련 함수 추가
     "YMDTIME": (YmdTimeFunctions.YMDTIME, 6),

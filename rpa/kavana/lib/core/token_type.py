@@ -42,6 +42,7 @@ class TokenType(Enum):
     FOR = "FOR"
     TO = "TO"
     STEP = "STEP"
+    IN = "IN"
     END_FOR = "END_FOR"
     WHILE = "WHILE"
     END_WHILE = "END_WHILE"

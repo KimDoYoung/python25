@@ -315,9 +315,6 @@ class CommandParser:
             # ✅ 작은따옴표 사용 감지 (문법 오류 처리)
             (r"'([^']*)'", None),  # ❌ 작은따옴표가 감지되면 예외 발생
 
-            # ✅ LIST로 처리할 경우: `=` 또는 연산자(`+`, `-`, `*`, `/`, `,`, `(`) 뒤에 오는 `[ ... ]`
-            #(r'\[(\s*\d+\s*(,\s*\d+\s*)*)\]', TokenType.LIST),
-
             # ✅ 연산자
             (r'\(', TokenType.LEFT_PAREN),
             (r'\)', TokenType.RIGHT_PAREN),

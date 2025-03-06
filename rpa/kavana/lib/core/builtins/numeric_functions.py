@@ -1,6 +1,8 @@
 import random
 from lib.core.datatypes.kavana_datatype import Integer
-from lib.core.token import Token
+from lib.core.datatypes.list_type import ListType
+from lib.core.token import ListToken, Token
+from lib.core.token_type import TokenType
 
 class NumericFunctions:
     @staticmethod
@@ -135,4 +137,29 @@ class NumericFunctions:
         if not isinstance(i, int):
             raise TypeError("IS_ODD() 함수는 정수형 인자만 받을 수 있습니다")
         return Token(data=Integer(i % 2 == 1), type="BOOLEAN")
-    
+
+    @staticmethod
+    def RANGE(*args) -> ListToken:
+        """RANGE(stop) 또는 RANGE(start, stop, step) 형태로 동작"""
+        arg_len = len(args)
+
+        if arg_len not in [1, 2, 3]:
+            raise TypeError("RANGE()는 1~3개의 정수를 인자로 받아야 합니다.")
+
+        for arg in args:
+            if not isinstance(arg, int):
+                raise TypeError("RANGE()의 모든 인자는 정수여야 합니다.")
+
+        if arg_len == 1:
+            start, stop, step = 0, args[0], 1
+        elif arg_len == 2:
+            start, stop, step = args[0], args[1], 1
+        else:
+            start, stop, step = args
+
+        if step == 0:
+            raise ValueError("RANGE()의 step 값은 0이 될 수 없습니다.")
+
+        range_list = list(range(start, stop, step))
+        resultToken = ListToken(data=ListType(*[range_list]), element_type=TokenType.INTEGER)
+        return resultToken

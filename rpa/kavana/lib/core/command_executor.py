@@ -52,21 +52,25 @@ class CommandExecutor:
 
         # ✅ FOR 문 처리
         if cmd == "FOR_BLOCK":
-            loop_var, start_value, end_value, step_value = self.parse_for_args(command["body"][0]["args"])
-            current_value = start_value
+            args = command["body"][0]["args"]
+            if self.find_index(args, TokenType.TO) != -1: # for i = 1 to 10 step 2
+                loop_var, start_value, end_value, step_value = self.parse_for_args(args)
+                current_value = start_value
 
-            while current_value <= end_value:
-                loop_var_token = Token(Integer(current_value), TokenType.INTEGER)
-                self.variable_manager.set_variable(loop_var, loop_var_token)
-                try:
-                    for sub_command in command["body"][1:]:
-                        self.execute(sub_command)
-                except ContinueException:
+                while current_value <= end_value:
+                    loop_var_token = Token(Integer(current_value), TokenType.INTEGER)
+                    self.variable_manager.set_variable(loop_var, loop_var_token)
+                    try:
+                        for sub_command in command["body"][1:]:
+                            self.execute(sub_command)
+                    except ContinueException:
+                        current_value += step_value
+                        continue  # 다음 반복으로 이동
+                    except BreakException:
+                        break  # 반복문 종료
                     current_value += step_value
-                    continue  # 다음 반복으로 이동
-                except BreakException:
-                    break  # 반복문 종료
-                current_value += step_value
+            elif  self.find_index(args, TokenType.IN) != -1: # for i in range(1,10)
+                pass
             return
 
         # ✅ BREAK 처리
@@ -128,6 +132,7 @@ class CommandExecutor:
         return loop_var.data.value, start_value.data.value, end_value.data.value, step_value.data.value
 
     def find_index(self, tokens, token_type):
+        ''' token list에서 token_type의 index를 찾는다. 못찾으면 -1'''
         for i, token in enumerate(tokens):
             if token.type == token_type:
                 return i
