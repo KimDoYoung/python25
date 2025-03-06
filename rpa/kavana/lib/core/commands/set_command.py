@@ -23,15 +23,15 @@ class SetCommand(BaseCommand):
 
         # 수식 평가
         exprEvaluator = ExprEvaluator(executor.variable_manager)
-        result_token = exprEvaluator.evaluate(expression)
+        value_token = exprEvaluator.evaluate(expression)
         # 변수 저장
         if args[0].type == TokenType.LIST_INDEX: # SET list[0] = 10
             # 리스트 요소 대입
             var_name = args[0].data.value
-            list_index_token = executor.variable_manager.get_variable(var_name, local=local_flag)
-            express = list_index_token.express
-            result_token = ExprEvaluator(executor.variable_manager).evaluate(express)
-            list_index = result_token.data.value
-            list_index_token.data.set(list_index, result_token.data.value)
+            list_index_token = executor.variable_manager.get_variable(var_name)
+            express = args[0].express
+            result_index_token = ExprEvaluator(executor.variable_manager).evaluate(express)
+            index = result_index_token.data.value
+            list_index_token.data.set(index, value_token.data.value)
         else:
-            executor.variable_manager.set_variable(var_name, result_token, local=local_flag)
+            executor.variable_manager.set_variable(var_name, value_token, local=local_flag)

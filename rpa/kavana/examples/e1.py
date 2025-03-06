@@ -6,7 +6,7 @@ from lib.core.command_preprocessor import CommandPreprocessor
 script = """
 MAIN
     SET list = [1, 2, 3, 4, 5]
-    SET list[0] = 10
+    SET list[2-(1+1)] = 10
     SET a = list[1] + list[2]
     SET b = list[a-1]
     PRINT "{a} {b} {list}"
@@ -17,15 +17,10 @@ END_MAIN
 #---------------------------
 script_lines = script.split("\n")
 command_preprocssed_lines = CommandPreprocessor().preprocess(script_lines)
-for line in command_preprocssed_lines:
-    print(line)
-parser = CommandParser()
-parsed_commands = parser.parse(command_preprocssed_lines)
-
+parsed_commands = CommandParser().parse(command_preprocssed_lines)
 commandExecutor = CommandExecutor()
-
 for command in parsed_commands:
-    print("----------------------")
-    print(command)
+    # print("----------------------")
+    # print(command)
     commandExecutor.execute(command)
-    print("----------------------")
+    # print("----------------------")

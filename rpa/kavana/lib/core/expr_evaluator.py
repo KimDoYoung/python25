@@ -280,7 +280,7 @@ class ExprEvaluator:
                 if index_value < 0 or index_value >= len(o_list):
                     ExprEvaluationError(f"인덱스가 범위를 벗어났습니다: {index_value}", token.line, token.column)
                 primitive_value = o_list[index_value]
-                kavana_data = TokenUtil.get_kavana_datatype(primitive_value)
+                kavana_data = TokenUtil.primitive_to_kavana(primitive_value)
                 index_value_token = Token(data=kavana_data, type=list_var_token.element_type)
                 stack.append(index_value_token)
              

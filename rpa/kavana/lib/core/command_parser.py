@@ -37,7 +37,6 @@ class CommandParser:
         i = 0  
 
         while i < len(processed_lines):
-            print(processed_lines[i].text)
             tokens = self.tokenize(processed_lines[i])  # ✅ `Token` 객체 리스트 반환
             
             if not tokens:
@@ -367,7 +366,7 @@ class CommandParser:
                         )
                     if token_type == TokenType.STRING:
                         value = CommandParser.decode_escaped_string(raw_value)  # ✅ 직접 변환 함수 호출
-                        value_datatype_changed = TokenUtil.value_by_kavana_type(value, token_type)
+                        value_datatype_changed = TokenUtil.primitive_to_kavana_by_tokentype(value, token_type)
                         tokens.append(Token(data=value_datatype_changed, type=token_type, line=line_num, column=column_num))
                     elif token_type == TokenType.LIST:
                         list_values = [int(v.strip()) for v in raw_value.strip("[]").split(",")]
@@ -376,7 +375,7 @@ class CommandParser:
                         tokens.append(token)
                     else:
                         value = raw_value
-                        value_datatype_changed = TokenUtil.value_by_kavana_type(value, token_type)
+                        value_datatype_changed = TokenUtil.primitive_to_kavana_by_tokentype(value, token_type)
                         tokens.append(Token(data=value_datatype_changed, type=token_type, line=line_num, column=column_num))
 
                     column_num += len(match.group(0))
