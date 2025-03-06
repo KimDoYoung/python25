@@ -1,3 +1,4 @@
+from lib.core.builtins.ymd_time_functions import YmdTimeFunctions
 from .string_functions import StringFunctions
 from .numeric_functions import NumericFunctions
 
@@ -28,7 +29,10 @@ BUILTIN_FUNCTIONS = {
     "FLOOR": (NumericFunctions.FLOOR, 1),
     "CEIL": (NumericFunctions.CEIL, 1),
     "TRUNC" : (NumericFunctions.TRUNC, 1),
-    "TO_EVEN" : (NumericFunctions.TO_EVEN, 1),
-    "TO_ODD" : (NumericFunctions.TO_ODD, 1),
+    "IS_EVEN" : (NumericFunctions.IS_EVEN, 1),
+    "IS_ODD" : (NumericFunctions.IS_ODD, 1),
 
+    # ✅ 날짜 관련 함수 추가
+    "YMDTIME": (YmdTimeFunctions.YMDTIME, 6),
+    "YMD": (YmdTimeFunctions.YMD, 3),
 }
