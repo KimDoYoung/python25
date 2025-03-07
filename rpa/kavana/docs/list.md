@@ -1,9 +1,12 @@
 # kavana에서의 List
+
 ## 설계
+
 ```
 
 1. 다음과 같은 문법을 지원한다, List안에 List 2중배열를 지원 a[1,2]와 같은 문법을 사용
 ```
+
 set a = [1,2,3] -> SET, a , =, ListExtoken
 set a[1] = 3 -> SET, ListIndexToken, =, 3
 set a = [1,olist[3],4] -> SET, a, =, ListExToken(element_expres=[[1],[ListIndexToken],[4]])
@@ -12,9 +15,11 @@ set a = [[a,b,c+1],[4,5]] -> SET, a, = ListExToken(element_expres=[[ListExToken]
 set a = [e1,2,3,(2+3*4)]
 set a[1,2,list[3]] = 3 -> set, ListIndexToken, =, 3
 set a[1,2] = 10
+
 ```
 2. token단위로 parsing한 것을 post_process_tokens에서 ListExToken과 ListIndexToken으로 만든다.
 ```
+
 @dataclass
 class ListExToken(Token):
     data: ListType  # ✅ `data`는 ListType 타입
@@ -26,8 +31,6 @@ class ListExToken(Token):
     def __post_init__(self):
         if not isinstance(self.data, ListType):
             raise TypeError("ListExToken must contain a ListType")
-
-
 
 @dataclass
 class ListIndexToken(Token):
@@ -46,6 +49,7 @@ class ListIndexToken(Token):
     def __repr__(self) -> str:
         express_str = ", ".join(repr(e) for e in self.express)  # express 리스트의 요소를 문자열로 변환
         return f"ListIndexToken(express=[{express_str}], data={repr(self.data)}, type={self.type})"
+
 ```
 3. post_process_tokens로직은 다음과 같다.
 
@@ -67,7 +71,9 @@ set a[1,2,list[3]] = 3 -> set, ListIndexToken, =, 3
 set a[1,2] = 10
 
 ```
+
 ## 문법
+
 ```
 set a = [1,2,3] -> SET, a , =, ListExtoken
 set a[1] = 3 -> SET, ListIndexToken, =, 3
@@ -78,7 +84,9 @@ set a = [e1,2,3,(2+3*4)]
 set a[1,2] = 3 -> set, ListIndexToken, =, 3
 
 ```
+
 ## 특징
+
 1. 같은 데이터 타입만을 지원.
 2. SET a = [1,2,3]과 같은 구문으로 지원
 3. 2중배열은 없는 것으로 하자

@@ -13,7 +13,7 @@ MAIN
     //set a = [1,a[1],4]
     //a = [1,2,3] //-> a,=,ListExToken
     //a = list[1] //-> a,=,ListIndexToken 
-    set a=b[c[2]]   
+    set a=b[c[2,3]+1]   
 END_MAIN
 """
 #---------------------------
@@ -27,9 +27,20 @@ for line in command_preprocssed_lines:
     if 'MAIN' in line.text:
         continue
     tokens = CommandParser().tokenize(line)
-    post_tokens= CommandParser().post_process_tokens(tokens)
+    # print(TokenUtil.tokens_to_string(tokens))
+    # r,c,i = CommandParser().extract_row_column_expresses(tokens,4)
+    # print(i)
+    # print(TokenUtil.tokens_to_string(r))
+    # print(TokenUtil.tokens_to_string(c))
+
+    # r,c,i = CommandParser().extract_row_column_expresses(tokens,6)
+    # print(i)
+    # print(TokenUtil.tokens_to_string(r))
+    # print(TokenUtil.tokens_to_string(c))
+
+    # post_tokens= CommandParser().post_process_tokens(tokens)
     print("----------------------------")
-    for token in post_tokens:
+    for token in tokens:
         if token.type == TokenType.LIST_EX:
             elements = []
             for express in token.element_expresses:
