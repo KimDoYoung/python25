@@ -161,5 +161,5 @@ class NumericFunctions:
             raise ValueError("RANGE()의 step 값은 0이 될 수 없습니다.")
 
         range_list = list(range(start, stop, step))
-        resultToken = ListToken(data=ListType(*[range_list]), element_type=TokenType.INTEGER)
+        resultToken = ListToken(data=ListType(*range_list), element_type=TokenType.INTEGER)
         return resultToken

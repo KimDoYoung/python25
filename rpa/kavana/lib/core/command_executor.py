@@ -71,8 +71,8 @@ class CommandExecutor:
                     current_value += step_value
             elif  self.find_index(args, TokenType.IN) != -1: # for i in range(1,10)
                 loop_var_name, iterable = self.parse_for_in_args(args)
-                for current_value in iterable:
-                    loop_var_token = Token(data=Integer(current_value), type=TokenType.INTEGER)
+                for i in iterable:
+                    loop_var_token = Token(data=Integer(i), type=TokenType.INTEGER)
                     self.variable_manager.set_variable(loop_var_name, loop_var_token)
                     try:
                         for sub_command in command["body"][1:]:

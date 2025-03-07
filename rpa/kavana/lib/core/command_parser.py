@@ -278,27 +278,27 @@ class CommandParser:
             (r'(?i)\bGLOBAL\b', TokenType.GLOBAL),
 
             # ✅ 제어문 키워드
-            (r'(?i)\bIF\b', TokenType.IF),
+            (r'(?i)\bEND_FUNCTION\b', TokenType.END_FUNCTION),
+            (r'(?i)\bEND_WHILE\b', TokenType.END_WHILE),
+            (r'(?i)\bFUNCTION\b', TokenType.FUNCTION),
+            # ✅ 스크립트 실행 관련 키워드
+            (r'(?i)\bENV_LOAD\b', TokenType.ENV_LOAD),
+            (r'(?i)\bEND_MAIN\b', TokenType.END_MAIN),
+            (r'(?i)\bINCLUDE\b', TokenType.INCLUDE),
+            (r'(?i)\bRETURN\b', TokenType.RETURN),
+            (r'(?i)\bMAIN\b', TokenType.MAIN),
+            (r'(?i)\bEND_FOR\b', TokenType.END_FOR),
+            (r'(?i)\bEND_IF\b', TokenType.END_IF),
+            (r'(?i)\bWHILE\b', TokenType.WHILE),
+            (r'(?i)\bSTEP\b', TokenType.STEP), 
             (r'(?i)\bELSE\b', TokenType.ELSE),
             (r'(?i)\bELIF\b', TokenType.ELIF),
-            (r'(?i)\bWHILE\b', TokenType.WHILE),
+            (r'(?i)\bIF\b', TokenType.IF),
             (r'(?i)\bFOR\b', TokenType.FOR),
             (r'(?i)\bTO\b', TokenType.TO),  
-            (r'(?i)\bSTEP\b', TokenType.STEP), 
-            (r'(?i)\bEND_IF\b', TokenType.END_IF),
-            (r'(?i)\bEND_WHILE\b', TokenType.END_WHILE),
-            (r'(?i)\bEND_FOR\b', TokenType.END_FOR),
+            (r'(?i)\bIN\b', TokenType.IN), 
 
             # ✅ 함수 관련 키워드
-            (r'(?i)\bFUNCTION\b', TokenType.FUNCTION),
-            (r'(?i)\bEND_FUNCTION\b', TokenType.END_FUNCTION),
-            (r'(?i)\bRETURN\b', TokenType.RETURN),
-
-            # ✅ 스크립트 실행 관련 키워드
-            (r'(?i)\bINCLUDE\b', TokenType.INCLUDE),
-            (r'(?i)\bENV_LOAD\b', TokenType.ENV_LOAD),
-            (r'(?i)\bMAIN\b', TokenType.MAIN),
-            (r'(?i)\bEND_MAIN\b', TokenType.END_MAIN),
 
             # ✅ 논리 연산자
             (r'(?i)\bAND\b', TokenType.LOGICAL_OPERATOR), 
@@ -382,7 +382,9 @@ class CommandParser:
                     break
 
             if not matched and line:  # ✅ 더 이상 처리할 수 없는 문자가 있으면 예외 발생
-                CommandParserError(f"Unknown token at line {line_num}, column {column_num} : {line}")
+                # print(f"알려지지 않은 Token:  line {line_num}, column {column_num} : {line[0]}")
+                line = line[1:]  # ✅ 한 글자 줄여서 진행하여 무한 루프 방지
+                column_num += 1
         tokens = CommandParser.post_process_tokens(tokens)
         return tokens
 
