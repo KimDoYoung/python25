@@ -23,7 +23,7 @@ class TokenType(Enum):
     RIGHT_PAREN = "RIGHT_PAREN" # )
     LEFT_BRACKET = "LEFT_BRACKET"    # [ 
     RIGHT_BRACKET = "RIGHT_BRACKET"  # ]
-    LIST = "LIST" # LIST
+    LIST_EX = "LIST" # LIST
 
     # ✅ 사용자 정의 데이터 타입 (POINT, REGION 등)
     POINT = "POINT"

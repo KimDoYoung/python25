@@ -79,7 +79,7 @@ class ExprEvaluator:
                 else: # list[express]과 같은 형태
                     var_token = self.var_manager.get_variable(token.data.value)
 
-                    if var_token is not None and var_token.type == TokenType.LIST:
+                    if var_token is not None and var_token.type == TokenType.LIST_EX:
                         list_index_token,i = self.make_list_index_token(tokens, i)
                         if list_index_token is not None and len(list_index_token) > 0:
                             output.append(list_index_token)
@@ -113,7 +113,19 @@ class ExprEvaluator:
                 output.append(token)
                 i += 1
                 continue
-
+            if token.type == TokenType.LIST_EX:
+                if token.status == 'Parsed':
+                    exprEval = ExprEvaluator(self.var_manager)
+                    result_values = []
+                    for express in token.element_expresses:
+                        element_token = exprEval.evaluate(express)
+                        result_values.append(element_token.data.value)
+                    token.data = ListType(*result_values)
+                    token.element_type = type(result_values[0])
+                    token.status = 'Evaluated'
+                output.append(token)
+                i += 1
+                continue
             # ✅ 괄호 처리
             if token.type == TokenType.LEFT_PAREN:
                 stack.append(token)
@@ -166,13 +178,13 @@ class ExprEvaluator:
                             raise ExprEvaluationError(f"Unsupported operand types for %: {a.type} and {b.type}")
                         result = Integer(a.data.value % b.data.value)
                         result_type = TokenType.INTEGER
-                    if token.data.value == '+' and a.type == TokenType.LIST and b.type == TokenType.LIST:
+                    if token.data.value == '+' and a.type == TokenType.LIST_EX and b.type == TokenType.LIST_EX:
                         # list + list
                         if a.element_type != b.element_type:
                             raise ExprEvaluationError("Cannot add lists of different types", token.line, token.column)
                         new_list = ListType(*(a.data.to_list() + b.data.to_list()))
                         result = new_list
-                        result_type = TokenType.LIST
+                        result_type = TokenType.LIST_EX
                     # YmdTime 연산 : Ymd + Integer, Ymd - Integer, Ymd - Ymd
                     elif a.type == TokenType.YMDTIME and b.type == TokenType.INTEGER:
                         dt = a.data.value + timedelta(days=b.data.value) if token.data.value == "+" else a.data.value - timedelta(days=b.data.value)
@@ -262,13 +274,13 @@ class ExprEvaluator:
                     raise ExprEvaluationError(f"Unsupported custom object type: {token.object_type}")
                 stack.append(result_token)
 
-            elif token.type == TokenType.LIST:
+            elif token.type == TokenType.LIST_EX:
                 stack.append(token)
             elif token.type == TokenType.LIST_INDEX: # list[express] 형태
                 var_name = token.data.value
                 express = token.express
                 list_var_token = self.var_manager.get_variable(var_name)
-                if list_var_token is None or list_var_token.type != TokenType.LIST:
+                if list_var_token is None or list_var_token.type != TokenType.LIST_EX:
                     ExprEvaluationError(f"리스트 변수가 없거나 변수가 리스트 타입이 아닙니다: {var_name}", token.line, token.column)
                 # 인덱스 값 계산
                 index_evaluator = ExprEvaluator(self.var_manager)

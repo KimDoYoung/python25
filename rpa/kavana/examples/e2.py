@@ -5,10 +5,11 @@ from lib.core.command_preprocessor import CommandPreprocessor
 # 대입
 script = """
 MAIN
-    SET list = ["kim", "lee", "park"]
-    SET list[1] = "choi"
-    SET list2 = [1+1, 2+2, 3+3]
-    PRINT "{list} {list2}"
+    SET olist = [1, 2, 3, 4, 5]
+    SET a = 1
+    //SET list = [1, a+oList[a], a+2, 2+2, (20+5)/5]
+    SET list = [1, a+oList[a],1, 2, 3]
+    PRINT "{list}"
 END_MAIN
 """
 #---------------------------
@@ -19,7 +20,9 @@ command_preprocssed_lines = CommandPreprocessor().preprocess(script_lines)
 parsed_commands = CommandParser().parse(command_preprocssed_lines)
 commandExecutor = CommandExecutor()
 for command in parsed_commands:
-    # print("----------------------")
-    # print(command)
-    commandExecutor.execute(command)
-    # print("----------------------")
+    print("----------------------")
+    print(command["cmd"])
+    for arg in command["args"]:
+        print(f">>>{arg}")
+    # commandExecutor.execute(command)
+    print("----------------------")

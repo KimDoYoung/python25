@@ -8,7 +8,7 @@ from lib.core.datatypes.list_type import ListType
 from lib.core.datatypes.point import Point
 from lib.core.datatypes.ymd_time import YmdTime
 from lib.core.exceptions.kavana_exception import CommandParserError, DataTypeError
-from lib.core.token import ListIndexToken, ListToken, Token
+from lib.core.token import ListExToken, ListIndexToken,  Token
 from lib.core.token_type import TokenType
 from lib.core.function_registry import FunctionRegistry
 from lib.core.token_util import TokenUtil
@@ -246,14 +246,38 @@ class CommandParser:
 
                 key_token = Token(data=String(f"${key}"), type=TokenType.IDENTIFIER)
                 # ✅ `parsed_commands`에 추가하여 추적 가능
-                const_token = Token(data=String("const"), type=TokenType.COMMAND)
                 parsed_commands.append({
                     "cmd": "CONST",
                     "args": [key_token, equals_token, value_token]
                 })
 
-    
+    @staticmethod
+    def decode_escaped_string(s: str) -> str:
+        """✅ 1바이트씩 읽어가면서 이스케이프 문자 변환"""
+        result = []
+        i = 0
+        while i < len(s):
+            if s[i] == "\\" and i + 1 < len(s):  # 🔥 이스케이프 문자 발견
+                escape_seq = s[i + 1]
 
+                if escape_seq == "n":
+                    result.append("\n")
+                elif escape_seq == "t":
+                    result.append("\t")
+                elif escape_seq == "\\":
+                    result.append("\\")
+                elif escape_seq == '"':
+                    result.append('"')
+                else:
+                    result.append("\\" + escape_seq)  # ✅ 미리 정의되지 않은 경우 그대로 추가
+
+                i += 2  # 🔥 이스케이프 문자는 2바이트 처리
+            else:
+                result.append(s[i])
+                i += 1
+
+        return "".join(result)
+    
     @staticmethod
     def tokenize(ppLine: PreprocessedLine) -> list:
         """한 줄을 `Token` 객체 리스트로 변환"""
@@ -365,11 +389,11 @@ class CommandParser:
                         value = CommandParser.decode_escaped_string(raw_value)  # ✅ 직접 변환 함수 호출
                         value_datatype_changed = TokenUtil.primitive_to_kavana_by_tokentype(value, token_type)
                         tokens.append(Token(data=value_datatype_changed, type=token_type, line=line_num, column=column_num))
-                    elif token_type == TokenType.LIST:
-                        list_values = [int(v.strip()) for v in raw_value.strip("[]").split(",")]
-                        value_datatype_changed = ListType(*list_values)
-                        token = ListToken(data=value_datatype_changed, type=token_type, line=line_num, column=column_num)
-                        tokens.append(token)
+                    # elif token_type == TokenType.LIST:
+                    #     list_values = [int(v.strip()) for v in raw_value.strip("[]").split(",")]
+                    #     value_datatype_changed = ListType(*list_values)
+                    #     token = ListToken(data=value_datatype_changed, type=token_type, line=line_num, column=column_num)
+                    #     tokens.append(token)
                     else:
                         value = raw_value
                         value_datatype_changed = TokenUtil.primitive_to_kavana_by_tokentype(value, token_type)
@@ -388,190 +412,87 @@ class CommandParser:
         tokens = CommandParser.post_process_tokens(tokens)
         return tokens
 
+ 
     @staticmethod
-    def post_process_tokens(tokens: List[Token]) -> List[Token]:
-        ''' 
-        [] 처리 TokenType.LIST로 처리할지, TokenType.LIST_INDEX로 처리할지 결정 
-        set list = [1,2,3] => [SET, list, =, [1,2,3]]
-        set list[0] = 100 => [SET, list[0], =, 100]
-        +, = , ',' '(',  뒤에 '['가 오면 TokenType.LIST로 처리
-        '[' 안에 있으면 TokenType.LIST_INDEX로 처리 (ex: list[b[1]])
-        a[ b[1] + 1] 같은 중첩 구조도 처리 가능
-        '''
+    def post_process_tokens(tokens: List[Token], flag_list_index=False) -> List[Token]:
         if not tokens:
             return []
 
         processed_tokens = []
         i = 0
-        bracket_count = 0  # `[` 개수 추적
 
         while i < len(tokens):
             token = tokens[i]
-            var_name = None
-            if token.type == TokenType.LEFT_BRACKET:
-                
-                # `[` 시작 시 개수 증가
-                bracket_count += 1
 
-                # LIST 또는 LIST_INDEX인지 판별
-                if bracket_count == 1 and processed_tokens and processed_tokens[-1].data.value in {
-                    '=','+',',','(','-'
-                }:
-                    var_name = tokens[i-2].data.value
-                    # ✅ LIST 처리 (최상위 `[`인 경우)
-                    list_values = []
-                    i += 1  # `[` 다음 토큰부터 시작
+            # ✅ 리스트 인덱스 (`ListIndexToken`) 처리
+            if flag_list_index or (token.type == TokenType.IDENTIFIER and i + 1 < len(tokens) and tokens[i + 1].type == TokenType.LEFT_BRACKET):                
+                row_express = []
+                column_express = []
+                current_express = row_express  # 초기에는 row_express에 저장
+                var_name = None
+                if not flag_list_index: # 재귀호출이라면
+                    var_name = token.data.value
+                    i += 2  # `IDENTIFIER`와 `[` 건너뛰기
+                bracket_count = 1  # `[` 개수 카운트
 
-                    while i < len(tokens):
-                        if tokens[i].type == TokenType.RIGHT_BRACKET:
-                            bracket_count -= 1
-                            if bracket_count == 0:  # 최상위 `[`가 닫힘
-                                break
-                        elif tokens[i].type == TokenType.LEFT_BRACKET:
-                            bracket_count += 1  # 중첩 `[` 개수 증가
-                        list_values.append(tokens[i])
-                        i += 1
-
-                    if i < len(tokens) and tokens[i].type == TokenType.RIGHT_BRACKET:
-                        i += 1  # `]` 건너뛰기
-                        if len(list_values) == 0:
-                            raise CommandParserError("리스트 내용이 없습니다.", tokens[i].line, tokens[i].column)
-                        element_type = list_values[0].type
-                        processed_tokens.append(ListToken(data=ListType(*[t.data.value for t in list_values if t.type != TokenType.COMMA]), element_type=element_type))
+                while i < len(tokens):
+                    if tokens[i].type == TokenType.RIGHT_BRACKET:
+                        bracket_count -= 1
+                        if bracket_count == 0:
+                            break
+                    elif tokens[i].type == TokenType.LEFT_BRACKET:
+                        bracket_count += 1
+                        # ✅ 내부 `ListIndexToken` 처리
+                        sub_index, new_pos = CommandParser.post_process_tokens(tokens[i+1:], flag_list_index=True)  
+                        current_express.append(sub_index)
+                        i = i + new_pos  # ✅ 재귀 호출이 끝난 위치로 `i` 이동
+                    elif tokens[i].type == TokenType.COMMA:
+                        current_express = column_express  # `,`가 나오면 column_express로 전환
                     else:
-                        raise CommandParserError("리스트 닫힘 `]`이 없습니다.", tokens[i].line, tokens[i].column)
-
+                        current_express.append(tokens[i])  # 현재 표현식 리스트에 추가
+                    i += 1
+                if var_name:
+                    processed_tokens.append(ListIndexToken(
+                        data=String(var_name),
+                        row_express=CommandParser.post_process_tokens(row_express),  # ✅ 내부 표현식 변환
+                        column_express=CommandParser.post_process_tokens(column_express)  # ✅ 내부 표현식 변환
+                    ))
                 else:
-                    var_name = tokens[i-1].data.value
-                    # ✅ LIST_INDEX 처리 (중첩된 `[`인 경우)
-                    list_index_values = []
-                    i += 1  # `[` 다음 토큰부터 시작
-                    while i < len(tokens):
-                        if tokens[i].type == TokenType.RIGHT_BRACKET:
-                            bracket_count -= 1
-                            if bracket_count == 0:  # 최상위 `[`가 닫힘
-                                break
-                        elif tokens[i].type == TokenType.LEFT_BRACKET:
-                            bracket_count += 1  # 중첩 `[` 개수 증가
-                        list_index_values.append(tokens[i])
-                        i += 1
+                    processed_tokens.append(current_express)
+                    break
+                i += 1  # `]` 건너뛰기
 
-                    if i < len(tokens) and tokens[i].type == TokenType.RIGHT_BRACKET:
-                        i += 1  # `]` 건너뛰기
-                        if var_name is None:
-                            raise CommandParserError("이름이 없는 리스트 index입니다", tokens[i].line, tokens[i].column)    
-                        list_index_token = ListIndexToken(data=String(var_name), express=list_index_values)
-                        # processed_tokens에서 마지막 토큰 제거
-                        processed_tokens.pop()
-                        processed_tokens.append(list_index_token)
+            # ✅ 리스트 (`ListExToken`) 처리
+            elif token.type == TokenType.LEFT_BRACKET:
+                list_elements = []
+                current_element = []
+                i += 1  # `[` 다음 토큰부터 시작
+
+                while i < len(tokens):
+                    if tokens[i].type == TokenType.RIGHT_BRACKET:
+                        if current_element:
+                            list_elements.append(current_element)  # 🔥 내부 표현식 추가
+                        break
+                    elif tokens[i].type == TokenType.COMMA:
+                        if current_element:
+                            list_elements.append(current_element)  # 🔥 내부 표현식 추가
+                            current_element = []
                     else:
-                        raise CommandParserError("인덱스 닫힘 `]`이 없습니다.", tokens[i].line, tokens[i].column)
+                        current_element.append(tokens[i])
+                    i += 1
 
+                if current_element:
+                    list_elements.append(current_element)  # 🔥 마지막 요소 추가
+
+                processed_tokens.append(ListExToken(
+                    data=ListType([]),
+                    element_expresses=list_elements  # ✅ 리스트 요소 저장
+                ))
+                i += 1  # `]` 건너뛰기
+
+            # ✅ 기본 토큰 처리
             else:
                 processed_tokens.append(token)
                 i += 1
 
-        return processed_tokens
-
-    @staticmethod
-    def decode_escaped_string(s: str) -> str:
-        """✅ 1바이트씩 읽어가면서 이스케이프 문자 변환"""
-        result = []
-        i = 0
-        while i < len(s):
-            if s[i] == "\\" and i + 1 < len(s):  # 🔥 이스케이프 문자 발견
-                escape_seq = s[i + 1]
-
-                if escape_seq == "n":
-                    result.append("\n")
-                elif escape_seq == "t":
-                    result.append("\t")
-                elif escape_seq == "\\":
-                    result.append("\\")
-                elif escape_seq == '"':
-                    result.append('"')
-                else:
-                    result.append("\\" + escape_seq)  # ✅ 미리 정의되지 않은 경우 그대로 추가
-
-                i += 2  # 🔥 이스케이프 문자는 2바이트 처리
-            else:
-                result.append(s[i])
-                i += 1
-
-        return "".join(result)
-    
-    # @staticmethod        
-    # def value_by_kavana_type(value: Any, token_type: TokenType) -> KavanaDataType:
-    #     """토큰 값을 해당 TokenType에 맞게 변환 (잘못된 값이면 Custom Exception 발생)"""
-    #     try:
-    #         if token_type == TokenType.INTEGER:
-    #             if not isinstance(value, int) and not str(value).isdigit():
-    #                 raise DataTypeError("Invalid integer format", value)
-    #             return Integer(int(value))
-
-    #         elif token_type == TokenType.FLOAT:
-    #             if not isinstance(value, float) and not re.match(r'^-?\d+\.\d+$', str(value)):
-    #                 raise DataTypeError("Invalid float format", value)
-    #             return Float(float(value))
-
-    #         elif token_type == TokenType.BOOLEAN:
-    #             if value not in {"True", "False", True, False}:
-    #                 raise DataTypeError("Invalid boolean value, expected 'True' or 'False'", value)
-    #             return Boolean(value == "True" or value is True)
-
-    #         elif token_type == TokenType.NONE:
-    #             if value not in {"None", None}:
-    #                 raise DataTypeError("Invalid None value, expected 'None'", value)
-    #             return NoneType(None)
-
-    #         elif token_type == TokenType.STRING:
-    #             return String(str(value))
-
-    #         elif token_type == TokenType.LIST:
-    #             if isinstance(value, list):  # ✅ 이미 리스트인 경우
-    #                 return ListType(*value)
-    #             if isinstance(value, str) and value.startswith("[") and value.endswith("]"):
-    #                 elements = [int(v.strip()) for v in value.strip("[]").split(",")]
-    #                 return ListType(*elements)
-    #         #TODO : 추가 타입 추가
-
-    #         return String(str(value))  # 나머지는 String (IDENTIFIER, OPERATOR 등)
-
-    #     except DataTypeError as e:
-    #         raise e  # 이미 처리된 예외 그대로 전달
-    #     except Exception as e:
-    #         raise DataTypeError(f"Unexpected error in classify_datatype: {str(e)}", value)
-        
-    # @staticmethod
-    # def get_kavana_datatype(value: Any) -> KavanaDataType | None:
-    #     """
-    #     주어진 value에서 KavanaDataType의 요소 타입을 추출하는 함수
-    #     - 리스트일 경우 내부 요소의 공통 타입을 반환
-    #     - 단일 값일 경우 해당 타입 반환
-    #     - 리스트가 비어 있으면 None 반환
-    #     """
-    #     if isinstance(value, list):  # 리스트 타입이면 내부 요소 확인
-    #         if len(value) == 0:
-    #             return None  # 빈 리스트이면 타입 미정
-
-    #         first_type = CommandParser.get_kavana_datatype(value[0])  # 첫 번째 요소 타입 결정
-    #         return first_type
-
-    #     # 개별 값에 대한 타입 결정
-    #     if isinstance(value, int):
-    #         return Integer
-    #     elif isinstance(value, float):
-    #         return Float
-    #     elif isinstance(value, bool):
-    #         return Boolean
-    #     elif value is None:
-    #         return NoneType
-    #     elif isinstance(value, str):
-    #         return String
-    #     elif isinstance(value, datetime):
-    #         return datetime
-    #     elif isinstance(value, date):
-    #         return date
-    #     elif isinstance(value, Point):
-    #         return Point
-    #     return None  # 알 수 없는 타입
+        return processed_tokens, i

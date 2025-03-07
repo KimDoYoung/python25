@@ -1,11 +1,11 @@
 from dataclasses import dataclass, field
-from typing import List, Optional
+from typing import List, Literal, Optional
 from lib.core.datatypes.kavana_datatype import KavanaDataType, String
 from lib.core.datatypes.list_type import ListType
 from lib.core.datatypes.ymd_time import Ymd, YmdTime
 from lib.core.token_type import TokenType
 
-@dataclass(frozen=True)
+@dataclass
 class Token:
     data: KavanaDataType
     type: TokenType  # ✅ 토큰 유형
@@ -16,7 +16,7 @@ class Token:
         """디버깅을 위한 문자열 표현"""
         return f"Token(data={self.data}, type={self.type}, line={self.line}, column={self.column})"
 
-@dataclass(frozen=True)
+@dataclass
 class FunctionToken(Token):
     """✅ 함수 호출을 표현하는 토큰"""
     function_name: str =""  # ✅ 함수 이름
@@ -33,7 +33,7 @@ class FunctionToken(Token):
         return f"FunctionToken(function_name={self.function_name}, arguments=[{arg_str}], line={self.line}, column={self.column})"
 
 
-@dataclass(frozen=True)
+@dataclass
 class CustomToken(Token):
     """✅ 'Point', 'Rectangle', 'Region', 'Image' 등의 객체를 표현하는 커스텀 토큰"""
     data: KavanaDataType = field(init=False)
@@ -50,7 +50,7 @@ class CustomToken(Token):
         return f"CustomToken(type={self.object_type}, arguments=[{arg_str}], line={self.line}, column={self.column})"
 
 
-@dataclass(frozen=True)
+@dataclass
 class YmdTimeToken(Token):
     """✅ YmdTime 함수 호출을 표현하는 토큰"""
     arguments: List[int] = field(default_factory=list)  # ✅ `init=True`로 변경하여 생성자에서 받음
@@ -73,7 +73,7 @@ class YmdTimeToken(Token):
         arg_str = ", ".join(map(str, self.arguments))
         return f"YmdTimeToken(arguments=[{arg_str}], data={self.data}, line={self.line}, column={self.column})"
 
-@dataclass(frozen=True)
+@dataclass
 class YmdToken(Token):
     """✅ Ymd 함수 호출을 표현하는 토큰"""
     arguments: List[int] = field(default_factory=list)  # ✅ 생성자에서 리스트 형태로 받음
@@ -95,22 +95,39 @@ class YmdToken(Token):
         return f"YmdToken(arguments=[{arg_str}], data={self.data}, line={self.line}, column={self.column})"
 
 
-@dataclass(frozen=True)
-class ListToken(Token):
+# @dataclass
+# class ListToken(Token):
+#     data: ListType  # ✅ `data`는 ListType 타입
+#     type: TokenType = field(default=TokenType.LIST, init=False)  # ✅ `type`을 LIST로 고정
+#     element_type : TokenType = field(default=TokenType.UNKNOWN) # element token type
+#     def __post_init__(self):
+#         if not isinstance(self.data, ListType):
+#             raise TypeError("ListToken must contain a ListType")
+        
+#         # ✅ `frozen=True`에서 값을 변경하려면 `object.__setattr__` 사용
+#         object.__setattr__(self, "type", TokenType.LIST)
+
+
+@dataclass
+class ListExToken(Token):
     data: ListType  # ✅ `data`는 ListType 타입
-    type: TokenType = field(default=TokenType.LIST, init=False)  # ✅ `type`을 LIST로 고정
-    element_type : TokenType = field(default=TokenType.UNKNOWN) # element token type
+    type: TokenType = field(default=TokenType.LIST_EX, init=False)  # ✅ `type`을 LIST로 고정
+    element_type: TokenType = field(default=TokenType.UNKNOWN)  # 요소의 토큰 타입
+    element_expresses: List[List[Token]] = field(default_factory=list)  # 각 요소의 표현 리스트
+    status: Literal["Parsed", "Evaled"] = "Parsed"
+
     def __post_init__(self):
         if not isinstance(self.data, ListType):
-            raise TypeError("ListToken must contain a ListType")
-        
-        # ✅ `frozen=True`에서 값을 변경하려면 `object.__setattr__` 사용
-        object.__setattr__(self, "type", TokenType.LIST)
+            raise TypeError("ListExToken must contain a ListType")
 
-@dataclass(frozen=True)
+
+
+@dataclass
 class ListIndexToken(Token):
     """✅ 리스트에 접근하기 위한 인덱스 토큰"""
-    express: List[Token] = field(default_factory=list)  # ✅ 리스트 형태로 받음
+    express: List[Token] = field(default_factory=list)  
+    row_express: List[Token] = field(default_factory=list)  
+    column_express: List[Token] = field(default_factory=list)
     data: String  # ✅ `data`는 String 타입 (생성 시 반드시 입력해야 함)
     type: TokenType = field(default=TokenType.LIST_INDEX, init=False)  # ✅ `type`을 LIST_INDEX 고정
 

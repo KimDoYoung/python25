@@ -1,7 +1,7 @@
 import random
 from lib.core.datatypes.kavana_datatype import Integer
 from lib.core.datatypes.list_type import ListType
-from lib.core.token import ListToken, Token
+from lib.core.token import  ListExToken, Token
 from lib.core.token_type import TokenType
 
 class NumericFunctions:
@@ -139,7 +139,7 @@ class NumericFunctions:
         return Token(data=Integer(i % 2 == 1), type="BOOLEAN")
 
     @staticmethod
-    def RANGE(*args) -> ListToken:
+    def RANGE(*args) -> ListExToken:
         """RANGE(stop) 또는 RANGE(start, stop, step) 형태로 동작"""
         arg_len = len(args)
 
@@ -161,5 +161,5 @@ class NumericFunctions:
             raise ValueError("RANGE()의 step 값은 0이 될 수 없습니다.")
 
         range_list = list(range(start, stop, step))
-        resultToken = ListToken(data=ListType(*range_list), element_type=TokenType.INTEGER)
+        resultToken = ListExToken(data=ListType(*range_list), element_type=TokenType.INTEGER)
         return resultToken

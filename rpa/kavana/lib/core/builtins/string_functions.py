@@ -2,7 +2,7 @@ from typing import Any, List
 
 from lib.core.datatypes.kavana_datatype import Boolean, Integer, String
 from lib.core.datatypes.list_type import ListType
-from lib.core.token import ListToken, Token
+from lib.core.token import  Token
 from lib.core.token_type import TokenType
 
 
@@ -71,7 +71,7 @@ class StringFunctions:
         if isinstance(s, str) and isinstance(sep, str):
             result = s.split(sep)
             list_type = ListType(result)
-            return ListToken(data=list_type, type=TokenType.LIST)
+            return ListToken(data=list_type, type=TokenType.LIST_EX)
         raise TypeError("사용형식 : SPLIT(문자열, 구분자)")
     
     @staticmethod

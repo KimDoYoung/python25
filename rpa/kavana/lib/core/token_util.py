@@ -6,10 +6,33 @@ from lib.core.datatypes.kavana_datatype import Boolean, Float, Integer, KavanaDa
 from lib.core.datatypes.list_type import ListType
 from lib.core.datatypes.ymd_time import Ymd, YmdTime
 from lib.core.exceptions.kavana_exception import DataTypeError
+from lib.core.token import Token
 from lib.core.token_type import TokenType
 
 
 class TokenUtil:
+    @staticmethod
+    def tokens_to_string(tokens: list[Token]) -> str:
+        """토큰 리스트를 문자열로 변환"""
+        strs = []
+        for token in tokens:
+            if isinstance(token, list):
+                TokenUtil.tokens_to_string(token)
+            elif token.type == TokenType.LIST_INDEX:
+                row_express = TokenUtil.tokens_to_string(token.row_express)
+                col_express = TokenUtil.tokens_to_string(token.column_express)
+                var_name = token.data.value
+                strs.append(f"name={var_name}, row_express:{row_express}, col_express:{col_express}")
+            elif token.type == TokenType.LIST_EX:
+                expresses = []
+                for express in token.element_expresses:
+                    expresses.append(TokenUtil.tokens_to_string(express))
+                strs.append(f"length:{len(token.element_expresses)}, els:[{', '.join(expresses)}]")
+            else:
+                strs.append(str(token.data.value))
+        return ', '.join(strs)
+    
+    
     '''kavana에서 사용하는 토큰 유틸리티 클래스'''
     @staticmethod
     def primitive_to_kavana(primitive: Any) -> KavanaDataType | None:
@@ -69,7 +92,7 @@ class TokenUtil:
             elif token_type == TokenType.STRING:
                 return String(str(value))
 
-            elif token_type == TokenType.LIST:
+            elif token_type == TokenType.LIST_EX:
                 if isinstance(value, list):  # ✅ 이미 리스트인 경우
                     return ListType(*value)
                 if isinstance(value, str) and value.startswith("[") and value.endswith("]"):
