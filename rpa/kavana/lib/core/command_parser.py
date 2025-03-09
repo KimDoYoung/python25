@@ -415,6 +415,7 @@ class CommandParser:
  
     @staticmethod
     def post_process_tokens(tokens: List[Token]) -> List[Token]:
+        ''' ListExToken, ListIndexToken을 생성해서 대체한다'''
         if not tokens:
             return []
 
@@ -444,29 +445,41 @@ class CommandParser:
             elif token.type == TokenType.LEFT_BRACKET:
                 list_elements = []
                 current_element = []
+                end_idx = CommandParser.find_matching_bracket(tokens, i)  # `]`의 위치 찾기
                 i += 1  # `[` 다음 토큰부터 시작
 
-                while i < len(tokens):
-                    if tokens[i].type == TokenType.RIGHT_BRACKET:
+                while i <= end_idx:  # `]`까지 포함하여 처리
+                    if tokens[i].type == TokenType.COMMA:
                         if current_element:
-                            list_elements.append(current_element)  # 🔥 내부 표현식 추가
-                        break
-                    elif tokens[i].type == TokenType.COMMA:
-                        if current_element:
-                            list_elements.append(current_element)  # 🔥 내부 표현식 추가
+                            list_elements.append(CommandParser.post_process_tokens(current_element))
                             current_element = []
+                    elif tokens[i].type == TokenType.LEFT_BRACKET:
+                        sub_end_idx = CommandParser.find_matching_bracket(tokens, i)
+                        sub_list_tokens = tokens[i :sub_end_idx]  # 내부 리스트 추출
+                        list_elements.append([ListExToken(
+                            data=ListType([]),
+                            element_expresses=CommandParser.post_process_tokens(sub_list_tokens)  # ✅ 내부 리스트 재귀 처리
+                        )])
+                        i = sub_end_idx  # `]` 위치로 이동
+                    elif tokens[i].type == TokenType.RIGHT_BRACKET:
+                        if current_element:
+                            # ✅ `RIGHT_BRACKET`을 만나면 `ListExToken`으로 변환하여 추가
+                            sub_list_tokens = current_element[1:]  # 첫 번째 `[` 제외
+                            list_elements.append(ListExToken(
+                                data=ListType([]),
+                                element_expresses=CommandParser.post_process_tokens(sub_list_tokens)  # ✅ 내부 리스트 재귀 처리
+                            ))
+                        break
                     else:
                         current_element.append(tokens[i])
-                    i += 1
 
-                if current_element:
-                    list_elements.append(current_element)  # 🔥 마지막 요소 추가
+                    i += 1
 
                 processed_tokens.append(ListExToken(
                     data=ListType([]),
-                    element_expresses=list_elements  # ✅ 리스트 요소 저장
+                    element_expresses=list_elements  # ✅ 중첩 리스트 포함
                 ))
-                i += 1  # `]` 건너뛰기
+                i = end_idx + 1  # `]` 다음 위치로 이동
 
             # ✅ 기본 토큰 처리
             else:
@@ -479,6 +492,7 @@ class CommandParser:
     def find_matching_bracket(tokens: List[Token], start_idx: int) -> int:
         """
         주어진 `start_idx` 위치의 `[`와 짝을 이루는 `]`의 위치를 찾는 함수.
+        '['에서 시작 ']'의 index를 리턴한다.
         """
         count_bracket = 1  # `[`를 만나고 시작하므로 1로 초기화
         i = start_idx + 1

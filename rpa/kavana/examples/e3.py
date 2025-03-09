@@ -9,11 +9,14 @@ script = """
 MAIN
     //SET olist = [1, 2, 3, 4, 5]
     //set a[1] = 3
-    //set a = [1,olist[3],4]
+    //set a = [1,olist[3],4] 
     //set a = [1,a[1],4]
     //a = [1,2,3] //-> a,=,ListExToken
     //a = list[1] //-> a,=,ListIndexToken 
-    set a=b[c[2,3]+1]   
+    // set a=b[c[2,3]+1]  + 9 
+    // set a = [ [1,2], [3,4] ]
+    // set a = [1,2,3] 
+    set a = [ [1,2], [3,4] ]
 END_MAIN
 """
 #---------------------------
