@@ -40,11 +40,7 @@ class TokenUtil:
         주어진 value 값으로 해당하는 KavanaDataType을 반환한다.
         """
         if isinstance(primitive, list):  # 리스트 타입이면 내부 요소 확인
-            if len(primitive) == 0:
-                return None  # 빈 리스트이면 타입 미정
-
-            first_type = TokenUtil.primitive_to_kavana(primitive[0])  # 첫 번째 요소 타입 결정
-            return first_type
+            return ListType(*[TokenUtil.primitive_to_kavana(p) for p in primitive])
 
         # 개별 값에 대한 타입 결정
         if isinstance(primitive, int):
@@ -104,3 +100,22 @@ class TokenUtil:
             raise e  # 이미 처리된 예외 그대로 전달
         except Exception as e:
             raise DataTypeError(f"primitive_to_kavanatype에서 알려지지 않은 예외발생: {str(e)}", value)    
+        
+
+    @staticmethod
+    def get_element_token_type(value: Any) -> TokenType:
+        """주어진 값의 타입을 확인하여 TokenType 반환"""
+        if isinstance(value, int):
+            return TokenType.INTEGER
+        elif isinstance(value, float):
+            return TokenType.FLOAT
+        elif isinstance(value, bool):
+            return TokenType.BOOLEAN
+        elif value is None:
+            return TokenType.NONE
+        elif isinstance(value, str):
+            return TokenType.STRING
+        elif isinstance(value, list):
+            return TokenType.LIST_EX
+        else:
+            return type(value)

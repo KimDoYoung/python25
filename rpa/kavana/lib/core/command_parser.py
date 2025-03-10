@@ -416,10 +416,11 @@ class CommandParser:
 
         processed_tokens = []
         i = 0
-
+        
+        
         while i < len(tokens):
             token = tokens[i]
-
+            print(token)
             # ✅ 리스트 인덱스 (`ListIndexToken`) 처리
             if token.type == TokenType.IDENTIFIER and i + 1 < len(tokens) and tokens[i + 1].type == TokenType.LEFT_BRACKET:                
                 var_name = token.data.value
@@ -465,10 +466,11 @@ class CommandParser:
                     elif tokens[i].type == TokenType.LEFT_BRACKET:
                         sub_end_idx = CommandParser.find_matching_bracket(tokens, i)
                         sub_list_tokens = tokens[i :sub_end_idx+1]  # 내부 리스트 추출
-                        list_elements.append([ListExToken(
-                            data=ListType([]),
-                            element_expresses=CommandParser.post_process_tokens(sub_list_tokens)  # ✅ 내부 리스트 재귀 처리
-                        )])
+                        current_element.extend(CommandParser.post_process_tokens(sub_list_tokens))
+                        # list_elements.append([ListExToken(
+                        #     data=ListType([]),
+                        #     element_expresses=CommandParser.post_process_tokens(sub_list_tokens)  # ✅ 내부 리스트 재귀 처리
+                        # )])
                         i = sub_end_idx  # `]` 위치로 이동
                     elif tokens[i].type == TokenType.RIGHT_BRACKET:
                         if current_element:

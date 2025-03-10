@@ -29,9 +29,12 @@ class SetCommand(BaseCommand):
             # 리스트 요소 대입
             var_name = args[0].data.value
             list_index_token = executor.variable_manager.get_variable(var_name)
-            express = args[0].express
-            result_index_token = ExprEvaluator(executor.variable_manager).evaluate(express)
-            index = result_index_token.data.value
-            list_index_token.data.set(index, value_token.data.value)
+            row_express = args[0].row_express
+            col_express = args[0].column_express
+            row = ExprEvaluator(executor.variable_manager).evaluate(row_express).data.value
+            col = None
+            if col_express:
+                col = ExprEvaluator(executor.variable_manager).evaluate(col_express).data.value
+            list_index_token.data.set(row,col, value_token.data)
         else:
             executor.variable_manager.set_variable(var_name, value_token, local=local_flag)

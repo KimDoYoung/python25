@@ -119,9 +119,19 @@ class ExprEvaluator:
                     result_values = []
                     for express in token.element_expresses:
                         element_token = exprEval.evaluate(express)
-                        result_values.append(element_token.data.value)
+                        if element_token.type == TokenType.LIST_EX:
+                            result_values.append([element_token])
+                            if len(result_values)>0 and len(result_values[0])> 0:
+                                token.element_type = TokenUtil.get_element_token_type(result_values[0][0])
+                            else:
+                                token.element_type = TokenType.UNKNOWN    
+                        else:
+                            result_values.append(element_token)
+                            if len(result_values) > 0:
+                                token.element_type = element_token.type
+                            else:
+                                token.element_type = TokenType.UNKNOWN
                     token.data = ListType(*result_values)
-                    token.element_type = type(result_values[0])
                     token.status = 'Evaluated'
                 output.append(token)
                 i += 1
@@ -278,22 +288,18 @@ class ExprEvaluator:
                 stack.append(token)
             elif token.type == TokenType.LIST_INDEX: # list[express] 형태
                 var_name = token.data.value
-                express = token.express
+                # row,col 값 계산
+                row = ExprEvaluator(self.var_manager).evaluate(token.row_express).data.value
+                evaluator = ExprEvaluator(self.var_manager).evaluate(token.column_express)
+                col = None if evaluator is None else evaluator.data.value
+                # list token 가져오기
                 list_var_token = self.var_manager.get_variable(var_name)
                 if list_var_token is None or list_var_token.type != TokenType.LIST_EX:
                     ExprEvaluationError(f"리스트 변수가 없거나 변수가 리스트 타입이 아닙니다: {var_name}", token.line, token.column)
                 # 인덱스 값 계산
-                index_evaluator = ExprEvaluator(self.var_manager)
-                index_value_token = index_evaluator.evaluate(express)
-                if index_value_token.type != TokenType.INTEGER:
-                    ExprEvaluationError(f"인덱스는 정수여야 합니다: {index_value_token.data}", token.line, token.column)
-                index_value = index_value_token.data.value
-                o_list = list_var_token.data.primitive
-                if index_value < 0 or index_value >= len(o_list):
-                    ExprEvaluationError(f"인덱스가 범위를 벗어났습니다: {index_value}", token.line, token.column)
-                primitive_value = o_list[index_value]
-                kavana_data = TokenUtil.primitive_to_kavana(primitive_value)
-                index_value_token = Token(data=kavana_data, type=list_var_token.element_type)
+                data = list_var_token.data.get(row,col)
+                token_type = list_var_token.element_type
+                index_value_token = Token(data=data, type=token_type)
                 stack.append(index_value_token)
              
             else:
@@ -360,6 +366,8 @@ class ExprEvaluator:
 
     def evaluate(self, tokens:List[Token]) -> Token:
         """수식을 계산하여 결과 반환 (예외 처리 강화)"""
+        if not tokens or len(tokens) == 0:
+            return None
         try:
             postfix_tokens = self.to_postfix(tokens)
             return self.evaluate_postfix(postfix_tokens)

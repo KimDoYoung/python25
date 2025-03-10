@@ -7,6 +7,7 @@ from lib.core.token_type import TokenType
 
 @dataclass
 class Token:
+    ''' 토큰 클래스 '''
     data: KavanaDataType
     type: TokenType  # ✅ 토큰 유형
     line: Optional[int] = None  # ✅ 기본값을 None으로 설정
@@ -95,21 +96,9 @@ class YmdToken(Token):
         return f"YmdToken(arguments=[{arg_str}], data={self.data}, line={self.line}, column={self.column})"
 
 
-# @dataclass
-# class ListToken(Token):
-#     data: ListType  # ✅ `data`는 ListType 타입
-#     type: TokenType = field(default=TokenType.LIST, init=False)  # ✅ `type`을 LIST로 고정
-#     element_type : TokenType = field(default=TokenType.UNKNOWN) # element token type
-#     def __post_init__(self):
-#         if not isinstance(self.data, ListType):
-#             raise TypeError("ListToken must contain a ListType")
-        
-#         # ✅ `frozen=True`에서 값을 변경하려면 `object.__setattr__` 사용
-#         object.__setattr__(self, "type", TokenType.LIST)
-
-
 @dataclass
 class ListExToken(Token):
+    ''' 리스트 표현식을 표현하는 토큰 '''
     data: ListType  # ✅ `data`는 ListType 타입
     type: TokenType = field(default=TokenType.LIST_EX, init=False)  # ✅ `type`을 LIST로 고정
     element_type: TokenType = field(default=TokenType.UNKNOWN)  # 요소의 토큰 타입
@@ -120,12 +109,10 @@ class ListExToken(Token):
         if not isinstance(self.data, ListType):
             raise TypeError("ListExToken must contain a ListType")
 
-
-
 @dataclass
 class ListIndexToken(Token):
     """✅ 리스트에 접근하기 위한 인덱스 토큰"""
-    express: List[Token] = field(default_factory=list)  
+    # express: List[Token] = field(default_factory=list)  
     row_express: List[Token] = field(default_factory=list)  
     column_express: List[Token] = field(default_factory=list)
     data: String  # ✅ `data`는 String 타입 (생성 시 반드시 입력해야 함)
@@ -137,5 +124,11 @@ class ListIndexToken(Token):
             raise TypeError(f"data 필드는 String 타입이어야 합니다. (현재 타입: {type(self.data)})")
 
     def __repr__(self) -> str:
-        express_str = ", ".join(repr(e) for e in self.express)  # express 리스트의 요소를 문자열로 변환
-        return f"ListIndexToken(express=[{express_str}], data={repr(self.data)}, type={self.type})"
+        row_expr_str = ", ".join(repr(e) for e in self.row_express) if self.row_express else "None"
+        col_expr_str = ", ".join(repr(e) for e in self.column_express) if self.column_express else "None"
+        
+        return (f"ListIndexToken("
+                f"row_express=[{row_expr_str}], "
+                f"column_express=[{col_expr_str}], "
+                f"data={repr(self.data)}, "
+                f"type={self.type})")
