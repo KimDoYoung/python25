@@ -389,11 +389,6 @@ class CommandParser:
                         value = CommandParser.decode_escaped_string(raw_value)  # ✅ 직접 변환 함수 호출
                         value_datatype_changed = TokenUtil.primitive_to_kavana_by_tokentype(value, token_type)
                         tokens.append(Token(data=value_datatype_changed, type=token_type, line=line_num, column=column_num))
-                    # elif token_type == TokenType.LIST:
-                    #     list_values = [int(v.strip()) for v in raw_value.strip("[]").split(",")]
-                    #     value_datatype_changed = ListType(*list_values)
-                    #     token = ListToken(data=value_datatype_changed, type=token_type, line=line_num, column=column_num)
-                    #     tokens.append(token)
                     else:
                         value = raw_value
                         value_datatype_changed = TokenUtil.primitive_to_kavana_by_tokentype(value, token_type)
@@ -449,13 +444,27 @@ class CommandParser:
                 i += 1  # `[` 다음 토큰부터 시작
 
                 while i <= end_idx:  # `]`까지 포함하여 처리
-                    if tokens[i].type == TokenType.COMMA:
+                    if tokens[i].type == TokenType.IDENTIFIER and i + 1 < len(tokens) and tokens[i + 1].type == TokenType.LEFT_BRACKET:                
+                        var_name = token.data.value
+                        i = i + 1  # '['부터 시작
+                        end_sub_idx = CommandParser.find_matching_bracket(tokens, i)
+                        row_sub_express, column_sub_express, pos = CommandParser.extract_row_column_expresses(tokens, i, end_sub_idx)
+                        row_express = CommandParser.post_process_tokens(row_sub_express)  
+                        column_express = CommandParser.post_process_tokens(column_sub_express) if column_sub_express else []
+
+                        i =  pos  # ✅ 재귀 호출이 끝난 위치로 `i` 이동
+                        current_element.append(ListIndexToken(
+                            data=String(var_name),
+                            row_express=row_express,  # ✅ 내부 표현식 변환
+                            column_express=column_express  # ✅ 내부 표현식 변환
+                        ))                    
+                    elif tokens[i].type == TokenType.COMMA:
                         if current_element:
                             list_elements.append(CommandParser.post_process_tokens(current_element))
                             current_element = []
                     elif tokens[i].type == TokenType.LEFT_BRACKET:
                         sub_end_idx = CommandParser.find_matching_bracket(tokens, i)
-                        sub_list_tokens = tokens[i :sub_end_idx]  # 내부 리스트 추출
+                        sub_list_tokens = tokens[i :sub_end_idx+1]  # 내부 리스트 추출
                         list_elements.append([ListExToken(
                             data=ListType([]),
                             element_expresses=CommandParser.post_process_tokens(sub_list_tokens)  # ✅ 내부 리스트 재귀 처리
@@ -463,12 +472,8 @@ class CommandParser:
                         i = sub_end_idx  # `]` 위치로 이동
                     elif tokens[i].type == TokenType.RIGHT_BRACKET:
                         if current_element:
-                            # ✅ `RIGHT_BRACKET`을 만나면 `ListExToken`으로 변환하여 추가
-                            sub_list_tokens = current_element[1:]  # 첫 번째 `[` 제외
-                            list_elements.append(ListExToken(
-                                data=ListType([]),
-                                element_expresses=CommandParser.post_process_tokens(sub_list_tokens)  # ✅ 내부 리스트 재귀 처리
-                            ))
+                            list_elements.append(CommandParser.post_process_tokens(current_element))
+                            current_element = []                            
                         break
                     else:
                         current_element.append(tokens[i])

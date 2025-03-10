@@ -13,10 +13,10 @@ MAIN
     //set a = [1,a[1],4]
     //a = [1,2,3] //-> a,=,ListExToken
     //a = list[1] //-> a,=,ListIndexToken 
-    // set a=b[c[2,3]+1]  + 9 
-    // set a = [ [1,2], [3,4] ]
+    //set a=b[c[2,3]+1]  + 9 
     // set a = [1,2,3] 
-    set a = [ [1,2], [3,4] ]
+    //set a = [ [1,2], [3,4] ]
+    //set a = [1, b[1], 4]
 END_MAIN
 """
 #---------------------------
@@ -45,11 +45,11 @@ for line in command_preprocssed_lines:
     print("----------------------------")
     for token in tokens:
         if token.type == TokenType.LIST_EX:
-            elements = []
-            for express in token.element_expresses:
-                elements.append(TokenUtil.tokens_to_string(express))
-            elements_str = ', '.join(elements)    
-            print(token.type, f"length:{len(token.element_expresses)}, els:{elements_str}")
+            # elements = []
+            # for express in token.element_expresses:
+            #     elements.append(TokenUtil.tokens_to_string(express))
+            # elements_str = ', '.join(elements)    
+            print(token.type, f"length:{len(token.element_expresses)}")
         elif token.type == TokenType.LIST_INDEX:
             row_express_str = TokenUtil.tokens_to_string(token.row_express)
             column_express_str = TokenUtil.tokens_to_string(token.column_express)
