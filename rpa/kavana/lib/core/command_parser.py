@@ -420,7 +420,6 @@ class CommandParser:
         
         while i < len(tokens):
             token = tokens[i]
-            print(token)
             # ✅ 리스트 인덱스 (`ListIndexToken`) 처리
             if token.type == TokenType.IDENTIFIER and i + 1 < len(tokens) and tokens[i + 1].type == TokenType.LEFT_BRACKET:                
                 var_name = token.data.value

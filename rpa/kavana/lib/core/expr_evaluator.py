@@ -297,11 +297,11 @@ class ExprEvaluator:
                 if list_var_token is None or list_var_token.type != TokenType.LIST_EX:
                     ExprEvaluationError(f"리스트 변수가 없거나 변수가 리스트 타입이 아닙니다: {var_name}", token.line, token.column)
                 # 인덱스 값 계산
-                data = list_var_token.data.get(row,col)
-                token_type = list_var_token.element_type
-                index_value_token = Token(data=data, type=token_type)
-                stack.append(index_value_token)
-             
+                element_token = list_var_token.data.get(row,col)
+                # token_type = list_var_token.element_type
+                # index_value_token = Token(data=data, type=token_type)
+                stack.append(element_token)
+            
             else:
                 raise ExprEvaluationError(f"지원하지 않는 Token타입입니다.: {token.data.value} {token.type}", token.line, token.column)  
 

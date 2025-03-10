@@ -7,7 +7,7 @@ from lib.core.token_util import TokenUtil
 # 대입
 script = """
 MAIN
-    //SET olist = [1, 2, 3, 4, 5]
+    SET list = [1, 2, 3, 4, 5]
     //set a[1] = 3
     //set a = [1,olist[3],4] 
     //set a = [1,a[1],4]
@@ -17,6 +17,7 @@ MAIN
     // set a = [1,2,3] 
     //set a = [ [1,2], [3,4] ]
     //set a = [1, b[1], 4]
+    print "{list[1]}"
 END_MAIN
 """
 #---------------------------

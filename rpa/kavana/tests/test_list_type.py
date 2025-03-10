@@ -55,14 +55,14 @@ def test_remove_at():
 
 def test_set():
     lst = ListType(1, 2, 3)
-    lst.set(1, value=99)
+    lst.set(1, token=99)
     assert lst.primitive == [1, 99, 3]
 
     with pytest.raises(TypeError):
-        lst.set(0, value="string")  # 타입 불일치
+        lst.set(0, token="string")  # 타입 불일치
 
     with pytest.raises(IndexError):
-        lst.set(10, value=100)  # 범위를 벗어난 인덱스
+        lst.set(10, token=100)  # 범위를 벗어난 인덱스
 
 def test_get():
     lst = ListType(100, 200, 300)

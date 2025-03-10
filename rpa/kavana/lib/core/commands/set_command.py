@@ -35,6 +35,6 @@ class SetCommand(BaseCommand):
             col = None
             if col_express:
                 col = ExprEvaluator(executor.variable_manager).evaluate(col_express).data.value
-            list_index_token.data.set(row,col, value_token.data)
+            list_index_token.data.set(row,col, value_token)
         else:
             executor.variable_manager.set_variable(var_name, value_token, local=local_flag)
