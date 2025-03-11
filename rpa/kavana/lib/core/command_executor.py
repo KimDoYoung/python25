@@ -32,7 +32,8 @@ class CommandExecutor:
         # ✅ IF 문 처리
         if cmd == "IF_BLOCK":
             condition = command["body"][0]["args"]
-            if self.eval_express(condition):
+            bool_result = self.eval_express_boolean(condition)
+            if bool_result:
                 for sub_command in command["body"][1:]:
                     self.execute(sub_command)
             return
@@ -40,7 +41,7 @@ class CommandExecutor:
         # ✅ WHILE 문 처리
         if cmd == "WHILE_BLOCK":
             condition = command["body"][0]["args"]
-            while self.eval_express_primitive(condition):
+            while self.eval_express_boolean(condition):
                 try:
                     for sub_command in command["body"][1:]:
                         self.execute(sub_command)
@@ -85,11 +86,11 @@ class CommandExecutor:
 
         # ✅ BREAK 처리
         if cmd == "BREAK":
-            raise BreakException()
+            raise BreakException("break 명령어 실횅")
 
         # ✅ CONTINUE 처리
         if cmd == "CONTINUE":
-            raise ContinueException()
+            raise ContinueException("continue 명령어 실행")
 
         # ✅ 일반 명령어 실행
         self.execute_standard_command(command)
@@ -110,10 +111,12 @@ class CommandExecutor:
         result_token =  exprEvaluator.evaluate(express)
         return result_token
     
-    def eval_express_primitive(self, express: list[Token]):
+    def eval_express_boolean(self, express: list[Token]):
         """IF 및 WHILE 조건 평가"""
         exprEvaluator = ExprEvaluator(self.variable_manager)
         result_token =  exprEvaluator.evaluate(express)
+        if result_token.type != TokenType.BOOLEAN:
+            raise CommandExecutionError("IF 및 WHILE 조건은 BOOL 타입이어야 합니다.", express[0].line, express[0].column)
         return result_token.data.value
     
     def find_index(self, tokens, token_type):
