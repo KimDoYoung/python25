@@ -445,7 +445,7 @@ class CommandParser:
 
                 while i <= end_idx:  # `]`까지 포함하여 처리
                     if tokens[i].type == TokenType.IDENTIFIER and i + 1 < len(tokens) and tokens[i + 1].type == TokenType.LEFT_BRACKET:                
-                        var_name = token.data.value
+                        var_name = tokens[i].data.value
                         i = i + 1  # '['부터 시작
                         end_sub_idx = CommandParser.find_matching_bracket(tokens, i)
                         row_sub_express, column_sub_express, pos = CommandParser.extract_row_column_expresses(tokens, i, end_sub_idx)

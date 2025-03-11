@@ -5,15 +5,15 @@ from lib.core.command_preprocessor import CommandPreprocessor
 # LIST
 script = """
 MAIN
-    //SET list = [1, 2, 3, 4, 5]
-    //SET list[2-(1+1)] = 10
-    //SET a = list[1] + list[2]
-    //SET b = list[a-2]
-    //SET list2 = [ [1,2,3], [4,5,6], [7,8,9] ]
-    //SET c = list2[0,0]
-    SET list = [[1,2],[3,4],[5,6]]
-    //print "{list} {list[1]} {a} {b} {list2} {c}"
-    print "{list[0,1]}"
+    SET list = [1, 2, 3, 4, 5]
+    SET list[2-(1+1)] = 10
+    SET a = list[1] + list[2]
+    SET b = list[a-2]
+    SET list2 = [ [1,2,3], [4,5,6], [7,8,9] ]
+    SET c = list2[0,0]
+    SET a1 = 2
+    SET list3 = [1, a1, 3, list[3], (2*2)+1]
+    print "{list}  {list2} {c} {list[1]} {a} {b} {list3}"
 END_MAIN
 """
 #---------------------------

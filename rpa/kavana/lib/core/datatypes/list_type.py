@@ -132,18 +132,14 @@ class ListType(KavanaDataType):
                     for token in element_group:
                         flattened_values.append(extract_value(token))  # Token을 변환
                 return f"[{', '.join(map(str, flattened_values))}]"
+            
             if isinstance(item, list):
-                flattened_values = []
-                item1 = item[0]
-                for element_group in item1.element_expresses:  # [[Token], [Token], [Token]]
-                    for token in element_group:
-                        flattened_values.append(extract_value(token))  # Token을 변환
-                return f"[{', '.join(map(str, flattened_values))}]"
-
+                converted_elements = [extract_value(i) for i in item]
+                return f"[{', '.join(map(str, converted_elements))}]"
 
             # ✅ Token이면 data.value를 사용하여 primitive 값 추출
             if isinstance(item, Token) and hasattr(item, "data"):
-                return item.data.value if hasattr(item.data, "value") else str(item.data)
+                return item.data.string if hasattr(item.data, "value") else str(item.data.value)
 
             # ✅ 일반적인 데이터 타입 (Integer, Float 등)
             return item.value if hasattr(item, "value") else str(item)
