@@ -11,6 +11,11 @@ MAIN
             exit
         end_if
     end_for
+    
+    ON_EXCEPTION
+        print "예외 발생"
+        exit
+    END_EXCEPTION
 END_MAIN
 """
 #---------------------------

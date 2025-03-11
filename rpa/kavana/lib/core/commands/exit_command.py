@@ -27,5 +27,4 @@ class ExitCommand(BaseCommand):
                     exit_no_token.column
                 )
 
-        # ✅ 테스트 가능성을 고려하여 sys.exit() 대신 executor.exit() 사용
         executor.exit(exit_no)

@@ -7,6 +7,7 @@ from lib.core.datatypes.kavana_datatype import Boolean,  Float, Integer, KavanaD
 from lib.core.datatypes.list_type import ListType
 from lib.core.datatypes.point import Point
 from lib.core.datatypes.ymd_time import YmdTime
+from lib.core.exception_registry import ExceptionRegistry
 from lib.core.exceptions.kavana_exception import CommandParserError, DataTypeError
 from lib.core.token import ListExToken, ListIndexToken,  Token
 from lib.core.token_type import TokenType
@@ -57,6 +58,10 @@ class CommandParser:
             # ✅ FUNCTION 처리
             if cmd == "FUNCTION":
                 i = self.parse_function(processed_lines, i)
+                continue  # ✅ 함수 정의는 parsed_commands에 추가하지 않음
+
+            if cmd == "ON_EXCEPTION":
+                i = self.parse_exception(processed_lines, i)
                 continue  # ✅ 함수 정의는 parsed_commands에 추가하지 않음
 
             # ✅ INCLUDE 처리
@@ -176,6 +181,23 @@ class CommandParser:
         # ✅ FunctionRegistry에 저장
         FunctionRegistry.register_function(func_name, params, parsed_commands)
         return i  # ✅ 함수 정의 후 새로운 라인 번호 반환
+
+    def parse_exception(self, ppLines:List[PreprocessedLine], start_line):
+        """ON_EXCEPTION 블록을 파싱하여  header를 제외하고 FunctionRegistry에 저장"""
+        exception_def_lines = [ppLines[start_line]]
+        i = start_line + 1
+
+        while i < len(ppLines) and ppLines[i].text.strip().upper() != "END_EXCEPTION":
+            exception_def_lines.append(ppLines[i])
+            i += 1
+
+        if i >= len(ppLines) or ppLines[i].text.strip().upper() != "END_EXCEPTION":
+            raise CommandParserError("예외 처리 정의에서 END_EXCEPTION이 누락되었습니다.", start_line, 0)
+        i += 1
+        
+        ExceptionRegistry.register_exception(exception_def_lines)
+        
+        return i
 
     def _include_process(self, include_path, parsed_commands):
         """INCLUDE 문을 처리하여 외부 KVS 파일을 불러온다."""
