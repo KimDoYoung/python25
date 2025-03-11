@@ -155,7 +155,7 @@ class CommandExecutor:
         loop_var = args[0]  # 반복 변수명
         start_expr = args[2:to_index]  # 초기값 표현식
         end_expr = args[to_index + 1:step_index] if step_index != -1 else args[to_index + 1:]
-        step_expr = args[step_index + 1:] if step_index != -1 else [Token(TokenType.INTEGER, "1")]
+        step_expr = args[step_index + 1:] if step_index != -1 else [Token(data=Integer(1),type=TokenType.INTEGER)]
 
         # ✅ 표현식 평가
         start_value = self.eval_express(start_expr)

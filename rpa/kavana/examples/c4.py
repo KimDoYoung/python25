@@ -5,7 +5,7 @@ from lib.core.command_preprocessor import CommandPreprocessor
 # 대입
 script = """
 MAIN
-    for i in range(1,10):
+    for i in range(1,10+1):
         PRINT "{i}"
     end_for
 END_MAIN
