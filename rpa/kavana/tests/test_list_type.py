@@ -85,4 +85,4 @@ def test_primitive_property():
 
 def test_repr():
     lst = ListType(1, 2, 3)
-    assert repr(lst) == "LIST(1, 2, 3)"
+    assert repr(lst) == "[1, 2, 3]"

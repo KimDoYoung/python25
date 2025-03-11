@@ -110,7 +110,7 @@ class ListType(KavanaDataType):
             return item.value if hasattr(item, 'value') else item  # Integer, Float 등 지원
 
         values_str = ", ".join(map(str, (extract_value(item) for item in self.data)))
-        return f"{values_str}"
+        return f"[{values_str}]"
 
     @property    
     def string(self):

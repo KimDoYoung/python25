@@ -466,10 +466,6 @@ class CommandParser:
                         sub_end_idx = CommandParser.find_matching_bracket(tokens, i)
                         sub_list_tokens = tokens[i :sub_end_idx+1]  # 내부 리스트 추출
                         current_element.extend(CommandParser.post_process_tokens(sub_list_tokens))
-                        # list_elements.append([ListExToken(
-                        #     data=ListType([]),
-                        #     element_expresses=CommandParser.post_process_tokens(sub_list_tokens)  # ✅ 내부 리스트 재귀 처리
-                        # )])
                         i = sub_end_idx  # `]` 위치로 이동
                     elif tokens[i].type == TokenType.RIGHT_BRACKET:
                         if current_element:
