@@ -48,3 +48,7 @@ class FunctionParserError(KavanaException):
 class CustomTokenMakerError(KavanaException):
     """토큰 생성 오류"""
     pass
+
+class KavanaSyntaxError(KavanaException):
+    """구문 오류"""
+    pass

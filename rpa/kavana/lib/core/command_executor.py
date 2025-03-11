@@ -1,5 +1,7 @@
+import sys
 from lib.core.commands.const_command import ConstCommand
 from lib.core.commands.endfunction_command import EndFunctionCommand
+from lib.core.commands.exit_command import ExitCommand
 from lib.core.commands.function_command import FunctionCommand
 from lib.core.commands.print_command import PrintCommand
 from lib.core.commands.return_command import ReturnCommand
@@ -25,10 +27,12 @@ class CommandExecutor:
             "FUNCTION": FunctionCommand(),
             "END_FUNCTION": EndFunctionCommand(),
             "RETURN": ReturnCommand() ,
-            "CONST" : ConstCommand()
+            "CONST" : ConstCommand(),
+            "EXIT" : ExitCommand(),
         }
     def execute(self, command):
         cmd = command["cmd"]
+      
         # ✅ IF 문 처리
         if cmd == "IF_BLOCK":
             condition = command["body"][0]["args"]
@@ -164,3 +168,7 @@ class CommandExecutor:
 
         return loop_var.data.value, start_value.data.value, end_value.data.value, step_value.data.value
 
+
+    def exit(self, code=0):
+        """EXIT 실행"""
+        sys.exit(code)

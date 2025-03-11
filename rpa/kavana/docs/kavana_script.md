@@ -14,6 +14,13 @@
 - 한 문장은 ';' ,'\n' 으로 끝난다.
 - 변수는 대입되는 값에 의해서 결정된다.
 
+## 현재명령어들들
+- include, load
+- set, print, function(end_function), return, const
+- if(end_if), for(end_for), while(end_while)
+- builtin functions : string, numeric, ymd_time관련 함수들들
+
+
 ## 전제적인 구조
 
 ```text
@@ -25,17 +32,17 @@ FUCTION plus n, b
     RETURN
 END_FUNCTION
 
+MAIN
+    LOAD ".env"
+    // 프로그램 코드
+END_MAIN
 
-EXCEPTION
+ON_EXCEPTION
     SET error_img = CAPTURE_SCREEN
     SAVE error_img TO $EXEUTE_FOLDER+"/error"+$NOW+".png"
     EXIT 1
 END_EXCEPTION
 
-MAIN
-    LOAD ".env"
-    // 프로그램 코드
-END_MAIN
 ```
 
 ## System변수
@@ -130,7 +137,7 @@ IF, ELSE_IF, ELSE, END_IF, WHILE, END_WHILE, FOR TO STEP END_FOR
   set b = $NOW; //이때 b는 Date타입이다.
 ```
 
-### PRINT, PRINTLN
+### PRINT
 
 - 기능 : 대상을 system out으로 출력한다.
 - 구문 : PRINT [변수|상수]
@@ -255,3 +262,43 @@ END_FOR;
 8. EXIT {n} : EXIT 0 정상종료, EXIT 1 등 0아닌 숫자 비정상종료
 9. ON_EXCEPTION BEGIN ..EXIT 1. END_EXCEPTION
 10. SET init_screen = CAPTURE_SCREEN 화면캡쳐해서 이미지변수에 저장
+
+## TODO
+```text
+kavana script에 대해서 어느정도 core가 된 것 같아.
+지금꺄지한 것을 좀 정리를 하자면
+```
+- include, load
+- set, print, function(end_function), return, const
+- if(end_if), for(end_for), while(end_while)
+- builtin functions : string, numeric, ymd_time관련 함수들들
+```
+위와 같아. 기본적인 datatype에 대해서 동작과 수식해석, [ [1,2,3],[4,5,6]]과 같은 2중배열 구현
+
+1. 이제 무엇을 해야할까?
+2. 예를 들어 list를 다루기 위한 것을 builtin 함수로 만들어야할까? 아니면 명령어로 만들어야할까?
+3. 예를 들어 file관련 built인 함수를 만들어서 처리할 것인가? 아니면 명령어를 만들어야할까?
+4. exit 명령어를 만들어할 듯.
+```
+main
+    //something
+    if result == 'NK'
+        EXIT 1
+    end_if
+end_main
+```
+5. exception이 나면 어떻게 처리할까? try문을 만들까?(try catch는 너무 복잡한 게 아닐까?)
+   아니면 그냥 exception... end_exception.으로 처리할까?
+   raise문을 만들어야할까? 
+6. kavanascript를 생각한 것은 RPA 프로그램을 쉽게 작성하기 위한 것인데. 
+7. log객체를 내장해서  기본명령어 LOG를 지원하자. 즉 LOG(INFO, "this is info log") 이렇게 할까?
+   아니면 LOG_INFO, LOG_DEBUG, LOG_WARN, LOG_ERROR 이렇게 각각 제공을 할까?
+
+   
+```
+### 진도
+1. exit
+2. on_exception ... end_exception, raise "문자열" 
+3. log, log_info..
+4. list builtin function, file builtin function...
+이런 순으로 만들어봅시다.

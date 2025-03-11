@@ -5,8 +5,11 @@ class ReservedWords:
         "SET","GLOBAL",
         "AND", "OR", "NOT",
         "IF", "ELSE", "ELSEIF", "END_IF", "WHILE", "END_WHILE",
+        "BREAK", "CONTINUE",
         "FOR", "TO", "STEP", "END_FOR", "FUNCTION", "END_FUNCTION",
         "RETURN", "PRINT"
+        "EXIT",
+        "ON_EXCEPTION", "END_ON_EXCEPTION","RAISE",
     }
 
     @classmethod
