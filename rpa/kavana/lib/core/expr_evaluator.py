@@ -18,7 +18,7 @@ from lib.core.token_type import TokenType
 from lib.core.function_executor import FunctionExecutor
 from lib.core.function_parser import FunctionParser
 from lib.core.function_registry import FunctionRegistry
-from lib.core.token import ListIndexToken, Token
+from lib.core.token import ListExToken, ListIndexToken, Token
 from lib.core.token_util import TokenUtil
 from lib.core.variable_manager import VariableManager
 
@@ -115,24 +115,19 @@ class ExprEvaluator:
                 continue
             if token.type == TokenType.LIST_EX:
                 if token.status == 'Parsed':
+                    # ListExToken의 expresses를 평가해서 ListType에 넣는다.
                     exprEval = ExprEvaluator(self.var_manager)
                     result_values = []
                     for express in token.element_expresses:
                         element_token = exprEval.evaluate(express)
-                        if element_token.type == TokenType.LIST_EX:
-                            result_values.append([element_token])
-                            if len(result_values)>0 and len(result_values[0])> 0:
-                                token.element_type = TokenUtil.get_element_token_type(result_values[0][0])
-                            else:
-                                token.element_type = TokenType.UNKNOWN    
+                        if element_token.type == TokenType.LIST_EX: # 2중배열
+                            result_values.append(element_token.data.to_list())
+                            token.element_type = element_token.element_type
                         else:
                             result_values.append(element_token)
-                            if len(result_values) > 0:
-                                token.element_type = element_token.type
-                            else:
-                                token.element_type = TokenType.UNKNOWN
-                    token.data = ListType(*result_values)
+                            token.element_type = element_token.type
                     token.status = 'Evaluated'
+                    token.data = ListType(*result_values)
                 output.append(token)
                 i += 1
                 continue

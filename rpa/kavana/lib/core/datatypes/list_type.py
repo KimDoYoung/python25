@@ -13,6 +13,10 @@ class ListType(KavanaDataType):
         self.data = list(values)
         self.value = self.data  # ✅ value를 리스트 데이터로 설정
 
+    def to_list(self):
+        """ListType을 Python의 기본 list로 변환하여 반환"""
+        return self.data[:]  # ✅ 리스트의 복사본을 반환
+    
     def append(self, value):
         """요소를 리스트 끝에 추가"""
         if self.data_type is None:
@@ -84,16 +88,16 @@ class ListType(KavanaDataType):
             if 0 <= row < len(self.data):
                 return self.data[row]
             else:
-                raise IndexError("리스트의 인덱스를 벗어났습니다")
+                raise IndexError("리스트의 인덱스를 벗어났습니다(get)")
         else:
             # 2차원 리스트에서 값 가져오기
             if not isinstance(self.data[row], list):
-                raise TypeError("배열의 요소가 2중배열이 아닙니다")
+                raise TypeError("배열의 요소가 2중배열이 아닙니다(get)")
             
             if 0 <= row < len(self.data) and 0 <= col < len(self.data[row]):
                 return self.data[row][col]
             else:
-                raise IndexError("리스트의 인덱스를 벗어났습니다")
+                raise IndexError("리스트의 인덱스를 벗어났습니다(get)")
 
 
     def __repr__(self):
@@ -147,74 +151,6 @@ class ListType(KavanaDataType):
         # ✅ self.data 내부 요소를 변환
         converted_list = [extract_value(item) for item in self.data]
         return f"[{', '.join(map(str, converted_list))}]"
-
-    # @property
-    # def string(self):
-    #     """✅ 항상 문자열(str)로 변환, ListType이면 '[ ]'를 붙여 출력"""
-    #     from lib.core.token import Token
-    #     from lib.core.token import ListExToken  # 추가
-
-    #     def extract_value(item):
-    #         """DataType이면 value 추출, ListType이면 재귀적으로 변환"""
-    #         if isinstance(item, ListType):
-    #             return f"[{', '.join(map(str, (extract_value(i) for i in item.data)))}]"  # ListType 내부 처리
-            
-    #         # ListExToken이면 element_expresses를 1단계 풀어서 처리 (중첩 리스트 해결)
-    #         if isinstance(item, ListExToken):
-    #             flattened = sum(item.element_expresses, [])  # [[Token], [Token], [Token]] -> [Token, Token, Token]
-    #             return f"[{', '.join(map(str, (extract_value(i) for i in flattened)))}]"
-            
-    #         # Token이면 data.value를 사용하여 primitive 값 추출
-    #         if isinstance(item, Token) and hasattr(item, "data"):
-    #             return item.data.value if hasattr(item.data, "value") else item.data
-            
-    #         return item.value if hasattr(item, "value") else item  # 일반적인 Integer, Float 등
-
-    #     values_str = ", ".join(map(str, (extract_value(item) for item in self.data)))
-    #     return f"[{values_str}]"
-
-
-    # @property
-    # def string(self):
-    #     """✅ 항상 문자열(str)로 변환, ListType이면 '[ ]'를 붙여 출력"""
-    #     from lib.core.token import Token
-    #     from lib.core.token import ListExToken  # 추가
-
-    #     def extract_value(item):
-    #         """DataType이면 value 추출, ListType이면 재귀적으로 변환"""
-    #         if isinstance(item, ListType):
-    #             return f"[{', '.join(map(str, (extract_value(i) for i in item.data)))}]"  # ListType 내부 처리
-            
-    #         # ListExToken이면 내부 요소들을 처리 (중첩 리스트 처리)
-    #         if isinstance(item, ListExToken):
-    #             return f"[{', '.join(map(str, (extract_value(i) for i in item.element_expresses)))}]"
-            
-    #         # Token이면 data.value를 사용하여 primitive 값 추출
-    #         if isinstance(item, Token) and hasattr(item, "data"):
-    #             return item.data.value if hasattr(item.data, "value") else item.data
-            
-    #         return item.value if hasattr(item, "value") else item  # 일반적인 Integer, Float 등
-
-    #     values_str = ", ".join(map(str, (extract_value(item) for item in self.data)))
-    #     return f"[{values_str}]"
-
-    # @property
-    # def string(self):
-    #     """✅ 항상 문자열(str)로 변환, ListType이면 '[ ]'를 붙여 출력"""
-    #     from lib.core.token import Token
-    #     def extract_value(item):
-    #         """DataType이면 value 추출, ListType이면 재귀적으로 변환"""
-    #         if isinstance(item, ListType):
-    #             return f"[{', '.join(map(str, (extract_value(i) for i in item.data)))}]"  # ListType 내부 처리
-            
-    #         # Token이면 data.value를 사용하여 primitive 값 추출
-    #         if isinstance(item, Token) and hasattr(item, "data"):
-    #             return item.data.value if hasattr(item.data, "value") else item.data
-            
-    #         return item.value if hasattr(item, "value") else item  # 일반적인 Integer, Float 등
-
-    #     values_str = ", ".join(map(str, (extract_value(item) for item in self.data)))
-    #     return f"[{values_str}]"
 
 
     @property
