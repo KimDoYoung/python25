@@ -48,7 +48,7 @@ class PrintCommand(BaseCommand):
                 # ✅ 문자열을 토큰화하여 ExprEvaluator에 전달
                 ppLines = CommandPreprocessor().preprocess([expression])
                 tokens = CommandParser.tokenize(ppLines[0])
-                evaluator = ExprEvaluator(executor.variable_manager)
+                evaluator = ExprEvaluator(executor)
                 
                 # ✅ 변수 존재 여부 확인
                 result_token = evaluator.evaluate(tokens)

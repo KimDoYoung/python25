@@ -17,7 +17,7 @@ class ConstCommand(BaseCommand):
         expression = args[2:]  # 수식 부분
 
         # 수식 평가
-        exprEvaluator = ExprEvaluator(executor.variable_manager)
+        exprEvaluator = ExprEvaluator(executor)
         result_token = exprEvaluator.evaluate(expression)
 
         # 변수 저장

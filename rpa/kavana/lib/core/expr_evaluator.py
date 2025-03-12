@@ -3,6 +3,7 @@ import operator
 from typing import List, Tuple, Union
 from datetime import datetime, timedelta
 from lib.core.command_parser import CommandParser
+from lib.core.commands.print_command import PrintCommand
 from lib.core.datatypes.application import Application
 from lib.core.datatypes.image import Image
 from lib.core.datatypes.kavana_datatype import Boolean,  Float, Integer, KavanaDataType, String
@@ -40,8 +41,12 @@ class ExprEvaluator:
         'OR':  (-3, lambda a, b: bool(a) or bool(b))        
     }
     
-    def __init__(self,  var_manager: VariableManager):
-        self.var_manager = var_manager
+    # def __init__(self,  var_manager: VariableManager):
+    def __init__(self, executor=None, var_manager=None):
+        """ExprEvaluator 생성자에서 executor 또는 var_manager를 선택적으로 받음"""
+        self.executor = executor
+        self.variable_manager = var_manager if var_manager else executor.variable_manager  # ✅ 기본값 설정
+
         self.data_token_type = {
             TokenType.NONE,
             TokenType.INTEGER,
@@ -116,7 +121,7 @@ class ExprEvaluator:
             if token.type == TokenType.LIST_EX:
                 if token.status == 'Parsed':
                     # ListExToken의 expresses를 평가해서 ListType에 넣는다.
-                    exprEval = ExprEvaluator(self.var_manager)
+                    exprEval = ExprEvaluator(self)
                     result_values = []
                     for express in token.element_expresses:
                         element_token = exprEval.evaluate(express)
@@ -141,6 +146,15 @@ class ExprEvaluator:
             elif i + 1 < len(tokens) and tokens[i + 1].type == TokenType.LEFT_PAREN:
                 stack.append(token)  # 함수 호출 (ex: FUNC(...))
 
+            if token.type == TokenType.STRING:
+                # ✅ 문자열일 경우, PrintCommand._evaluate_message()를 한 번 더 실행하여 `{}` 해석
+                executor = self.executor  # 현재 실행 컨텍스트
+                print_cmd = PrintCommand()
+                evaluated_string = print_cmd._evaluate_message(token.data.string, executor)
+                
+                # ✅ 변환된 값을 새로운 STRING 토큰으로 저장
+                token.data.string = evaluated_string
+                output.append(token)
             else:
                 output.append(token)
 
@@ -249,7 +263,7 @@ class ExprEvaluator:
                 # 인자의 값을 구한다.
                 arg_values = []
                 for arg_tokens in token.arguments:  # ✅ 각 인자는 List[Token] 형태
-                    evaluator = ExprEvaluator(self.var_manager)
+                    evaluator = ExprEvaluator(self)
                     result_token = evaluator.evaluate(arg_tokens)  # ✅ 표현식을 평가
                     arg_values.append(result_token)  # ✅ 평가 결과 저장
                 # 함수 수행
@@ -260,7 +274,7 @@ class ExprEvaluator:
             elif token.type == TokenType.CUSTOM_TYPE:
                 arg_values = []
                 for arg_tokens in token.arguments:  # ✅ 각 인자는 List[Token] 형태
-                    evaluator = ExprEvaluator(self.var_manager)
+                    evaluator = ExprEvaluator(self)
                     result_token = evaluator.evaluate(arg_tokens)  # ✅ 표현식을 평가
                     arg_values.append(result_token.data.value)  # ✅ 평가 결과 저장
                 if token.object_type == TokenType.POINT:
@@ -284,8 +298,8 @@ class ExprEvaluator:
             elif token.type == TokenType.LIST_INDEX: # list[express] 형태
                 var_name = token.data.value
                 # row,col 값 계산
-                row = ExprEvaluator(self.var_manager).evaluate(token.row_express).data.value
-                evaluator = ExprEvaluator(self.var_manager).evaluate(token.column_express)
+                row = ExprEvaluator(self).evaluate(token.row_express).data.value
+                evaluator = ExprEvaluator(self).evaluate(token.column_express)
                 col = None if evaluator is None else evaluator.data.value
                 # list token 가져오기
                 list_var_token = self.var_manager.get_variable(var_name)
@@ -353,7 +367,7 @@ class ExprEvaluator:
         """
         if func_body.startswith("RETURN "):
             # expr = func_body[len("RETURN "):].strip()
-            evaluator = ExprEvaluator(VariableManager())  # ✅ 새로운 평가기 생성
+            evaluator = ExprEvaluator(self)  # ✅ 새로운 평가기 생성
             evaluator.var_manager.variables.update(local_vars)  # ✅ 지역 변수 전달
             return evaluator.evaluate(func_body)
         raise ExprEvaluationError(f"Unsupported function body: {func_body}")

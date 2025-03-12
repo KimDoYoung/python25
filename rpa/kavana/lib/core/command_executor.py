@@ -120,13 +120,13 @@ class CommandExecutor:
 
     def eval_express(self, express: list[Token])->Token:
         """IF 및 WHILE 조건 평가"""
-        exprEvaluator = ExprEvaluator( self.variable_manager)
+        exprEvaluator = ExprEvaluator(self)
         result_token =  exprEvaluator.evaluate(express)
         return result_token
     
     def eval_express_boolean(self, express: list[Token]):
         """IF 및 WHILE 조건 평가"""
-        exprEvaluator = ExprEvaluator(self.variable_manager)
+        exprEvaluator = ExprEvaluator(self)
         result_token =  exprEvaluator.evaluate(express)
         if result_token.type != TokenType.BOOLEAN:
             raise CommandExecutionError("IF 및 WHILE 조건은 BOOL 타입이어야 합니다.", express[0].line, express[0].column)

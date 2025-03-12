@@ -58,5 +58,5 @@ class FunctionExecutor:
         """
         함수 인수를 평가한다.
         """
-        argEvaluator = ExprEvaluator(arg, self.global_var_manager)
+        argEvaluator = ExprEvaluator(self, self.global_var_manager)
         return argEvaluator.evaluate()

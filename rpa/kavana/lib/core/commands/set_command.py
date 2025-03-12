@@ -22,7 +22,7 @@ class SetCommand(BaseCommand):
             expression = args[2:-1]  # GLOBAL 제거
 
         # 수식 평가
-        exprEvaluator = ExprEvaluator(executor.variable_manager)
+        exprEvaluator = ExprEvaluator(executor)
         value_token = exprEvaluator.evaluate(expression)
         # 변수 저장
         if args[0].type == TokenType.LIST_INDEX: # SET list[0] = 10
@@ -31,10 +31,10 @@ class SetCommand(BaseCommand):
             list_index_token = executor.variable_manager.get_variable(var_name)
             row_express = args[0].row_express
             col_express = args[0].column_express
-            row = ExprEvaluator(executor.variable_manager).evaluate(row_express).data.value
+            row = ExprEvaluator(executor).evaluate(row_express).data.value
             col = None
             if col_express:
-                col = ExprEvaluator(executor.variable_manager).evaluate(col_express).data.value
+                col = ExprEvaluator(executor).evaluate(col_express).data.value
             list_index_token.data.set(row,col, value_token)
         else:
             executor.variable_manager.set_variable(var_name, value_token, local=local_flag)

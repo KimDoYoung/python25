@@ -12,7 +12,7 @@ class ReturnCommand(BaseCommand):
         local_flag = executor.in_function_scope  # ✅ 함수 내부면 자동으로 Local
 
         # 수식 평가
-        exprEvaluator = ExprEvaluator(executor.variable_manager)
+        exprEvaluator = ExprEvaluator(executor)
         value = exprEvaluator.evaluate(expression)
 
         # 변수 저장
