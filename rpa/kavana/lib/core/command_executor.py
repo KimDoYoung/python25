@@ -4,6 +4,7 @@ from lib.core.commands.endfunction_command import EndFunctionCommand
 from lib.core.commands.exit_command import ExitCommand
 from lib.core.commands.function_command import FunctionCommand
 from lib.core.commands.print_command import PrintCommand
+from lib.core.commands.raise_command import RaiseCommand
 from lib.core.commands.return_command import ReturnCommand
 from lib.core.commands.set_command import SetCommand
 from lib.core.datatypes.kavana_datatype import Integer
@@ -29,6 +30,7 @@ class CommandExecutor:
             "RETURN": ReturnCommand() ,
             "CONST" : ConstCommand(),
             "EXIT" : ExitCommand(),
+            "RAISE" : RaiseCommand()
         }
     def execute(self, command):
         cmd = command["cmd"]

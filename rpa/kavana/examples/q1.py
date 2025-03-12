@@ -8,13 +8,12 @@ MAIN
     for i = 1 to 10 
         print "{i}"
         if i == 3
-            exit
+            raise "사용자 예외 발생..." 5
         end_if
     end_for
     
     ON_EXCEPTION
-        print "예외 발생"
-        exit
+        print "{$exception_message} {$exit_code}"
     END_EXCEPTION
 END_MAIN
 """
