@@ -1,2 +1,0 @@
-2025-03-12 13:45:39,150 - INFO - ℹ️ 로그 설정 변경됨: log_dir=logs, log_prefix=custom_prefix
-2025-03-12 13:45:39,152 - INFO - ℹ️ 새로운 로그 설정 적용됨. 현재 경로: {ERROR: ExprEvaluationError: Undefined variable: String(value='log_dir') at line 1, column 1}

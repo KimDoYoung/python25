@@ -1,3 +1,0 @@
-2025-03-12 14:10:18,377 - INFO - ℹ️ 새로운 로그 설정 적용됨. 현재 경로: {ERROR: ExprEvaluationError: Undefined variable: String(value='log_dir') at line 1, column 1}
-2025-03-12 14:13:18,368 - INFO - ℹ️ 새로운 로그 설정 적용됨. 현재 경로: {ERROR: ExprEvaluationError: Undefined variable: String(value='log_dir') at line 1, column 1}
-2025-03-12 14:15:13,775 - INFO - ℹ️ 새로운 로그 설정 적용됨. 현재 경로: {ERROR: ExprEvaluationError: Undefined variable: String(value='log_dir') at line 1, column 1}
