@@ -1,3 +1,4 @@
+from lib.core.builtins.file_dir_functions import FileDirFunctions
 from lib.core.builtins.ymd_time_functions import YmdTimeFunctions
 from .string_functions import StringFunctions
 from .numeric_functions import NumericFunctions
@@ -36,4 +37,9 @@ BUILTIN_FUNCTIONS = {
     # ✅ 날짜 관련 함수 추가
     "YMDTIME": (YmdTimeFunctions.YMDTIME, 6),
     "YMD": (YmdTimeFunctions.YMD, 3),
+    "NOW": (YmdTimeFunctions.NOW, 0),
+    "TODAY": (YmdTimeFunctions.TODAY, 0),
+
+    # ✅ 파일 관련 함수 추가
+    "FILE_READ": (FileDirFunctions.FILE_READ, 1),
 }

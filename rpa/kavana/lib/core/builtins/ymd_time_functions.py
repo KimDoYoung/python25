@@ -48,3 +48,11 @@ class YmdTimeFunctions:
 
         args = [y, m, d]
         return YmdToken(arguments=args)
+
+    @staticmethod
+    def NOW() -> YmdTimeToken:
+        return YmdTimeFunctions.YMDTIME()
+    
+    @staticmethod
+    def TODAY() -> YmdToken:
+        return YmdTimeFunctions.YMD()
