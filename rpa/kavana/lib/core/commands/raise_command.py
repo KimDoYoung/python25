@@ -40,8 +40,6 @@ class RaiseCommand(BaseCommand):
                 exit_code = exit_code_token.data.value
             else:
                 raise KavanaException(f"EXIT CODE는 정수형이어야 합니다. (잘못된 값: {exit_code_token.data.string})")
-        else:
-            raise KavanaException(f"문법: RAISE [message(문자열), exit_code(정수)]")
 
         # ✅ 예외 메시지 및 종료 코드 저장
         executor.variable_manager.set_variable("$exception_message", Token(data=String(exception_message), type=TokenType.STRING))

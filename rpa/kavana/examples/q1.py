@@ -6,16 +6,16 @@ from lib.core.command_preprocessor import CommandPreprocessor
 script = """
 MAIN
     for i = 1 to 10 
-        print "{i}"
+        print "우리는 빛이 없느 어둠 속에서도 :", "{i}" 
         if i == 3
-            raise "사용자 예외 발생..." 5
+            raise "예외 발생: i는 {i}입니다."
         end_if
-    end_for
-    
+    end_for   
     ON_EXCEPTION
-        print "{$exception_message} {$exit_code}"
+        print ">>> {$exception_message} {$exit_code}"
     END_EXCEPTION
 END_MAIN
+
 """
 #---------------------------
 # 기본적인 사용
