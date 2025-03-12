@@ -15,8 +15,9 @@ MAIN
 
     LOG_CONFIG dir="logs", prefix="kdy", level="DEBUG"
     LOG_INFO "새로운 로그 설정 적용됨. 현재 경로: {log_dir}"
-
-    LOG_CONFIG dir="my_logs", prefix="kavana"
+    SET base_dir = "./var/log"
+    SET abbr = "kdy"
+    LOG_CONFIG dir="{base_dir}/kavana", prefix=abbr+"1", level="INFO"
     LOG_WARN "기본 설정으로 복원됨. var1={var1}"
 END_MAIN
 """

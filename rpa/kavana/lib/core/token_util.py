@@ -1,7 +1,7 @@
 
 from datetime import date, datetime
 import re
-from typing import Any
+from typing import Any, List
 from lib.core.datatypes.kavana_datatype import Boolean, Float, Integer, KavanaDataType, NoneType, String
 from lib.core.datatypes.list_type import ListType
 from lib.core.datatypes.ymd_time import Ymd, YmdTime
@@ -119,3 +119,24 @@ class TokenUtil:
             return TokenType.LIST_EX
         else:
             return type(value)
+        
+    @staticmethod
+    def find_key_value(tokens: list[Token], start_index: int) -> tuple[Token, List[Token], int]:
+        """
+        주어진 토큰 리스트에서 key에 해당하는 토큰1개와 express에 해당하는 토큰 리스트 
+        express는 TokenType.COMMA나 tokens의 끝까지로 한다.
+        그리고 next_index를 리턴한다
+        """
+        if start_index >= len(tokens):
+            return None, None, start_index
+        expresses = []
+        key_token = tokens[start_index]
+        i = start_index +1
+        while i < len(tokens):
+            token = tokens[i]
+            if token.type == TokenType.COMMA:
+                i += 1
+                break
+            expresses.append(token)
+            i += 1
+        return key_token, expresses, i    

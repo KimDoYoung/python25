@@ -62,6 +62,147 @@ class ExprEvaluator:
             TokenType.APPLICATION
         }            
 
+    def split_function_token(self, function_token:str) -> List[str]:
+        """function_token PLUS(3,4) -> PLUS,3,4 함수명과 인자로 분리"""
+        if "(" not in function_token or not function_token.endswith(")"):
+            return [function_token]  # 괄호가 없으면 그대로 반환
+
+        func_name = function_token[:function_token.index("(")]  # ✅ 함수명 추출
+        args_str = function_token[function_token.index("(") + 1:-1].strip()  # ✅ 괄호 안의 내용
+
+        if not args_str:  # ✅ 빈 괄호 처리 (예: MY_FUNC())
+            return [func_name]
+
+        args = []
+        current_arg = []
+        bracket_depth = 0  # ✅ 괄호 깊이 추적
+
+        i = 0
+        while i < len(args_str):
+            char = args_str[i]
+
+            if char == "(":
+                bracket_depth += 1
+            elif char == ")":
+                bracket_depth -= 1
+
+            if char == "," and bracket_depth == 0:
+                # ✅ 쉼표가 최상위 레벨에 있을 때만 인자 구분
+                args.append("".join(current_arg).strip())
+                current_arg = []
+            else:
+                current_arg.append(char)
+
+            i += 1
+
+        if current_arg:  # ✅ 마지막 인자 추가
+            args.append("".join(current_arg).strip())
+
+        return [func_name] + args
+
+    def is_function(self, token: Token) -> bool:
+        """토큰이 함수인지 확인 PLUS(3,4)"""
+        func_name = token.data.value.upper()
+        func_info = FunctionRegistry.get_function(func_name)
+        return func_info != None
+
+    def execute_user_function(self, func_body: List[Token], local_vars: dict):
+        """
+        간단한 사용자 정의 함수 실행기
+        - 현재는 간단한 RETURN 문만 지원
+        """
+        if func_body.startswith("RETURN "):
+            for var_name, token in local_vars.items():
+                self.variable_manager.set_variable(var_name, token, local=True)
+
+            evaluator = ExprEvaluator(self)  # ✅ 새로운 평가기 생성
+            return evaluator.evaluate(func_body)
+        raise ExprEvaluationError(f"Unsupported function body: {func_body}")
+
+
+    def evaluate(self, tokens:List[Token]) -> Token:
+        """수식을 계산하여 결과 반환 (예외 처리 강화)"""
+        if not tokens or len(tokens) == 0:
+            return None
+        try:
+            postfix_tokens = self.to_postfix(tokens)
+            return self.evaluate_postfix(postfix_tokens)
+        except KavanaException as ke:
+            # ✅ Kavana 예외는 그대로 전달
+            raise ke
+
+        except Exception as e:
+            # ✅ 기타 예외는 ExprEvaluationError로 변환하여 감싸기
+            raise ExprEvaluationError(f"Error evaluate express: {str(e)}")        
+
+    def get_token_type(self, value) -> TokenType:
+        """value 로 해당하는 토큰타입을 반환"""
+        if not isinstance(value, KavanaDataType):
+            raise ExprEvaluationError(f"Unsupported KavanaDataType: {value}")
+        
+        if value is None:
+            return TokenType.NONE
+        if isinstance(value, Integer):
+            return TokenType.INTEGER
+        if isinstance(value, Float):
+            return TokenType.FLOAT
+        if isinstance(value, Boolean):
+            return TokenType.BOOLEAN
+        if isinstance(value, String):
+            return TokenType.STRING
+        if isinstance(value, datetime):
+            return TokenType.YMDTIME
+        #Point, Rectangle, Region, window, Application, Image
+        
+        if isinstance(value, Point):
+            return TokenType.POINT
+        if isinstance(value, Rectangle):
+            return TokenType.RECTANGLE
+        if isinstance(value, Region):
+            return TokenType.REGION
+        if isinstance(value, Window):
+            return TokenType.WINDOW
+        if isinstance(value, Application):
+            return TokenType.APPLICATION
+        if isinstance(value, Image):
+            return TokenType.IMAGE
+        
+        raise ExprEvaluationError(f"Unsupported token type: {value}")
+
+
+    def make_list_index_token(self, tokens: List[Token], start_index: int) -> Tuple[Token, int]:
+        """ 리스트 인덱싱 토큰을 파싱하는 함수 (중첩 인덱싱 지원) """
+        
+        if start_index + 2 >= len(tokens):  # 최소한 list[0] 형태가 있어야 함
+            return [], start_index  # 인덱스 초과 방지
+
+        var_token = tokens[start_index]  # 리스트 변수
+
+        if tokens[start_index + 1].value == "[":  # 리스트 접근 시작
+            express = []
+            i = start_index + 2
+
+            bracket_count = 1  # `[` 개수를 추적하여 중첩된 인덱싱 확인
+            while i < len(tokens) and bracket_count > 0:
+                if tokens[i].value == "[":
+                    bracket_count += 1
+                elif tokens[i].value == "]":
+                    bracket_count -= 1
+                    if bracket_count == 0:  # 마지막 `]`을 찾았으면 종료
+                        break
+                express.append(tokens[i])
+                i += 1
+
+            if bracket_count > 0:  # 닫는 `]`가 부족하면 오류
+                raise ExprEvaluationError("리스트 인덱스의 `]`가 부족합니다.", tokens[start_index].line, tokens[start_index].column)
+
+            # 리스트 인덱스 토큰 생성
+            list_index_token = ListIndexToken(express=express, data=String(var_token.value))
+
+            return list_index_token, i + 1  # 생성한 토큰과 새로운 위치 반환
+        
+        return None, start_index  # 리스트 인덱스가 아니라면 원래 위치 유지
+
     def to_postfix(self, tokens: List[Token]) -> List[Token]:
         """토큰 리스트를  후위 표기법(RPN)으로 변환"""
         output = []
@@ -168,13 +309,16 @@ class ExprEvaluator:
         for token in tokens:
 
             if token.type == TokenType.STRING:
-                # ✅ 문자열일 경우, PrintCommand._evaluate_message()를 한 번 더 실행하여 `{}` 해석
-                print_cmd = PrintCommand()
-                evaluated_string = print_cmd._evaluate_message(token.data.string, self.executor)
-                
-                # ✅ 변환된 값을 새로운 STRING 토큰으로 저장
-                new_token = Token(data=String(evaluated_string), type=TokenType.STRING, line=token.line, column=token.column)
-                stack.append(new_token)
+                # ✅ 문자열일 경우, PrintCommand._evaluate_message()를 한 번 더 실행하여 `{}` 해석, ex: "{name}님" -> "홍길동님"
+                if '{' in token.data.string:                        
+                    print_cmd = PrintCommand()
+                    evaluated_string = print_cmd._evaluate_message(token.data.string, self.executor)
+                    
+                    # ✅ 변환된 값을 새로운 STRING 토큰으로 저장
+                    new_token = Token(data=String(evaluated_string), type=TokenType.STRING, line=token.line, column=token.column)
+                    stack.append(new_token)
+                else:
+                    stack.append(token)
             elif token.type in self.data_token_type:  # ✅ Kavana 데이터 타입이면 그대로 스택에 추가
                 stack.append(token)
             
@@ -317,144 +461,3 @@ class ExprEvaluator:
                 raise ExprEvaluationError(f"지원하지 않는 Token타입입니다.: {token.data.value} {token.type}", token.line, token.column)  
 
         return stack[0]
-
-    def split_function_token(self, function_token:str) -> List[str]:
-        """function_token PLUS(3,4) -> PLUS,3,4 함수명과 인자로 분리"""
-        if "(" not in function_token or not function_token.endswith(")"):
-            return [function_token]  # 괄호가 없으면 그대로 반환
-
-        func_name = function_token[:function_token.index("(")]  # ✅ 함수명 추출
-        args_str = function_token[function_token.index("(") + 1:-1].strip()  # ✅ 괄호 안의 내용
-
-        if not args_str:  # ✅ 빈 괄호 처리 (예: MY_FUNC())
-            return [func_name]
-
-        args = []
-        current_arg = []
-        bracket_depth = 0  # ✅ 괄호 깊이 추적
-
-        i = 0
-        while i < len(args_str):
-            char = args_str[i]
-
-            if char == "(":
-                bracket_depth += 1
-            elif char == ")":
-                bracket_depth -= 1
-
-            if char == "," and bracket_depth == 0:
-                # ✅ 쉼표가 최상위 레벨에 있을 때만 인자 구분
-                args.append("".join(current_arg).strip())
-                current_arg = []
-            else:
-                current_arg.append(char)
-
-            i += 1
-
-        if current_arg:  # ✅ 마지막 인자 추가
-            args.append("".join(current_arg).strip())
-
-        return [func_name] + args
-
-    def is_function(self, token: Token) -> bool:
-        """토큰이 함수인지 확인 PLUS(3,4)"""
-        func_name = token.data.value.upper()
-        func_info = FunctionRegistry.get_function(func_name)
-        return func_info != None
-
-    def execute_user_function(self, func_body: List[Token], local_vars: dict):
-        """
-        간단한 사용자 정의 함수 실행기
-        - 현재는 간단한 RETURN 문만 지원
-        """
-        if func_body.startswith("RETURN "):
-            for var_name, token in local_vars.items():
-                self.variable_manager.set_variable(var_name, token, local=True)
-
-            evaluator = ExprEvaluator(self)  # ✅ 새로운 평가기 생성
-            return evaluator.evaluate(func_body)
-        raise ExprEvaluationError(f"Unsupported function body: {func_body}")
-
-
-    def evaluate(self, tokens:List[Token]) -> Token:
-        """수식을 계산하여 결과 반환 (예외 처리 강화)"""
-        if not tokens or len(tokens) == 0:
-            return None
-        try:
-            postfix_tokens = self.to_postfix(tokens)
-            return self.evaluate_postfix(postfix_tokens)
-        except KavanaException as ke:
-            # ✅ Kavana 예외는 그대로 전달
-            raise ke
-
-        except Exception as e:
-            # ✅ 기타 예외는 ExprEvaluationError로 변환하여 감싸기
-            raise ExprEvaluationError(f"Error evaluate express: {str(e)}")        
-
-    def get_token_type(self, value) -> TokenType:
-        """value 로 해당하는 토큰타입을 반환"""
-        if not isinstance(value, KavanaDataType):
-            raise ExprEvaluationError(f"Unsupported KavanaDataType: {value}")
-        
-        if value is None:
-            return TokenType.NONE
-        if isinstance(value, Integer):
-            return TokenType.INTEGER
-        if isinstance(value, Float):
-            return TokenType.FLOAT
-        if isinstance(value, Boolean):
-            return TokenType.BOOLEAN
-        if isinstance(value, String):
-            return TokenType.STRING
-        if isinstance(value, datetime):
-            return TokenType.YMDTIME
-        #Point, Rectangle, Region, window, Application, Image
-        
-        if isinstance(value, Point):
-            return TokenType.POINT
-        if isinstance(value, Rectangle):
-            return TokenType.RECTANGLE
-        if isinstance(value, Region):
-            return TokenType.REGION
-        if isinstance(value, Window):
-            return TokenType.WINDOW
-        if isinstance(value, Application):
-            return TokenType.APPLICATION
-        if isinstance(value, Image):
-            return TokenType.IMAGE
-        
-        raise ExprEvaluationError(f"Unsupported token type: {value}")
-
-
-    def make_list_index_token(self, tokens: List[Token], start_index: int) -> Tuple[Token, int]:
-        """ 리스트 인덱싱 토큰을 파싱하는 함수 (중첩 인덱싱 지원) """
-        
-        if start_index + 2 >= len(tokens):  # 최소한 list[0] 형태가 있어야 함
-            return [], start_index  # 인덱스 초과 방지
-
-        var_token = tokens[start_index]  # 리스트 변수
-
-        if tokens[start_index + 1].value == "[":  # 리스트 접근 시작
-            express = []
-            i = start_index + 2
-
-            bracket_count = 1  # `[` 개수를 추적하여 중첩된 인덱싱 확인
-            while i < len(tokens) and bracket_count > 0:
-                if tokens[i].value == "[":
-                    bracket_count += 1
-                elif tokens[i].value == "]":
-                    bracket_count -= 1
-                    if bracket_count == 0:  # 마지막 `]`을 찾았으면 종료
-                        break
-                express.append(tokens[i])
-                i += 1
-
-            if bracket_count > 0:  # 닫는 `]`가 부족하면 오류
-                raise ExprEvaluationError("리스트 인덱스의 `]`가 부족합니다.", tokens[start_index].line, tokens[start_index].column)
-
-            # 리스트 인덱스 토큰 생성
-            list_index_token = ListIndexToken(express=express, data=String(var_token.value))
-
-            return list_index_token, i + 1  # 생성한 토큰과 새로운 위치 반환
-        
-        return None, start_index  # 리스트 인덱스가 아니라면 원래 위치 유지
