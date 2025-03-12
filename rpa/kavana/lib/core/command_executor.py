@@ -3,6 +3,7 @@ from lib.core.commands.const_command import ConstCommand
 from lib.core.commands.endfunction_command import EndFunctionCommand
 from lib.core.commands.exit_command import ExitCommand
 from lib.core.commands.function_command import FunctionCommand
+from lib.core.commands.log_command import LogConfigCommand, LogDebugCommand, LogErrorCommand, LogInfoCommand, LogWarnCommand
 from lib.core.commands.print_command import PrintCommand
 from lib.core.commands.raise_command import RaiseCommand
 from lib.core.commands.return_command import ReturnCommand
@@ -30,7 +31,13 @@ class CommandExecutor:
             "RETURN": ReturnCommand() ,
             "CONST" : ConstCommand(),
             "EXIT" : ExitCommand(),
-            "RAISE" : RaiseCommand()
+            "RAISE" : RaiseCommand(),
+            # log 관련 명령어
+            "LOG_CONFIG" : LogConfigCommand(),
+            "LOG_DEBUG" : LogDebugCommand(),
+            "LOG_INFO" : LogInfoCommand(),
+            "LOG_WARN" : LogWarnCommand(),
+            "LOG_ERROR" : LogErrorCommand(),
         }
     def execute(self, command):
         cmd = command["cmd"]

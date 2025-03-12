@@ -52,3 +52,7 @@ class CustomTokenMakerError(KavanaException):
 class KavanaSyntaxError(KavanaException):
     """구문 오류"""
     pass
+
+class KavanaValueError(KavanaException):
+    """값 오류"""
+    pass
