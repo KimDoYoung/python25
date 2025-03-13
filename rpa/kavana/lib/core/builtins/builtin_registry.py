@@ -42,4 +42,5 @@ BUILTIN_FUNCTIONS = {
 
     # ✅ 파일 관련 함수 추가
     "FILE_READ": (FileDirFunctions.FILE_READ, 1),
+    "FILE_WRITE": (FileDirFunctions.FILE_WRITE, 1),
 }

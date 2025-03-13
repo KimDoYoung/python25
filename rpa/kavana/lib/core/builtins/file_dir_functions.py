@@ -1,6 +1,6 @@
 import os
 
-from lib.core.datatypes.kavana_datatype import String
+from lib.core.datatypes.kavana_datatype import Boolean, String
 from lib.core.token import Token
 from lib.core.token_type import TokenType
 
@@ -20,4 +20,14 @@ class FileDirFunctions:
             content = f.read()
         
         return Token(data=String(content), type=TokenType.STRING)
-        
+
+    @staticmethod
+    def FILE_WRITE(file_path: str, content: str) -> Token:
+        """파일 쓰기"""
+        try:
+            with open(file_path, "w", encoding="utf-8") as f:
+                f.write(content)
+        except Exception as e:            
+            return Token(data=Boolean(False), type=TokenType.BOOLEAN)
+
+        return Token(data=Boolean(True), type=TokenType.BOOLEAN)

@@ -5,31 +5,24 @@ from lib.core.command_preprocessor import CommandPreprocessor
 
 script = """
 main
-    PRINT "Before loop"
-
-    FOR i = 1 TO 5 STEP 1
-        IF i == 3
-            PRINT "Skipping 3"
-            CONTINUE
-        END_IF
-        IF i == 4
-            PRINT "Breaking at 4"
-            BREAK
-        END_IF
-        PRINT "Loop iteration {i}"
-    END_FOR
-
-    PRINT "After loop"
+    for i in [3,5,10]
+        if i == 3
+            set r = "if"
+            print "i is 3 {r}"
+        elif i == 5 
+            set r = "elif"
+            print "i is 5 {r}"
+        else
+            set r = "else"
+            print "i is not 3 or 5 {r}"
+        end_if
+    end_for
 end_main
 """
 script_lines = script.split("\n")
 ppLines = CommandPreprocessor(script_lines).preprocess()
 parser = CommandParser(ppLines)
 parsed_commands = parser.parse()
-
-for command in parsed_commands:
-    print(command)
-# exit(0)
 
 # 명령어 실행
 executor = CommandExecutor()

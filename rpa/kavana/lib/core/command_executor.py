@@ -13,6 +13,7 @@ from lib.core.exceptions.kavana_exception import BreakException, CommandExecutio
 from lib.core.expr_evaluator import ExprEvaluator
 from lib.core.token import Token
 from lib.core.token_type import TokenType
+from lib.core.token_util import TokenUtil
 from lib.core.variable_manager import VariableManager
 
 
@@ -44,13 +45,42 @@ class CommandExecutor:
       
         # ✅ IF 문 처리
         if cmd == "IF_BLOCK":
+            # condition = command["body"][0]["args"]
+            # bool_result = self.eval_express_boolean(condition)
+            # if bool_result:
+            #     for sub_command in command["body"][1:]:
+            #         self.execute(sub_command)
+            # return
             condition = command["body"][0]["args"]
-            bool_result = self.eval_express_boolean(condition)
-            if bool_result:
-                for sub_command in command["body"][1:]:
-                    self.execute(sub_command)
-            return
+            condition_met = self.eval_express_boolean(condition)  # 현재 블록이 실행될지 여부
+            condition_found = condition_met  # 실행된 블록이 있는지 추적
+            
+            body = command["body"][1:]  # IF_BLOCK 내부 코드
 
+            exec_body = []  # 최종 실행할 코드 저장
+            for sub_command in body:
+                if sub_command["cmd"] in ["ELIF", "ELSE"]:
+                    if condition_found:  
+                        break  # IF 또는 ELIF 중 하나라도 실행되었으면 나머지는 실행하지 않음
+                    
+                    if sub_command["cmd"] == "ELIF":
+                        condition = sub_command["args"]
+                        condition_met = self.eval_express_boolean(condition)
+                    
+                    else:  # ELSE
+                        condition_met = True  
+
+                    condition_found = condition_met  # 이후 모든 블록 무시하도록 설정
+                    continue
+
+                if condition_met:
+                    exec_body.append(sub_command)  # 실행할 블록에 추가
+
+            # 최종 실행
+            for sub_command in exec_body:
+                self.execute(sub_command)
+
+            return
         # ✅ WHILE 문 처리
         if cmd == "WHILE_BLOCK":
             condition = command["body"][0]["args"]
@@ -85,8 +115,10 @@ class CommandExecutor:
                     current_value += step_value
             elif  self.find_index(args, TokenType.IN) != -1: # for i in range(1,10)
                 loop_var_name, iterable = self.parse_for_in_args(args)
-                for i in iterable:
-                    loop_var_token = Token(data=Integer(i), type=TokenType.INTEGER)
+                for t in iterable:
+                    #TODO iterable이 Integer가 아닌경우
+                    # loop_var_token = Token(data=Integer(t.data.value), type=TokenType.INTEGER)
+                    loop_var_token = Token(data=t.data, type=t.type)
                     self.variable_manager.set_variable(loop_var_name, loop_var_token)
                     try:
                         for sub_command in command["body"][1:]:
@@ -116,7 +148,7 @@ class CommandExecutor:
         if cmd in self.command_map:
             self.command_map[cmd].execute(args, self)  # 명령어 객체에 실행 위임
         else:
-            raise CommandExecutionError(f"알려지지 않은 명령어입니다: {cmd}", args[0].line, args[0].column)
+            raise CommandExecutionError(f"알려지지 않은 명령어입니다: {cmd}")
 
     def eval_express(self, express: list[Token])->Token:
         """IF 및 WHILE 조건 평가"""
