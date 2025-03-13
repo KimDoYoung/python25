@@ -453,8 +453,6 @@ class ExprEvaluator:
                     ExprEvaluationError(f"리스트 변수가 없거나 변수가 리스트 타입이 아닙니다: {var_name}", token.line, token.column)
                 # 인덱스 값 계산
                 element_token = list_var_token.data.get(row,col)
-                # token_type = list_var_token.element_type
-                # index_value_token = Token(data=data, type=token_type)
                 stack.append(element_token)
             
             else:

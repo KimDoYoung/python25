@@ -7,7 +7,7 @@ script = """
 MAIN
     SET name="홍길동"
     SET hello = "안녕하세요, {name}님!"
-    PRINT "{hello}"
+    PRINT "{hello}", "HI" "ABC"
 END_MAIN
 """
 #---------------------------

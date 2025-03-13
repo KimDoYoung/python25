@@ -5,7 +5,8 @@ from lib.core.command_preprocessor import CommandPreprocessor
 # 대입
 script = """
 MAIN
-    SET text = File_Read("examples/t1.py")
+    SET path = "docs/ymd.md"
+    SET text = File_Read(path)
     PRINT "{text}"
 END_MAIN
 """
@@ -14,15 +15,10 @@ END_MAIN
 #---------------------------
 script_lines = script.split("\n")
 command_preprocssed_lines = CommandPreprocessor().preprocess(script_lines)
-for line in command_preprocssed_lines:
-    print(line)
 parser = CommandParser()
 parsed_commands = parser.parse(command_preprocssed_lines)
 
 commandExecutor = CommandExecutor()
 
 for command in parsed_commands:
-    print("----------------------")
-    print(command)
     commandExecutor.execute(command)
-    print("----------------------")

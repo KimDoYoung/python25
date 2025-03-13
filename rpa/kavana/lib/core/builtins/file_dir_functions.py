@@ -12,14 +12,12 @@ class FileDirFunctions:
     #     return [f for f in os.listdir(directory) if os.path.isfile(os.path)]
     @staticmethod
     def FILE_READ(file_path: str) -> Token:
-        ''' 파일 읽기 '''
-        if not os.path.exists(file_path):
-            raise FileNotFoundError(f"파일을 찾을 수 없습니다: {file_path}")
+        """파일 읽기"""
         if not os.path.isfile(file_path):
-            raise FileNotFoundError(f"파일이 아닙니다: {file_path}")
+            raise FileNotFoundError(f"파일이 존재하지 않거나 디렉터리입니다: {file_path}")
         
-        result = ""
         with open(file_path, "r", encoding="utf-8") as f:
-            result = f.read()
-        return Token(data=String(result), type=TokenType.STRING)
+            content = f.read()
+        
+        return Token(data=String(content), type=TokenType.STRING)
         
