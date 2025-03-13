@@ -1,4 +1,6 @@
-from lib.core.builtins.file_dir_functions import FileDirFunctions
+from lib.core.builtins.dir_functions import DirFunctions
+from lib.core.builtins.file_functions import FileFunctions
+from lib.core.builtins.path_functons import PathFunctions
 from lib.core.builtins.ymd_time_functions import YmdTimeFunctions
 from .string_functions import StringFunctions
 from .numeric_functions import NumericFunctions
@@ -41,6 +43,23 @@ BUILTIN_FUNCTIONS = {
     "TODAY": (YmdTimeFunctions.TODAY, 0),
 
     # ✅ 파일 관련 함수 추가
-    "FILE_READ": (FileDirFunctions.FILE_READ, 1),
-    "FILE_WRITE": (FileDirFunctions.FILE_WRITE, 1),
+    "FILE_READ": (FileFunctions.FILE_READ, 1),
+    "FILE_WRITE": (FileFunctions.FILE_WRITE, 1),
+    "FILE_APPEND": (FileFunctions.FILE_APPEND, 1),
+    "FILE_EXISTS": (FileFunctions.FILE_EXISTS, 1),
+    "FILE_DELETE": (FileFunctions.FILE_DELETE, 1),
+    "FILE_SIZE": (FileFunctions.FILE_SIZE, 1),
+    "FILE_MODIFIED_TIME": (FileFunctions.FILE_MODIFIED_TIME, 1),
+    "FILE_TYPE" : (FileFunctions.FILE_TYPE, 1),
+    
+    # ✅ PATH 관련 함수 추가
+    "PATH_JOIN": (PathFunctions.PATH_JOIN, 2),
+    "PATH_BASENAME": (PathFunctions.PATH_BASENAME, 1),
+    "PATH_DIRNAME": (PathFunctions.PATH_DIRNAME, 1),
+
+    # ✅ 디렉토리 관련 함수 추가
+    "DIR_LIST": (DirFunctions.DIR_LIST, 1),
+    "DIR_EXISTS": (DirFunctions.DIR_EXISTS, 1),
+    "DIR_CREATE": (DirFunctions.DIR_CREATE, 1),
+    "DIR_DELETE": (DirFunctions.DIR_DELETE, 1),
 }

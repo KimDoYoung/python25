@@ -2,7 +2,8 @@ from typing import Any, List
 
 from lib.core.datatypes.kavana_datatype import Boolean, Integer, String
 from lib.core.datatypes.list_type import ListType
-from lib.core.token import  Token
+from lib.core.exceptions.kavana_exception import KavanaTypeError, KavanaValueError
+from lib.core.token import  ListExToken, Token
 from lib.core.token_type import TokenType
 
 
@@ -15,95 +16,95 @@ class StringFunctions:
         elif isinstance(s, List):
             i = len(s)
             return Token(data=Integer(len(s)), type=TokenType.INTEGER)
-        raise TypeError("LENGTH()는 문자열과 리스트 타입에만 적용됩니다")
+        raise KavanaTypeError("LENGTH()는 문자열과 리스트 타입에만 적용됩니다")
 
     @staticmethod
     def SUBSTR(s: str, start: int, length: int) -> str:
         if isinstance(s, str) and isinstance(start, int) and isinstance(length, int):
             result = s[start:start + length]
             return Token(data=String(result), type=TokenType.STRING)
-        raise TypeError("형식은 SUBSTR(문자열, 시작인덱스, 길이)로 되어 있습니다")
+        raise KavanaTypeError("형식은 SUBSTR(문자열, 시작인덱스, 길이)로 되어 있습니다")
     
     @staticmethod
     def UPPER(s: str) -> str:
         if isinstance(s, str):
             result = s.upper()
             return Token(data=String(result), type=TokenType.STRING)
-        raise TypeError("UPPER()는 문자열에만 적용됩니다")
+        raise KavanaTypeError("UPPER()는 문자열에만 적용됩니다")
     
     @staticmethod
     def LOWER(s: str) -> str:
         if isinstance(s, str):
             result = s.lower()
             return Token(data=String(result), type=TokenType.STRING)
-        raise TypeError("LOWER()는 문자열에만 적용됩니다")
+        raise KavanaTypeError("LOWER()는 문자열에만 적용됩니다")
     
     @staticmethod
     def TRIM(s: str) -> str:
         if isinstance(s, str):
             result = s.strip()
             return Token(data=String(result), type=TokenType.STRING)
-        raise TypeError("TRIM()는 문자열에만 적용됩니다")
+        raise KavanaTypeError("TRIM()는 문자열에만 적용됩니다")
     
     @staticmethod
     def LTRIM(s: str) -> str:
         if isinstance(s, str):
             result = s.lstrip()
             return Token(data=String(result), type=TokenType.STRING)
-        raise TypeError("LTRIM()는 문자열에만 적용됩니다")
+        raise KavanaTypeError("LTRIM()는 문자열에만 적용됩니다")
     
     @staticmethod
     def RTRIM(s: str) -> str:
         if isinstance(s, str):
             result = s.rstrip()
             return Token(data=String(result), type=TokenType.STRING)
-        raise TypeError("RTRIM()는 문자열에만 적용됩니다")
+        raise KavanaTypeError("RTRIM()는 문자열에만 적용됩니다")
     
     @staticmethod
     def REPLACE(s: str, old: str, new: str) -> str:
         if isinstance(s, str) and isinstance(old, str) and isinstance(new, str):
             result = s.replace(old, new)
             return Token(data=String(result), type=TokenType.STRING)
-        raise TypeError("사용형식 : REPLACE(문자열, 바꿀문자열 , 새로운문자열)")
+        raise KavanaTypeError("사용형식 : REPLACE(문자열, 바꿀문자열 , 새로운문자열)")
     
     @staticmethod
     def SPLIT(s: str, sep: str) -> List[str]:
         if isinstance(s, str) and isinstance(sep, str):
             result = s.split(sep)
             list_type = ListType(result)
-            return ListToken(data=list_type, type=TokenType.LIST_EX)
-        raise TypeError("사용형식 : SPLIT(문자열, 구분자)")
+            return ListExToken(data=list_type, type=TokenType.LIST_EX)
+        raise KavanaTypeError("사용형식 : SPLIT(문자열, 구분자)")
     
     @staticmethod
     def JOIN(s: List[str], sep: str) -> str:
         if isinstance(s, List) and isinstance(sep, str):
             result = sep.join(s)
             return Token(data=String(result), type=TokenType.STRING)
-        raise TypeError("사용형식 : JOIN(리스트, 구분자)")
+        raise KavanaTypeError("사용형식 : JOIN(리스트, 구분자)")
     
     @staticmethod
     def STARTSWITH(s: str, prefix: str) -> bool:
         if isinstance(s, str) and isinstance(prefix, str):
             return Token(data=Integer(s.startswith(prefix)),type=TokenType.INTEGER)
-        raise TypeError("사용형식 : STARTSWITH(문자열, 접두사)")
+        raise KavanaTypeError("사용형식 : STARTSWITH(문자열, 접두사)")
     
     @staticmethod
     def ENDSWITH(s: str, suffix: str) -> bool:
         if isinstance(s, str) and isinstance(suffix, str):
             return Token(data=Integer(s.endswith(suffix)), type=TokenType.INTEGER)
-        raise TypeError("사용형식 : ENDSWITH(문자열, 접미사)")
+        raise KavanaTypeError("사용형식 : ENDSWITH(문자열, 접미사)")
     
     @staticmethod
     def CONTAINS(s: str, sub: str) -> bool:
         if isinstance(s, str) and isinstance(sub, str):
             return Token(data=Boolean(sub in s), type=TokenType.BOOLEAN)
-        raise TypeError("사용형식 : CONTAINS(문자열, 포함문자열)")
+        raise KavanaTypeError("사용형식 : CONTAINS(문자열, 포함문자열)")
     
     @staticmethod
     def INDEX_OF(s: str, sub: str) -> int:
         if isinstance(s, str) and isinstance(sub, str):
             return Token(data=Integer(s.find(sub)), type=TokenType.INTEGER)
-        raise TypeError("사용형식 : INDEX_OF(문자열, 찾을문자열), 못찾았을 때 -1 반환")
+        raise KavanaTypeError("사용형식 : INDEX_OF(문자열, 찾을문자열), 못찾았을 때 -1 반환")
 
     @staticmethod
     def TO_INT(s: str) -> int:
@@ -118,11 +119,11 @@ class StringFunctions:
         TO_INT("abc") → 오류 발생
         '''
         if not isinstance(s, str):
-            raise TypeError("TO_INT() 함수는 문자열 인자만 받을 수 있습니다")
+            raise KavanaTypeError("TO_INT() 함수는 문자열 인자만 받을 수 있습니다")
         try:
             return Token(data=Integer(int(s)), type="INTEGER")
         except ValueError:
-            raise ValueError("TO_INT() 함수는 정수형 문자열만 받을 수 있습니다")
+            raise KavanaValueError("TO_INT() 함수는 정수형 문자열만 받을 수 있습니다")
         
     @staticmethod
     def TO_FLOAT(s: str) -> float:
@@ -137,9 +138,9 @@ class StringFunctions:
         TO_FLOAT("hello") → 오류 발생
         '''
         if not isinstance(s, str):
-            raise TypeError("TO_FLOAT() 함수는 문자열 인자만 받을 수 있습니다")
+            raise KavanaTypeError("TO_FLOAT() 함수는 문자열 인자만 받을 수 있습니다")
         try:
             return Token(data=Integer(float(s)), type="FLOAT")
         except ValueError:
-            raise ValueError("TO_FLOAT() 함수는 실수형 문자열만 받을 수 있습니다")
+            raise KavanaValueError("TO_FLOAT() 함수는 실수형 문자열만 받을 수 있습니다")
     

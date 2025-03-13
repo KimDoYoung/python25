@@ -56,3 +56,11 @@ class KavanaSyntaxError(KavanaException):
 class KavanaValueError(KavanaException):
     """값 오류"""
     pass
+
+class KavanaTypeError(KavanaException):
+    """값 오류"""
+    pass
+
+class KavanaFileNotFoundError(KavanaException):
+    """파일이 존재하지 않는 경우"""
+    pass

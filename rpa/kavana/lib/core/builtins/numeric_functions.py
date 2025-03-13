@@ -1,6 +1,7 @@
 import random
 from lib.core.datatypes.kavana_datatype import Integer
 from lib.core.datatypes.list_type import ListType
+from lib.core.exceptions.kavana_exception import KavanaValueError, KavanaTypeError
 from lib.core.token import  ListExToken, Token
 from lib.core.token_type import TokenType
 
@@ -15,9 +16,9 @@ class NumericFunctions:
         RANDOM(100, 200) → 157  (랜덤 값)
         '''
         if not isinstance(min_val, int) or not isinstance(max_val, int):
-            raise TypeError("RANDOM() 함수는 정수형 인자만 받을 수 있습니다")
+            raise KavanaTypeError("RANDOM() 함수는 정수형 인자만 받을 수 있습니다")
         if min_val > max_val:
-            raise ValueError("최소값은 최대값보다 작아야 합니다")
+            raise KavanaTypeError("최소값은 최대값보다 작아야 합니다")
         i = random.randint(min_val, max_val)
         return Token(data=Integer(i), type="INTEGER")
     
@@ -31,7 +32,7 @@ class NumericFunctions:
         ABS(10) → 10
         '''
         if not isinstance(i, int):
-            raise TypeError("ABS() 함수는 정수형 인자만 받을 수 있습니다")
+            raise KavanaTypeError("ABS() 함수는 정수형 인자만 받을 수 있습니다")
         return Token(data=Integer(abs(i)), type="INTEGER")
     
     @staticmethod
@@ -44,7 +45,7 @@ class NumericFunctions:
         MAX(10, -5) → 10
         '''
         if not isinstance(i, int) or not isinstance(j, int):
-            raise TypeError("MAX() 함수는 정수형 인자만 받을 수 있습니다")
+            raise KavanaTypeError("MAX() 함수는 정수형 인자만 받을 수 있습니다")
         return Token(data=Integer(max(i, j)), type="INTEGER")
     
     @staticmethod
@@ -57,7 +58,7 @@ class NumericFunctions:
         MIN(10, -5) → -5
         '''
         if not isinstance(i, int) or not isinstance(j, int):
-            raise TypeError("MIN() 함수는 정수형 인자만 받을 수 있습니다")
+            raise KavanaTypeError("MIN() 함수는 정수형 인자만 받을 수 있습니다")
         return Token(data=Integer(min(i, j)), type="INTEGER")
     
     @staticmethod
@@ -70,7 +71,7 @@ class NumericFunctions:
         ROUND(2.3) → 2
         '''
         if not isinstance(i, int):
-            raise TypeError("ROUND() 함수는 정수형 인자만 받을 수 있습니다")
+            raise KavanaTypeError("ROUND() 함수는 정수형 인자만 받을 수 있습니다")
         return Token(data=Integer(round(i)), type="INTEGER")
     
     @staticmethod
@@ -83,7 +84,7 @@ class NumericFunctions:
         FLOOR(-1.2) → -2
         '''
         if not isinstance(i, int):
-            raise TypeError("FLOOR() 함수는 정수형 인자만 받을 수 있습니다")
+            raise KavanaTypeError("FLOOR() 함수는 정수형 인자만 받을 수 있습니다")
         return Token(data=Integer(i // 1), type="INTEGER")
     
     @staticmethod
@@ -96,7 +97,7 @@ class NumericFunctions:
         CEIL(-1.8) → -1
         '''
         if not isinstance(i, int):
-            raise TypeError("CEIL() 함수는 정수형 인자만 받을 수 있습니다")
+            raise KavanaTypeError("CEIL() 함수는 정수형 인자만 받을 수 있습니다")
         return Token(data=Integer(i // 1 + 1), type="INTEGER")
     
     @staticmethod
@@ -109,7 +110,7 @@ class NumericFunctions:
         TRUNC(-5.9) → -5
         '''
         if not isinstance(i, int):
-            raise TypeError("TRUNC() 함수는 정수형 인자만 받을 수 있습니다")
+            raise KavanaTypeError("TRUNC() 함수는 정수형 인자만 받을 수 있습니다")
         return Token(data=Integer(i), type="INTEGER")
     
     @staticmethod
@@ -122,7 +123,7 @@ class NumericFunctions:
         IS_EVEN(7) → False
         '''
         if not isinstance(i, int):
-            raise TypeError("IS_EVEN() 함수는 정수형 인자만 받을 수 있습니다")
+            raise KavanaTypeError("IS_EVEN() 함수는 정수형 인자만 받을 수 있습니다")
         return Token(data=Integer(i % 2 == 0), type="BOOLEAN")
     
     @staticmethod
@@ -135,7 +136,7 @@ class NumericFunctions:
         IS_ODD(8) → False
         '''
         if not isinstance(i, int):
-            raise TypeError("IS_ODD() 함수는 정수형 인자만 받을 수 있습니다")
+            raise KavanaTypeError("IS_ODD() 함수는 정수형 인자만 받을 수 있습니다")
         return Token(data=Integer(i % 2 == 1), type="BOOLEAN")
 
     @staticmethod
@@ -144,11 +145,11 @@ class NumericFunctions:
         arg_len = len(args)
 
         if arg_len not in [1, 2, 3]:
-            raise TypeError("RANGE()는 1~3개의 정수를 인자로 받아야 합니다.")
+            raise KavanaTypeError("RANGE()는 1~3개의 정수를 인자로 받아야 합니다.")
 
         for arg in args:
             if not isinstance(arg, int):
-                raise TypeError("RANGE()의 모든 인자는 정수여야 합니다.")
+                raise KavanaTypeError("RANGE()의 모든 인자는 정수여야 합니다.")
 
         if arg_len == 1:
             start, stop, step = 0, args[0], 1
@@ -158,7 +159,7 @@ class NumericFunctions:
             start, stop, step = args
 
         if step == 0:
-            raise ValueError("RANGE()의 step 값은 0이 될 수 없습니다.")
+            raise KavanaValueError("RANGE()의 step 값은 0이 될 수 없습니다.")
 
         range_list = list(range(start, stop, step))
         resultToken = ListExToken(data=ListType(*range_list), element_type=TokenType.INTEGER)
