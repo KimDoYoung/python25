@@ -1,0 +1,11 @@
+main
+    if a>3
+        print "a is greater than 3"
+    end_if
+    for i = 1 to 20 step 3
+        print "{i}"
+    end_for
+    while a>3
+        print "a is greater than 3"
+    end_while
+end_main
