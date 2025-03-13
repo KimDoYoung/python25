@@ -1,5 +1,9 @@
 from datetime import datetime
+import glob
+import hashlib
 import os
+import shutil
+from typing import List
 
 from lib.core.datatypes.kavana_datatype import Boolean, Integer, String
 from lib.core.exceptions.kavana_exception import KavanaFileNotFoundError
@@ -92,3 +96,60 @@ class FileFunctions:
             return Token(data=String("directory"), type=TokenType.STRING)
         return Token(data=String("none"), type=TokenType.STRING)  # 존재하지 않으면 "none"
 
+
+    @staticmethod
+    def FILE_COPY(src: str, dest: str) -> Token:
+        """파일 복사"""
+        try:
+            shutil.copy2(src, dest)  # 메타데이터까지 복사
+            return Token(data=Boolean(True), type=TokenType.BOOLEAN)
+        except Exception:
+            return Token(data=Boolean(False), type=TokenType.BOOLEAN)
+
+    @staticmethod
+    def FILE_MOVE(src: str, dest: str) -> Token:
+        """파일 이동/이름 변경"""
+        try:
+            shutil.move(src, dest)
+            return Token(data=Boolean(True), type=TokenType.BOOLEAN)
+        except Exception:
+            return Token(data=Boolean(False), type=TokenType.BOOLEAN)
+
+    @staticmethod
+    def FILE_HASH(file_path: str, algorithm: str) -> Token:
+        """파일의 해시 값 계산 (MD5, SHA256)"""
+        hash_func = {
+            "md5": hashlib.md5,
+            "sha256": hashlib.sha256
+        }.get(algorithm.lower())
+
+        if hash_func is None:
+            return Token(data=String(""), type=TokenType.STRING)  # 지원되지 않는 알고리즘
+
+        try:
+            with open(file_path, "rb") as f:
+                hasher = hash_func()
+                while chunk := f.read(8192):
+                    hasher.update(chunk)
+            return Token(data=String(hasher.hexdigest()), type=TokenType.STRING)
+        except Exception:
+            return Token(data=String(""), type=TokenType.STRING)
+
+    @staticmethod
+    def FILE_LINES(file_path: str) -> Token:
+        """파일의 각 줄을 리스트로 반환"""
+        try:
+            with open(file_path, "r", encoding="utf-8") as f:
+                lines = [String(line.strip()) for line in f.readlines()]
+            return Token(data=List(lines), type=TokenType.LIST)
+        except Exception:
+            return Token(data=List([]), type=TokenType.LIST)
+
+    @staticmethod
+    def FILE_FIND(directory: str, pattern: str) -> Token:
+        """특정 디렉토리에서 패턴과 일치하는 파일 찾기"""
+        try:
+            files = glob.glob(os.path.join(directory, pattern))
+            return Token(data=List([String(os.path.basename(f)) for f in files]), type=TokenType.LIST)
+        except Exception:
+            return Token(data=List([]), type=TokenType.LIST)

@@ -51,6 +51,11 @@ BUILTIN_FUNCTIONS = {
     "FILE_SIZE": (FileFunctions.FILE_SIZE, 1),
     "FILE_MODIFIED_TIME": (FileFunctions.FILE_MODIFIED_TIME, 1),
     "FILE_TYPE" : (FileFunctions.FILE_TYPE, 1),
+    "FILE_COPY" : (FileFunctions.FILE_COPY, 2),
+    "FILE_MOVE" : (FileFunctions.FILE_MOVE, 2),
+    "FILE_HASH" : (FileFunctions.FILE_HASH, 2),
+    "FILE_LINES" : (FileFunctions.FILE_LINES, 1),
+    "FILE_FIND" : (FileFunctions.FILE_FIND, 2),
     
     # ✅ PATH 관련 함수 추가
     "PATH_JOIN": (PathFunctions.PATH_JOIN, 2),
