@@ -91,7 +91,7 @@ class LogConfigCommand(BaseCommand):
                 raise KavanaValueError("LOG_CONFIG 명령어의 인자는 `key=\"value\"` 형태여야 합니다.", key_token.line, key_token.column)
 
             # ✅ `=` 연산자 확인
-            if value_tokens[0].type != TokenType.OPERATOR or value_tokens[0].data.value != '=':
+            if value_tokens[0].type != TokenType.ASSIGN:
                 raise KavanaValueError(f"잘못된 형식: `{key_token.data.string}` 다음에는 `=`가 와야 합니다.", key_token.line, key_token.column)
 
             key = key_token.data.string.lower()
@@ -124,48 +124,3 @@ class LogConfigCommand(BaseCommand):
         # ✅ 변경 사항 출력
         print(f"✅ 로그 설정 변경됨: dir='{logger.log_dir}', prefix='{logger.log_prefix}', level='{logger.logger.level}'")
 
-
-# class LogConfigCommand(BaseCommand):
-#     """LOG_CONFIG dir=<express:string>, prefix=<express:string>, level=<express:string> """
-
-#     def execute(self, args: list[Token], executor):
-#         logger = Logger()  # ✅ Logger 인스턴스 가져오기
-#         config_params = {"dir": None, "prefix": None, "level": None}
-#         # remove TokenType COMMA
-
-#         args  = [arg for arg in args if arg.type != TokenType.COMMA]
-#         if len(args) == 0:
-#             # ✅ 현재 로그 설정 출력
-#             print(f"현재 로그 설정: dir='{logger.log_dir}', prefix='{logger.log_prefix}', level='{logger.logger.level}'")
-#             return
-
-#         # ✅ key=value 형태의 인자 파싱 (IDENTIFIER = STRING)
-#         i = 0
-#         while i < len(args):
-#             if i + 2 >= len(args):  # `key = value`의 3개 단위가 아니면 오류
-#                 raise KavanaValueError("LOG_CONFIG 명령어의 인자는 `key=\"value\"` 형태여야 합니다.", args[i].line, args[i].column)
-
-#             key_token, equals_token, value_token = args[i], args[i + 1], args[i + 2]
-
-#             # ✅ 올바른 `IDENTIFIER = STRING` 형식인지 확인
-#             if key_token.type != TokenType.IDENTIFIER or equals_token.type != TokenType.OPERATOR or equals_token.data.value != '=' or value_token.type != TokenType.STRING:
-#                 raise KavanaValueError(f"잘못된 파라미터 형식: `{key_token.data.string} {equals_token.data.string} {value_token.data.string}`", key_token.line, key_token.column)
-
-#             key = key_token.data.string.lower()
-#             value = value_token.data.string
-
-#             if key not in config_params:
-#                 raise KavanaValueError(f"지원되지 않는 로그 설정 키: `{key}` (가능한 값: dir, prefix, level)", key_token.line, key_token.column)
-
-#             config_params[key] = value
-#             i += 3  # ✅ `key = value` 형태이므로 3개 단위로 증가
-
-#         # ✅ 설정 적용 (None이면 기존 값 유지)
-#         logger.set_config(
-#             log_dir=config_params["dir"] if config_params["dir"] else logger.log_dir,
-#             log_prefix=config_params["prefix"] if config_params["prefix"] else logger.log_prefix,
-#             log_level=config_params["level"] if config_params["level"] else logger.log_level
-#         )
-
-#         # ✅ 변경 사항 출력
-#         print(f"✅ 로그 설정 변경됨: dir='{logger.log_dir}', prefix='{logger.log_prefix}', level='{logger.logger.level}'")

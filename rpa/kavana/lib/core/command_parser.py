@@ -268,7 +268,7 @@ class CommandParser:
                     value_token = Token(data=String(value), type=TokenType.STRING)
 
                 # ✅ "=" 연산자 토큰 추가
-                equals_token = Token(data=String("="), type=TokenType.OPERATOR)
+                equals_token = Token(data=String("="), type=TokenType.ASSIGN)
 
                 key_token = Token(data=String(f"${key}"), type=TokenType.IDENTIFIER)
                 # ✅ `parsed_commands`에 추가하여 추적 가능
@@ -372,13 +372,9 @@ class CommandParser:
             (r'\]', TokenType.RIGHT_BRACKET),
             (r',', TokenType.COMMA),
 
-            # ✅ OPERATOR
-            # ✅ 2글자 연산자를 먼저 매칭해야 함 (순서 중요!)
-            # (r'==|!=|>=|<=|>|<', TokenType.OPERATOR),  # ✅ 비교연산자
-            # (r'[+\-*/=%]', TokenType.OPERATOR),
+            (r'==|!=|>=|<=|[+\-*/%<>]', TokenType.OPERATOR),  # ✅ '=' 제거
+            (r'=', TokenType.ASSIGN),  # ✅ '='을 별도로 할당 연산자로 분리            
 
-            # ✅ 연산자 (두 글자 연산자 먼저 매칭)
-            (r'==|!=|>=|<=|[+\-*/=%<>]', TokenType.OPERATOR),
 
             # ✅ 일반 식별자  
             (r'[a-zA-Z_\$][a-zA-Z0-9_]*', TokenType.IDENTIFIER),

@@ -162,7 +162,7 @@ class CommandExecutor:
         if step_index != -1 and step_index < to_index:
             raise CommandExecutionError("FOR 문에는 'TO'보다 앞에 'STEP'이 올 수 없습니다.", args[0].line, args[0].column)
 
-        if args[1].type != TokenType.OPERATOR or args[1].data.value != "=":
+        if args[1].type != TokenType.ASSIGN:
             raise CommandExecutionError("FOR 문의 변수 할당이 잘못되었습니다.", args[0].line, args[0].column)
 
         loop_var = args[0]  # 반복 변수명

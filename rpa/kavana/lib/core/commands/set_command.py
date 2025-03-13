@@ -1,5 +1,6 @@
 from typing import List
 from lib.core.commands.base_command import BaseCommand
+from lib.core.exceptions.kavana_exception import KavanaSyntaxError
 from lib.core.token_type import TokenType
 from lib.core.expr_evaluator import ExprEvaluator
 from lib.core.token import Token
@@ -9,8 +10,8 @@ class SetCommand(BaseCommand):
         """
         SET <varname> = <expression> [GLOBAL]
         """
-        if len(args) < 3 or args[1].data.value != "=":
-            raise SyntaxError("Invalid SET command format. Expected: SET <varname> = <expression> [GLOBAL]")
+        if len(args) < 3 or args[1].type != TokenType.ASSIGN:
+            raise KavanaSyntaxError("잘못된 SET명령어 :  SET <varname> = <expression> [GLOBAL]")
 
         var_name = args[0].data.value
         expression = args[2:]  # 수식 부분

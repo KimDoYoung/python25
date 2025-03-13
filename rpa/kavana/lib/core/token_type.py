@@ -18,7 +18,8 @@ class TokenType(Enum):
     IDENTIFIER = "IDENTIFIER" 
     OPERATOR = "OPERATOR" # +, -, *, /, ==, !=, <, >, <=, >=, AND, OR
     LOGICAL_OPERATOR = "LOGICAL_OPERATOR" # AND, OR, NOT
-    COMMA = "COMMA" # ,
+    COMMA = "," # ,
+    ASSIGN = "=" # =
     LEFT_PAREN = "LEFT_PAREN" # (
     RIGHT_PAREN = "RIGHT_PAREN" # )
     LEFT_BRACKET = "LEFT_BRACKET"    # [ 

@@ -397,9 +397,9 @@ class ExprEvaluator:
                                 result = Integer(result)  # ✅ Integer로 변환
                                 result_type = TokenType.INTEGER
                         else:
-                            raise ExprEvaluationError(f"Unsupported operator: {token.data.value}", token.line, token.column)
+                            raise ExprEvaluationError(f"지원하지 않는 연산자 입니다: {token.data.value}", token.line, token.column)
                     else:
-                        raise ExprEvaluationError(f"Unsupported operand types: {a.type} and {b.type}", token.line, token.column)
+                        raise ExprEvaluationError(f"연산을 지원하지 않는 타입입니다.: {a.type} and {b.type}", token.line, token.column)
 
                     stack.append(Token(result, result_type, line=token.line, column=token.column))
 
@@ -436,7 +436,7 @@ class ExprEvaluator:
                 elif token.object_type == TokenType.APPLICATION:
                     result_token = Token(data=Application(*arg_values), type=TokenType.APPLICATION)
                 else:
-                    raise ExprEvaluationError(f"Unsupported custom object type: {token.object_type}")
+                    raise ExprEvaluationError(f"지원하지 않는 객체 타입입니다: {token.object_type}")
                 stack.append(result_token)
 
             elif token.type == TokenType.LIST_EX:
