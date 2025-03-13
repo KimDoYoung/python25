@@ -2,18 +2,48 @@
     "version": "0.2.0",
     "configurations": [
         {
-            "name": "kavana",
+            "name": "kavana-pretty",
             "type": "debugpy",
             "request": "launch",
             "program": "${file}",
             "console": "integratedTerminal",
             "args": [
-                 "./scripts/0.kvs"
+                 "./scripts/a.kvs",
+                 "--pretty"
             ],
             "env": {
                 "PYTHONPATH": "${workspaceFolder}"
             }
         },
+        {
+            "name": "kavana-check",
+            "type": "debugpy",
+            "request": "launch",
+            "program": "${file}",
+            "console": "integratedTerminal",
+            "args": [
+                 "./scripts/a.kvs",
+                 "--check"
+            ],
+            "env": {
+                "PYTHONPATH": "${workspaceFolder}"
+            }
+        },        
+        {
+            "name": "kavana-all",
+            "type": "debugpy",
+            "request": "launch",
+            "program": "${file}",
+            "console": "integratedTerminal",
+            "args": [
+                 "./scripts/a.kvs",
+                 "--check",
+                 "--pretty"
+            ],
+            "env": {
+                "PYTHONPATH": "${workspaceFolder}"
+            }
+        },        
         {
             "name": "Python: Current File",
             "type": "debugpy",

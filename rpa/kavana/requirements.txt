@@ -12,3 +12,5 @@ openpyxl
 Pillow
 pywinauto
 pytest-asyncio
+pyinstaller
+pyyaml

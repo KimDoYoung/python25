@@ -1,15 +1,15 @@
 class ReservedWords:
     _keywords = {
-        "True", "False", "None",
+        "CONST",
         "INCLUDE", "ENV_LOAD", "MAIN", "END_MAIN",
         "SET","GLOBAL",
         "AND", "OR", "NOT",
         "IF", "ELSE", "ELSEIF", "END_IF", "WHILE", "END_WHILE",
         "BREAK", "CONTINUE",
         "FOR", "TO", "STEP", "END_FOR", "FUNCTION", "END_FUNCTION",
-        "RETURN", "PRINT"
+        "RETURN", "PRINT",
         "EXIT",
-        "ON_EXCEPTION", "END_ON_EXCEPTION","RAISE",
+        "ON_EXCEPTION", "END_EXCEPTION","RAISE",
     }
 
     @classmethod

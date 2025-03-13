@@ -4,7 +4,7 @@ FUNCTION plus(a, b)
 END_FUNCTION
 
 main
-   set global_number = 10
+   set1 global_number = 10
    set a = plus(3, 4)
    print "{a}"
 end_main
