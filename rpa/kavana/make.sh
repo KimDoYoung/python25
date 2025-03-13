@@ -40,4 +40,4 @@ chmod +x "$INSTALL_DIR/kavana.exe"
 echo "✅ 빌드 완료! 이제 터미널에서 'kavana a.kvs' 실행 가능."
 
 # 가상 환경 비활성화
-deactivate
+#deactivate
