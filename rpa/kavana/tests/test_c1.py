@@ -15,6 +15,10 @@ def test_script_execution(capfd):
         SET sum = 0
         IF a > 3
             SET sum = sum + a
+        ELIF a == 3
+            print "a is 3"
+        ELSE
+            print "a is not 3"
         END_IF
 
         FOR i = 1 TO 3 STEP 1

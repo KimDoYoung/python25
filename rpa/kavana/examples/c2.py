@@ -17,6 +17,9 @@ main
             print "i is not 3 or 5 {r}"
         end_if
     end_for
+    for s in ["갑돌이", "이몽룡", "홍길동"]
+        print "{s}"
+    end_for
 end_main
 """
 script_lines = script.split("\n")
