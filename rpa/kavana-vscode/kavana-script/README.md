@@ -28,9 +28,11 @@ code --uninstall-extension my-extension
 ```
 
 ### make.sh
+
 - package.json의 버젼을 올리고
-- vscode에서 기존에 설치된 것 제거 하고 
+- vscode에서 기존에 설치된 것 제거 하고
 - 새로운 것을 올린다.
+
 ```text
 현재 나의 custom script language를 위한 vscode 확장 프로그램을 만드는데.
 vsce package 라고 bash console에서 빌드하고 있어.
@@ -41,7 +43,6 @@ vsce package 라고 bash console에서 빌드하고 있어.
 3. 기존 code에 이미 설치되어 있는 kavana-script 확장 제거
 4. 새로 만들어진 것 설치
 ```
-
 
 ## package.json
 
