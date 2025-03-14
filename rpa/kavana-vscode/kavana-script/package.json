@@ -2,7 +2,8 @@
   "name": "kavana-script",
   "displayName": "kavana-script",
   "description": "kavana script syntax highlighting for VSCode",
-  "version": "0.0.1",
+  "publisher": "kalpa-tech", 
+  "version": "0.0.2",
   "engines": {
     "vscode": "^1.98.0"
   },

@@ -20,7 +20,7 @@
 
 ### vsix관련 명령어
 ```bash
-code --list-extensions
+code --list-extensions --show-versions
 code --uninstall-extension my-extension
 ```
 
