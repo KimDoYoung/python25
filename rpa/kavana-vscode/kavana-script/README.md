@@ -10,7 +10,19 @@
 6. kvs.tmLanguage.json, language-configuration.json 편집
 7. npm install -g vsce
    vsce package
-8. kavana-script-0.0.1.vsix 만들어진다.   
+8. kavana-script-0.0.1.vsix 만들어진다.
+
+## vsix를 설치하는 방법
+
+1. code gui에서 설치 : ctrl+shift+P -> Extensions: Install from VSIX. -> vsix선택
+2. bash :  code --install-extension my-extension.vsix -> vscode 재시작
+3. ctrl+shift+x ->  ... -> install from VSIX
+
+### vsix관련 명령어
+```bash
+code --list-extensions
+code --uninstall-extension my-extension
+```
 
 ## package.json
 
