@@ -3,13 +3,21 @@
 # 가상 환경 경로 (프로젝트에 맞게 수정)
 VENV_DIR="$(pwd)/venv"
 
-# 가상 환경 활성화
-if [ -d "$VENV_DIR" ]; then
-    echo "🐍 가상 환경 활성화: $VENV_DIR"
-    source "$VENV_DIR/bin/activate"
+# 현재 사용 중인 Python 확인
+PYTHON_PATH=$(which python)
+
+# 만약 현재 Python 경로가 venv 내부라면 가상 환경 활성화 스킵
+if [[ "$PYTHON_PATH" == *"venv/Scripts/python" ]]; then
+    echo "🔄 이미 가상 환경이 활성화되어 있습니다: $PYTHON_PATH"
 else
-    echo "❌ 가상 환경을 찾을 수 없습니다: $VENV_DIR"
-    exit 1
+    # 가상 환경 활성화
+    if [ -d "$VENV_DIR" ]; then
+        echo "🐍 가상 환경 활성화: $VENV_DIR"
+        source "$VENV_DIR/Scripts/activate"
+    else
+        echo "❌ 가상 환경을 찾을 수 없습니다: $VENV_DIR"
+        exit 1
+    fi
 fi
 
 # 설정: 실행 파일을 저장할 디렉토리
@@ -39,5 +47,5 @@ chmod +x "$INSTALL_DIR/kavana.exe"
 
 echo "✅ 빌드 완료! 이제 터미널에서 'kavana a.kvs' 실행 가능."
 
-# 가상 환경 비활성화
-#deactivate
+# 가상 환경 비활성화 (필요 시)
+# deactivate

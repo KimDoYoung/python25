@@ -6,7 +6,9 @@ import shutil
 from typing import List
 
 from lib.core.datatypes.kavana_datatype import Boolean, Integer, String
-from lib.core.exceptions.kavana_exception import KavanaFileNotFoundError
+from lib.core.datatypes.list_type import ListType
+from lib.core.datatypes.ymd_time import YmdTime
+from lib.core.exceptions.kavana_exception import KavanaException, KavanaFileNotFoundError
 from lib.core.token import Token
 from lib.core.token_type import TokenType
 
@@ -75,17 +77,17 @@ class FileFunctions:
             size = os.path.getsize(file_path)
             return Token(data=Integer(size), type=TokenType.INTEGER)
         except Exception:
-            return Token(data=Integer(-1), type=TokenType.NUMBER)  # 오류 시 -1 반환
+            return Token(data=Integer(-1), type=TokenType.INTEGER)  # 오류 시 -1 반환
 
     @staticmethod
     def FILE_MODIFIED_TIME(file_path: str) -> Token:
         """파일 최종 수정 시간 반환 (YYYY-MM-DD HH:MM:SS 형식)"""
         try:
             timestamp = os.path.getmtime(file_path)
-            mod_time = datetime.datetime.fromtimestamp(timestamp).strftime("%Y-%m-%d %H:%M:%S")
-            return Token(data=String(mod_time), type=TokenType.STRING)
+            mod_time = datetime.fromtimestamp(timestamp)
+            return Token(data=YmdTime.from_datetime(mod_time), type=TokenType.YMDTIME)
         except Exception:
-            return Token(data=String(""), type=TokenType.STRING)  # 오류 시 빈 문자열 반환
+            raise KavanaException(f"파일의 최종 변경시각을 가져 오지 못했습니다: {file_path}")
 
     @staticmethod
     def FILE_TYPE(file_path: str) -> Token:
@@ -141,15 +143,15 @@ class FileFunctions:
         try:
             with open(file_path, "r", encoding="utf-8") as f:
                 lines = [String(line.strip()) for line in f.readlines()]
-            return Token(data=List(lines), type=TokenType.LIST)
+            return Token(data=ListType(lines), type=TokenType.LIST_EX)
         except Exception:
-            return Token(data=List([]), type=TokenType.LIST)
+            return Token(data=ListType([]), type=TokenType.LIST_EX)
 
     @staticmethod
     def FILE_FIND(directory: str, pattern: str) -> Token:
         """특정 디렉토리에서 패턴과 일치하는 파일 찾기"""
         try:
             files = glob.glob(os.path.join(directory, pattern))
-            return Token(data=List([String(os.path.basename(f)) for f in files]), type=TokenType.LIST)
+            return Token(data=ListType([String(os.path.basename(f)) for f in files]), type=TokenType.LIST_EX)
         except Exception:
-            return Token(data=List([]), type=TokenType.LIST)
+            return Token(data=ListType([]), type=TokenType.LIST_EX)
