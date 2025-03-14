@@ -8,7 +8,7 @@
 4. 파일 다운로드
 5. eSAFE2019 종료
 6. 다운로드 받은 파일을 ftp서버에 put
-7. 조회 조건에서 [공공데이터](https://www.data.go.kr/)의 open api를 사용
+7. 조회 조건 공휴일을 제외하고 前日을 구하기 위해서 [공공데이터](https://www.data.go.kr/)의 open api를 사용
 
 ## 동작
 
@@ -22,8 +22,8 @@
 ## 제약조건
 
 1. 화면 크기 FHD에서 동작
-2. 공인인증서는 하드에 존재.
-3. 공인인증서 사용자 고정
+2. 공인인증서는 하드에 존재. (불필요: .env에 설정가능)
+3. 공인인증서 사용자 고정 (불필요: .env에 설정가능)
 
 ## 기능
 
@@ -35,10 +35,24 @@
 6. pyinstaller를 사용하여 exe파일을 만든다.
 7. 다운로드 받은 excel은 csv로 변환되어 ftp 서버에 upload된다.
 
+## 개발환경 및 upgrade
+
+- 필요
+  - FHD모니터
+  - esafe.exe
+  - 공인인증서
+- git clone
+- python -m venv env
+- source env/Scripts/activate
+- config.py에 버젼번호 변경
+- 수정작업
+- make.sh
+
 ## 빌드
 
 - pyinstaller로 exe파일을 만듬
 - 가상환경에서 작업해야함
+- make.sh
 
 ```shell
 source env/Script/activate

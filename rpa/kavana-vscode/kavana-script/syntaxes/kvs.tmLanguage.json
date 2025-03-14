@@ -14,11 +14,11 @@
 			"patterns": [
 				{
 				"name": "keyword.control.kvs",
-				"match": "\\b(main|end_main|function|end_function|if|end_if|elif|else|while|end_while|for|to|in|step|end_for|return|continue|break)\\b"
+				"match": "(?i)\\b(main|end_main|function|end_function|if|end_if|elif|else|while|end_while|for|to|in|step|end_for|on_exception|end_exception)\\b"
 				},
 				{
 				"name": "keyword.command.kvs",
-				"match": "\\b(include|load_env|print|set)\\b"
+				"match": "(?i)\\b(include|env_load|print|set|return|continue|break)\\b"
 				}
 		]
 		},

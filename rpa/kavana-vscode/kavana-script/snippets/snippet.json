@@ -1,0 +1,67 @@
+{
+
+    "kavana-script전체적인구조":{
+        "prefix":"kavana!!",
+        "body":[
+        "//INCLUDE \"./examples/common.kvs\" // 사용자정의함수 및  상수 설정",
+        "//ENV_LOAD \"./examples/env.test\"  // .env 파일을 읽어서 변수로 설정",
+        "\n//사용자함수",
+        "FUNCTION plus(a, b)",
+        "\tRETURN a + b",
+        "END_FUNCTION",
+        "\n//메인함수",
+        "MAIN$1",
+        "\tSET c = plus(1, 2)$1",
+        "\tPRINT \"Hi! kavana\"",
+        "\nON_EXCEPTION //예외처리",
+        "\tPRINT \">>> {$$exception_message} exit code: {$$exit_code}\"",
+        "END_EXCEPTION",
+        "END_MAIN"
+        ],
+        "description":"kavana-script의 전제적인 구조"
+    },
+    "if문의 구조":{
+        "prefix":"if-full",
+        "body":[
+        "IF $1i == 0",
+        "\tPRINT \"{i}\"",
+        "ELIF i == 1",
+        "\tPRINT \"{i}\"",
+        "ELSE",
+        "\tPRINT \"{i}\"",
+        "END_IF"
+        ],
+        "description":"if문의 구조"
+    },
+    "for-to문의 구조":{
+        "prefix":"for-to-full",
+        "body":[
+        "FOR i=$1 TO $2 STEP $3",
+        "\tPRINT \"{i}\"",
+        "END_FOR"
+        ],
+        "description":"for-to문의 구조"
+    },    
+    "for-in문의 구조":{
+        "prefix":"for-in-full",
+        "body":[
+        "FOR i$1 IN [1,2,3]",
+        "\tPRINT \"{i}\"",
+        "\tBREAK",
+        "\tCONTINUE",
+        "END_FOR"
+        ],
+        "description":"for-in문의 구조"
+    },    
+    "while문의 구조":{
+        "prefix":"while-full",
+        "body":[
+        "WHILE i < 10",
+        "\tPRINT \"{i}\"",
+        "\tBREAK",
+        "\tCONTINUE",
+        "END_WHILE"
+        ],
+        "description":"for-in문의 구조"
+    }
+}

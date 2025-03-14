@@ -1,10 +1,10 @@
-FUNCTION plus(a, b)
+function plus(a, b)
    set c = a + b + global_number
    return c
-END_FUNCTION
+end_function
 
 main
-   set1 global_number = 10
+   set global_number = 10
    set a = plus(3, 4)
    print "{a}"
 end_main

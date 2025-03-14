@@ -21,6 +21,10 @@
       "language": "kvs",
       "scopeName": "source.kvs",
       "path": "./syntaxes/kvs.tmLanguage.json"
-    }]
+    }],
+    "snippets": [{
+          "language": "kvs",
+          "path": "./snippets/snippet.json"
+    }]       
   }
 }

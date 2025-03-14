@@ -34,5 +34,6 @@
         ["funcdtion", "end_function"],
         ["while", "end_while"],
         ["for", "end_for"],        
+        ["on-exception", "end_exception"],        
     ]
 }
