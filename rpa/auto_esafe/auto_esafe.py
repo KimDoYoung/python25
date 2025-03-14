@@ -140,7 +140,7 @@ def work_start_main():
     else:
         mouse_move_and_click(1037, 444, wait_seconds=1)
     # 사용자 선택
-    find_and_click(pngimg('user'), region=region, grayscale=True, timeout=5)
+    find_and_click(pngimg('user'), region=region, grayscale=True, timeout=10)
 
     # 비밀번호 입력
     pyautogui.write(Config.PASSWORD)
@@ -694,6 +694,7 @@ if __name__ == "__main__":
     pre_check()
     # 이름문자를 이미지로 만들어서 저장한다.
     create_user_name_imge()
+    time.sleep(3)
     version = Config.VERSION
     log.info("------------------------------------------------------")
     log.info(f"auto_esafe 프로그램 시작 ver : {version}")
