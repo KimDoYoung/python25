@@ -20,7 +20,13 @@
         ],
         "description":"kavana-script의 전제적인 구조"
     },
-    "if문의 구조":{
+    "set문" :{"prefix":"set", "body":["SET $1 = $2"],"description":"set문"},
+    "print문" :{"prefix":"print", "body":["PRINT \"$1\""],"description":"print문"},
+    "if문" :{"prefix":"if", "body":["IF $1","\t$2","END_IF"],"description":"if문"},
+    "for문" :{"prefix":"for", "body":["FOR $1 TO $2 STEP $3","\t$4","END_FOR"],"description":"for문"},
+    "forin문" :{"prefix":"for-in", "body":["FOR $1 IN $2","\t$3","END_FOR"],"description":"forin문"},
+    "while문" :{"prefix":"while", "body":["WHILE $1","\t$2","END_WHILE"],"description":"while문"},
+    "if문의 full구조":{
         "prefix":"if-full",
         "body":[
         "IF $1i == 0",
@@ -31,7 +37,7 @@
         "\tPRINT \"{i}\"",
         "END_IF"
         ],
-        "description":"if문의 구조"
+        "description":"if문의 full구조"
     },
     "for-to문의 구조":{
         "prefix":"for-to-full",

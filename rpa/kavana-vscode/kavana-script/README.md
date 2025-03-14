@@ -1,5 +1,7 @@
 # kavana-vscode
 
+kavana script를 위한 syntax 색상 제공
+
 ## vscode kavana-script extension
 
 1. npm -v, node -v
@@ -19,6 +21,7 @@
 3. ctrl+shift+x ->  ... -> install from VSIX
 
 ### vsix관련 명령어
+
 ```bash
 code --list-extensions --show-versions
 code --uninstall-extension my-extension
@@ -52,5 +55,4 @@ code --uninstall-extension my-extension
     }]
   }
 }
-
 ```
