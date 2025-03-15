@@ -7,7 +7,7 @@ from lib.core.token_type import TokenType
 
 class NumericFunctions:
     @staticmethod
-    def RANDOM(min_val: int, max_val: int) -> int:
+    def RANDOM(min_val: int, max_val: int) -> Integer:
         '''
         min_val과 max_val 사이의 랜덤한 정수를 반환합니다.
         
@@ -20,7 +20,7 @@ class NumericFunctions:
         if min_val > max_val:
             raise KavanaTypeError("최소값은 최대값보다 작아야 합니다")
         i = random.randint(min_val, max_val)
-        return Token(data=Integer(i), type="INTEGER")
+        return Token(data=Integer(i), type=TokenType.INTEGER)
     
     @staticmethod
     def ABS(i: int) -> int:
@@ -33,7 +33,7 @@ class NumericFunctions:
         '''
         if not isinstance(i, int):
             raise KavanaTypeError("ABS() 함수는 정수형 인자만 받을 수 있습니다")
-        return Token(data=Integer(abs(i)), type="INTEGER")
+        return Token(data=Integer(abs(i)), type=TokenType.INTEGER)
     
     @staticmethod
     def MAX(i: int, j: int) -> int:
@@ -46,7 +46,7 @@ class NumericFunctions:
         '''
         if not isinstance(i, int) or not isinstance(j, int):
             raise KavanaTypeError("MAX() 함수는 정수형 인자만 받을 수 있습니다")
-        return Token(data=Integer(max(i, j)), type="INTEGER")
+        return Token(data=Integer(max(i, j)), type=TokenType.INTEGER)
     
     @staticmethod
     def MIN(i: int, j: int) -> int:
@@ -59,7 +59,7 @@ class NumericFunctions:
         '''
         if not isinstance(i, int) or not isinstance(j, int):
             raise KavanaTypeError("MIN() 함수는 정수형 인자만 받을 수 있습니다")
-        return Token(data=Integer(min(i, j)), type="INTEGER")
+        return Token(data=Integer(min(i, j)),type=TokenType.INTEGER)
     
     @staticmethod
     def ROUND(i: int) -> int:
@@ -72,7 +72,7 @@ class NumericFunctions:
         '''
         if not isinstance(i, int):
             raise KavanaTypeError("ROUND() 함수는 정수형 인자만 받을 수 있습니다")
-        return Token(data=Integer(round(i)), type="INTEGER")
+        return Token(data=Integer(round(i)), type=TokenType.INTEGER)
     
     @staticmethod
     def FLOOR(i: int) -> int:
@@ -85,7 +85,7 @@ class NumericFunctions:
         '''
         if not isinstance(i, int):
             raise KavanaTypeError("FLOOR() 함수는 정수형 인자만 받을 수 있습니다")
-        return Token(data=Integer(i // 1), type="INTEGER")
+        return Token(data=Integer(i // 1), type=TokenType.INTEGER)
     
     @staticmethod
     def CEIL(i: int) -> int:
@@ -98,7 +98,7 @@ class NumericFunctions:
         '''
         if not isinstance(i, int):
             raise KavanaTypeError("CEIL() 함수는 정수형 인자만 받을 수 있습니다")
-        return Token(data=Integer(i // 1 + 1), type="INTEGER")
+        return Token(data=Integer(i // 1 + 1), type=TokenType.INTEGER)
     
     @staticmethod
     def TRUNC(i: int) -> int:
@@ -111,7 +111,7 @@ class NumericFunctions:
         '''
         if not isinstance(i, int):
             raise KavanaTypeError("TRUNC() 함수는 정수형 인자만 받을 수 있습니다")
-        return Token(data=Integer(i), type="INTEGER")
+        return Token(data=Integer(i), type=TokenType.INTEGER)
     
     @staticmethod
     def IS_EVEN(i: int) -> bool:
@@ -124,7 +124,7 @@ class NumericFunctions:
         '''
         if not isinstance(i, int):
             raise KavanaTypeError("IS_EVEN() 함수는 정수형 인자만 받을 수 있습니다")
-        return Token(data=Integer(i % 2 == 0), type="BOOLEAN")
+        return Token(data=Integer(i % 2 == 0), type=TokenType.INTEGER)
     
     @staticmethod
     def IS_ODD(i: int) -> bool:
@@ -137,7 +137,7 @@ class NumericFunctions:
         '''
         if not isinstance(i, int):
             raise KavanaTypeError("IS_ODD() 함수는 정수형 인자만 받을 수 있습니다")
-        return Token(data=Integer(i % 2 == 1), type="BOOLEAN")
+        return Token(data=Integer(i % 2 == 1), type=TokenType.INTEGER)
 
     @staticmethod
     def RANGE(*args) -> ListExToken:

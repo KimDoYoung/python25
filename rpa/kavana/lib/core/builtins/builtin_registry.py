@@ -1,6 +1,6 @@
 from lib.core.builtins.dir_functions import DirFunctions
 from lib.core.builtins.file_functions import FileFunctions
-from lib.core.builtins.path_functons import PathFunctions
+from lib.core.builtins.path_functions import PathFunctions
 from lib.core.builtins.ymd_time_functions import YmdTimeFunctions
 from .string_functions import StringFunctions
 from .numeric_functions import NumericFunctions

@@ -72,7 +72,7 @@ class StringFunctions:
         if isinstance(s, str) and isinstance(sep, str):
             result = s.split(sep)
             list_type = ListType(result)
-            return ListExToken(data=list_type, type=TokenType.LIST_EX)
+            return ListExToken(data=list_type)
         raise KavanaTypeError("사용형식 : SPLIT(문자열, 구분자)")
     
     @staticmethod
