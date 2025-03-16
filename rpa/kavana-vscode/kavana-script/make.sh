@@ -2,11 +2,13 @@
 
 # 1. package.json의 version 값을 1 증가
 echo "Updating version in package.json..."
-VERSION=$(jq -r '.version' package.json)
+VERSION=$(grep -oP '"version": *"\K[0-9]+\.[0-9]+\.[0-9]+' package.json)  # 현재 버전 추출
 IFS='.' read -r -a VERSION_PARTS <<< "$VERSION"
 ((VERSION_PARTS[2]++))  # 마지막 숫자(패치 버전) 증가
 NEW_VERSION="${VERSION_PARTS[0]}.${VERSION_PARTS[1]}.${VERSION_PARTS[2]}"
-jq --arg new_version "$NEW_VERSION" '.version = $new_version' package.json > temp.json && mv temp.json package.json
+
+# package.json에서 기존 버전 값을 새 버전으로 변경
+sed -i.bak "s/\"version\": \"$VERSION\"/\"version\": \"$NEW_VERSION\"/" package.json
 echo "New version: $NEW_VERSION"
 
 # 2. vsce package 실행

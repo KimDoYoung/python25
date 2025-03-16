@@ -7,9 +7,16 @@
 		},
 		{
 			"include": "#strings"
+		},
+		{
+			"include": "#comments"
 		}
 	],
 	"repository": {
+		"comments": {
+			"name": "comment.line.kvs",
+			"match": "//.*$"
+		},
 		"keywords": {
 			"patterns": [
 				{
