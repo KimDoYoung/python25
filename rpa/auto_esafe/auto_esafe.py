@@ -12,10 +12,10 @@ from rpa_misc import get_text_from_input_field
 from rpa_utils import *
 from rpa_process import is_process_running, kill_process, maximize_window
 from ftplib import FTP
-import paramiko
+from paramiko import Transport, SFTPClient
 from PIL import Image, ImageDraw, ImageFont
 
-from working_days import get_prev_working_day, get_today, isHoliday, isTodayAHoliday, todayYmd
+from working_days import get_prev_working_day, get_today, isHoliday,  todayYmd
 from excel_utils import excel_to_csv
 
 # Logger 인스턴스 생성
@@ -55,11 +55,11 @@ def sftp_upload_files(filenames):
     
     try:
         # SFTP 연결 설정
-        transport = paramiko.Transport((SFTP_HOST, 22))  # 기본 SFTP 포트 22
+        transport = Transport((SFTP_HOST, 22))  # 기본 SFTP 포트 22
         transport.connect(username=SFTP_USER, password=SFTP_PASS)
 
         # SFTP 클라이언트 생성
-        sftp = paramiko.SFTPClient.from_transport(transport)
+        sftp = SFTPClient.from_transport(transport)
         
         # 원격 디렉토리 이동
         sftp.chdir(SFTP_REMOTE_DIR)

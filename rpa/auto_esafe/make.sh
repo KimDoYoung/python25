@@ -15,7 +15,7 @@ sed -i "s/name='auto_esafe_[0-9.]*'/name='auto_esafe_$VERSION'/" auto_esafe.spec
 
 # 4. PyInstaller 빌드 실행
 echo ">>> PyInstaller 실행 중..."
-pyinstaller auto_esafe.spec
+pyinstaller --clean auto_esafe.spec
 
 # 5. C:/tmp/auto_esafe 폴더 정리
 TARGET_DIR="/c/tmp/auto_esafe"
