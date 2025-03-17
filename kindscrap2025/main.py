@@ -84,6 +84,11 @@ def create_sqlite_db(frdate, todate):
     os.makedirs(data_folder, exist_ok=True)
     db_name = f"{data_folder}/kindscrap_{frdate}_{todate}.sqlite3"
 
+    # 이미 존재하면 삭제한다
+    if os.path.exists(db_name):
+        os.remove(db_name)
+        logger.info(f"이미 존재하는 DB 파일 삭제: {db_name}")
+
     # 데이터베이스 연결
     conn = sqlite3.connect(db_name)
  
