@@ -1,0 +1,7 @@
+requests
+beautifulsoup4
+selenium
+python-dotenv
+webdriver-manager
+paramiko
+pyinstaller
