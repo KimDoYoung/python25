@@ -17,6 +17,8 @@ pyinstaller --noconsole --onefile --icon="$ICON_PATH" src/sophia.py
 # 빌드 완료 메시지
 if [ -f "dist/sophia.exe" ]; then
     echo "✅ 빌드 완료: dist/sophia.exe"
+    cp dist/sophia.exe $HOME/bin/sophia.exe
+    
 else
     echo "❌ 빌드 실패!"
 fi
