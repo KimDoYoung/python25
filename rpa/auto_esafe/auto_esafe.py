@@ -1,6 +1,7 @@
 import glob
 import os
 import subprocess
+import sys
 import time
 import pyautogui
 from logger import Logger
@@ -49,13 +50,14 @@ def ftp_upload_files(filenames):
 def sftp_upload_files(filenames):
     """여러 개의 파일을 SFTP 서버에 업로드하는 함수"""
     SFTP_HOST = Config.SFTP_HOST  # 기존 FTP 설정 그대로 사용
+    SFTP_PORT = int(Config.SFTP_PORT)
     SFTP_USER = Config.SFTP_USER
     SFTP_PASS = Config.SFTP_PASS
     SFTP_REMOTE_DIR = Config.SFTP_REMOTE_DIR  # 예: "/HDD1/esafe"
     
     try:
         # SFTP 연결 설정
-        transport = Transport((SFTP_HOST, 22))  # 기본 SFTP 포트 22
+        transport = Transport((SFTP_HOST, SFTP_PORT))  # 기본 SFTP 포트 22
         transport.connect(username=SFTP_USER, password=SFTP_PASS)
 
         # SFTP 클라이언트 생성
@@ -618,7 +620,7 @@ def esafe_auto_work():
     pyautogui.press('space')
     return saved_files
 
-def deleteTodayFiles(ymd):
+def deleteTodayFiles(ymd, mode:str = "am"):
     """폴더 안에서 특정 날짜 패턴(YYYYMMDD_*)에 맞는 파일 삭제"""
     pattern = os.path.join(Config.SAVE_AS_PATH1, f"{ymd}_*.*")
     files = glob.glob(pattern)  # 패턴에 맞는 파일 찾기
@@ -690,6 +692,9 @@ def create_user_name_imge():
     log.info(f"사용자 이름 이미지 저장: {user_name_img}")    
     
 if __name__ == "__main__":
+    mode = "am"
+    if "pm" in sys.argv:
+        mode = "pm"
     # exit(1)
     pre_check()
     # 이름문자를 이미지로 만들어서 저장한다.
@@ -711,7 +716,7 @@ if __name__ == "__main__":
         # esafe화면작업
         filenames = esafe_auto_work()
     
-        log.info(">>> CSV 변환 시작") 
+        log.info(">>> CSV 변환 시작")
         for idx, filename in enumerate(filenames, start=1):
             # 확장자가 xls인 파일을 csv로 변환
             if filename.endswith('.xls') or filename.endswith('.xlsx'):

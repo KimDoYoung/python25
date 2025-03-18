@@ -10,3 +10,4 @@ xlrd
 openpyxl
 keyboard
 paramiko
+Pillow

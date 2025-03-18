@@ -19,7 +19,7 @@ load_dotenv(env_path())
 
 class Config:
     """환경 설정 및 상수 관리"""
-    VERSION = "1.1.0"
+    VERSION = "1.1.1"
 
     # 프로그램 실행 경로
     PROGRAM_PATH = os.getenv("PROGRAM_PATH")
@@ -40,6 +40,7 @@ class Config:
     
     # SFTP 설정
     SFTP_HOST = os.getenv("SFTP_HOST")
+    SFTP_PORT = os.getenv("SFTP_PORT", 22)
     SFTP_USER = os.getenv("SFTP_USER")
     SFTP_PASS = os.getenv("SFTP_PASS")
     SFTP_REMOTE_DIR = os.getenv("SFTP_REMOTE_DIR")
