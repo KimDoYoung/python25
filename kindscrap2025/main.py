@@ -28,13 +28,14 @@ one_time_log = False
 def sftp_upload_files(filenames):
     """여러 개의 파일을 SFTP 서버에 업로드하는 함수"""
     SFTP_HOST = config.SFTP_HOST  # 기존 FTP 설정 그대로 사용
+    SFTP_PORT = config.SFTP_PORT  # 기본 SFTP 포트 22
     SFTP_USER = config.SFTP_USER
     SFTP_PASS = config.SFTP_PASS
     SFTP_REMOTE_DIR = config.SFTP_REMOTE_DIR  # 예: "/HDD1/esafe"
     
     try:
         # SFTP 연결 설정
-        transport = paramiko.Transport((SFTP_HOST, 22))  # 기본 SFTP 포트 22
+        transport = paramiko.Transport((SFTP_HOST, SFTP_PORT))  # 기본 SFTP 포트 22
         transport.connect(username=SFTP_USER, password=SFTP_PASS)
 
         # SFTP 클라이언트 생성

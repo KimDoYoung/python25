@@ -28,6 +28,7 @@ class Settings:
         self.SFTP_USER = os.getenv('SFTP_USER', 'kdy987')
         self.SFTP_PASS = os.getenv('SFTP_PASS', 'kalpa987!')
         self.SFTP_REMOTE_DIR = os.getenv('SFTP_REMOTE_DIR', '/kind')
+        self.SFTP_PORT = int(os.getenv('SFTP_PORT', 22))
         
         self.LOG_FOLDER_BASE = os.getenv('LOG_FOLDER_BASE', 'c:/tmp/logs')        
         self.DATA_FOLDER = os.getenv('DATA_FOLDER', 'c:/tmp/data')
