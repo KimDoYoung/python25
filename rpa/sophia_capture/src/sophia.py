@@ -76,20 +76,7 @@ class CustomLabel(QLabel):
 
             print(f"🔹 Original Mark Position (Saved): {x}, {y}")  
 
-            # # 🔹 + 마크 생성
-            # mark = QLabel("+", self)
-            # mark.setStyleSheet("color: red; font-size: 20px; font-weight: bold;")
-            # mark.setAttribute(Qt.WA_TransparentForMouseEvents)  
-
-            # # 🔹 마크를 현재 배율에 맞게 배치
-            # scaled_x = int(x * self.parent_window.scale_factor)
-            # scaled_y = int(y * self.parent_window.scale_factor)
-            # mark.move(scaled_x, scaled_y)
-            # mark.show()
-
-            # # 🔹 마크와 원본 좌표를 리스트에 저장
-            # self.parent_window.mark_list.append((mark, x, y))  
-        # 🔹 + 마크 생성 (크기 지정 및 중앙 정렬)
+            # 🔹 + 마크 생성 (크기 지정 및 중앙 정렬)
             mark = QLabel("+", self)
             mark.setStyleSheet("color: red; font-size: 16px; font-weight: bold; text-align: center;")
             mark.setAttribute(Qt.WA_TransparentForMouseEvents)  # ✅ 마우스 이벤트 무시
@@ -97,8 +84,9 @@ class CustomLabel(QLabel):
             mark.move(x - 10, y - 10)  # 🔹 중앙 정렬 (좌상단 기준에서 반 크기만큼 이동)
             mark.show()
 
-            print(f"✅ Mark added at: {x}, {y}")  # ✅ 마크 추가 로그 출력
             self.parent_window.mark_list.append((mark, x, y))              
+            print(f"✅ Mark added at: {x}, {y}")  # ✅ 마크 추가 로그 출력
+            self.parent_window.info_text.append("----->mark: ({}, {})".format(x, y))  # ✅ 정보창에 마크 추가
 
     def mouseReleaseEvent(self, event):
         """ 마우스 드래그 후 선택된 영역 처리 (Rubber Band 위치 보정) """
@@ -116,21 +104,6 @@ class CustomLabel(QLabel):
             self.rubber_band.hide()
             self.rubber_band.update()  # ✅ 즉시 갱신
 
-    # def update_cross_cursor(self, x, y):
-    #     """ 마우스 이동 시 십자선 그리기 """
-    #     if hasattr(self, "h_line"):
-    #         self.h_line.move(0, y)
-    #         self.v_line.move(x, 0)
-    #     else:
-    #         self.h_line = QLabel(self)
-    #         self.h_line.setStyleSheet("background-color: rgba(255, 0, 0, 0.5);")
-    #         self.h_line.setGeometry(0, y, self.width(), 2)
-    #         self.h_line.show()
-
-    #         self.v_line = QLabel(self)
-    #         self.v_line.setStyleSheet("background-color: rgba(255, 0, 0, 0.5);")
-    #         self.v_line.setGeometry(x, 0, 2, self.height())
-    #         self.v_line.show()
     def update_cross_cursor(self, x, y):
         """ 마우스 이동 시 십자선 다시 그리기 """
         if self.parent_window.cross_cursor_mode:
@@ -150,13 +123,10 @@ class CustomLabel(QLabel):
 
             print("✅ Cross Cursor updated successfully")
 
-
-
-
 class SophiaCapture(QMainWindow):
     def __init__(self):
         super().__init__()
-
+        self.VERSION = "1.0"  # 버전 정보 추가
         # 이미지 관련 변수
         self.original_image = None  # 원본 이미지
         self.displayed_image = None  # 확대/축소용 이미지
@@ -167,7 +137,7 @@ class SophiaCapture(QMainWindow):
         self.mark_list = []  # 저장된 마크 리스트 + 리스트
 
 
-        self.setWindowTitle("Sophia Capture")
+        self.setWindowTitle(f"Sophia Capture v{self.VERSION}")  # 창 제목 설정
 
         base_dir = os.path.dirname(os.path.abspath(__file__))  # 현재 파일(sophia.py)의 절대 경로
         icon_path = os.path.join(base_dir, "sophia_capture.ico")  # 절대 경로로 변경        
@@ -496,7 +466,7 @@ class SophiaCapture(QMainWindow):
         """ About 창을 표시하는 함수 """
         msg = QMessageBox(self)
         msg.setWindowTitle("About SophiaCapture")
-        msg.setText("SophiaCapture v1.0\n\n이미지 캡처 및 편집 도구\n\n© 2024 SophiaCapture Team")
+        msg.setText(f"SophiaCapture {self.VERSION}\n\n이미지 캡처 및 편집 도구\n\n© 2024 KimDoYoung")
         msg.setIcon(QMessageBox.Information)
         msg.setStandardButtons(QMessageBox.Ok)
 
