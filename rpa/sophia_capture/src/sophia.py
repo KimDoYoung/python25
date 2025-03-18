@@ -75,13 +75,13 @@ class CustomLabel(QLabel):
             y = int(event.y() / self.parent_window.scale_factor)
 
             print(f"🔹 Original Mark Position (Saved): {x}, {y}")  
-
+            x1,y1 = event.x(), event.y()
             # 🔹 + 마크 생성 (크기 지정 및 중앙 정렬)
             mark = QLabel("+", self)
             mark.setStyleSheet("color: red; font-size: 16px; font-weight: bold; text-align: center;")
             mark.setAttribute(Qt.WA_TransparentForMouseEvents)  # ✅ 마우스 이벤트 무시
             mark.setFixedSize(20, 20)  # 🔹 크기 고정
-            mark.move(x - 10, y - 10)  # 🔹 중앙 정렬 (좌상단 기준에서 반 크기만큼 이동)
+            mark.move(x1 - 10, y1 - 10)  # 🔹 중앙 정렬 (좌상단 기준에서 반 크기만큼 이동)
             mark.show()
 
             self.parent_window.mark_list.append((mark, x, y))              
@@ -126,7 +126,7 @@ class CustomLabel(QLabel):
 class SophiaCapture(QMainWindow):
     def __init__(self):
         super().__init__()
-        self.VERSION = "1.0"  # 버전 정보 추가
+        self.VERSION = "0.1"  # 버전 정보 추가
         # 이미지 관련 변수
         self.original_image = None  # 원본 이미지
         self.displayed_image = None  # 확대/축소용 이미지
@@ -359,7 +359,7 @@ class SophiaCapture(QMainWindow):
         self.display_image()
 
         # ✅ 창 제목 업데이트 (Full Path 표시)
-        self.setWindowTitle(f"Sophia Capture - {file_name}")
+        self.setWindowTitle(f"Sophia Capture v{self.VERSION} - {file_name}")
 
         # ✅ 이미지 파일명 추출 후 폴더 생성
         image_basename = os.path.basename(file_name)  # 파일명 (abc.png)
@@ -466,7 +466,7 @@ class SophiaCapture(QMainWindow):
         """ About 창을 표시하는 함수 """
         msg = QMessageBox(self)
         msg.setWindowTitle("About SophiaCapture")
-        msg.setText(f"SophiaCapture {self.VERSION}\n\n이미지 캡처 및 편집 도구\n\n© 2024 KimDoYoung")
+        msg.setText(f"SophiaCapture v{self.VERSION}\n\nRPA용 이미지 잘라내기 및 위치 구하기 유틸리티\n\n© 2025 KimDoYoung")
         msg.setIcon(QMessageBox.Information)
         msg.setStandardButtons(QMessageBox.Ok)
 
