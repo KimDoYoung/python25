@@ -18,7 +18,7 @@ echo ">>> PyInstaller 실행 중..."
 pyinstaller --clean auto_esafe.spec
 
 # 5. C:/tmp/auto_esafe 폴더 정리
-TARGET_DIR="/c/tmp/auto_esafe"
+TARGET_DIR="$HOME/tmp/auto_esafe"
 echo ">>> $TARGET_DIR 내부 파일 삭제 중..."
 rm -rf "$TARGET_DIR"/*
 mkdir -p "$TARGET_DIR"

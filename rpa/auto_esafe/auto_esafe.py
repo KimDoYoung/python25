@@ -560,66 +560,7 @@ def warning_and_alert_check():
     region = get_region(RegionName.CENTER)
     find_and_press_key(pngimg('error_icon'), 'space', region=region, ignoreNotFound=True, timeout=5)
                     
-def esafe_auto_work():
-    global hts_process  # finally에서 접근하기 위해 전역 변수 사용
-    hts_process = None  # 실행한 프로세스 핸들러
-    saved_files = []  # 저장된 파일 경로 리스트
-    
-    process_name = Config.PROCESS_NAME
-    if is_process_running(process_name):
-        kill_process(process_name)
-        log.info(f"{process_name} 가 이미 실행중이라서 프로세스 종료시킴")
-
-    log.info(">>> 프로그램 실행 및 인증서 선택 및 메인으로 진입 시작")
-    work_start_main()
-    log.info(">>> 프로그램 실행 및 인증서 선택 및 메인으로 진입 완료")
-    
-    #-------------------------기준가
-    log.info(">>> 500068 기준가1 시작")
-    filename = work_500068_tab1()
-    saved_files.append(filename)
-    log.info(">>> 500068 기준가1 종료")
-    # #-------------------------기준가2
-    log.info(">>> 500068 기준가2 작업 시작")
-    files = work_500068_tab2()
-    saved_files.extend(files)
-    log.info(">>> 500068 기준가2 작업 종료")
-    #-------------------------500038 분배금 내역통보
-    log.info(">>> 500038 분배금 내역통보 작업 시작")
-    tabClose = close_all_tabs_via_context_menu((460,85), pngimg('context_menu'), pngimg('all_tab_close'))
-    if not tabClose:
-        mouse_move_and_click(493, 89, wait_seconds=2)
-            
-    prev_working_day = get_prev_working_day(*get_today())
-    log.info("이전 영업일: " + prev_working_day)
-    filename = work_500038(prev_working_day)
-    saved_files.append(filename)
-    log.info(">>> 500038 분배금 내역통보 작업 종료")
-    #-------------------------800008종목발행현황
-    log.info(">>> 800008 종목발행현황 작업 시작")
-    close_all_tabs_via_context_menu((460,85), pngimg('context_menu'), pngimg('all_tab_close'))
-    filename = work_800008(prev_working_day)
-    saved_files.append(filename)
-    log.info(">>> 800008 분배금 내역통보 작업 종료")
-    #-------------------------800100 일자별 일정현황
-    log.info(">>> 800100 일자별 일정현황 시작")
-    close_all_tabs_via_context_menu((460,85), pngimg('context_menu'), pngimg('all_tab_close'))
-    filename = work_800100()
-    saved_files.append(filename)
-    log.info(">>> 800100 일자별 일정현황 종료")
-    #-------------------------800100 일자별 일정현황
-    log.info(">>> 500086 등록잔량서비스 시작")
-    close_all_tabs_via_context_menu((460,85), pngimg('context_menu'), pngimg('all_tab_close'))
-    filename = work_500086()
-    saved_files.append(filename)
-    log.info(">>> 500086 등록잔량서비스 종료")
-    
-    # 프로그램 종료
-    mouse_move_and_click(1901, 16, wait_seconds=1)
-    time.sleep(2)
-    pyautogui.press('space')
-    return saved_files
-
+   
 def deleteTodayFiles(ymd, mode:str = "am"):
     """폴더 안에서 특정 날짜 패턴(YYYYMMDD_*)에 맞는 파일 삭제"""
     pattern = os.path.join(Config.SAVE_AS_PATH1, f"{ymd}_*.*")
@@ -627,6 +568,11 @@ def deleteTodayFiles(ymd, mode:str = "am"):
 
     for file in files:
         try:
+            # 오전 모드이고 파일명에 T1N이나 T2N이 포함되어 삭제하지 않는다.
+            if mode == "am" and ("T1N" in file or "T2N" in file):
+                continue
+            if mode == "pm" and ("T1N" not in file and "T2N" not in file):
+                continue
             os.remove(file)
             log.info(f" 기존 파일 삭제 완료: {file}")
         except Exception as e:
@@ -690,20 +636,212 @@ def create_user_name_imge():
     # 이미지 저장
     img.save(user_name_img)
     log.info(f"사용자 이름 이미지 저장: {user_name_img}")    
+
+def esafe_auto_work():
+    global hts_process  # finally에서 접근하기 위해 전역 변수 사용
+    hts_process = None  # 실행한 프로세스 핸들러
+    saved_files = []  # 저장된 파일 경로 리스트
     
+    process_name = Config.PROCESS_NAME
+    if is_process_running(process_name):
+        kill_process(process_name)
+        log.info(f"{process_name} 가 이미 실행중이라서 프로세스 종료시킴")
+
+    log.info(">>> 프로그램 실행 및 인증서 선택 및 메인으로 진입 시작")
+    work_start_main()
+    log.info(">>> 프로그램 실행 및 인증서 선택 및 메인으로 진입 완료")
+    
+    #-------------------------기준가
+    log.info(">>> 500068 기준가1 시작")
+    filename = work_500068_tab1()
+    saved_files.append(filename)
+    log.info(">>> 500068 기준가1 종료")
+    # #-------------------------기준가2
+    log.info(">>> 500068 기준가2 작업 시작")
+    files = work_500068_tab2()
+    saved_files.extend(files)
+    log.info(">>> 500068 기준가2 작업 종료")
+    #-------------------------500038 분배금 내역통보
+    log.info(">>> 500038 분배금 내역통보 작업 시작")
+    tabClose = close_all_tabs_via_context_menu((460,85), pngimg('context_menu'), pngimg('all_tab_close'))
+    if not tabClose:
+        mouse_move_and_click(493, 89, wait_seconds=2)
+            
+    prev_working_day = get_prev_working_day(*get_today())
+    log.info("이전 영업일: " + prev_working_day)
+    filename = work_500038(prev_working_day)
+    saved_files.append(filename)
+    log.info(">>> 500038 분배금 내역통보 작업 종료")
+    #-------------------------800008종목발행현황
+    log.info(">>> 800008 종목발행현황 작업 시작")
+    close_all_tabs_via_context_menu((460,85), pngimg('context_menu'), pngimg('all_tab_close'))
+    filename = work_800008(prev_working_day)
+    saved_files.append(filename)
+    log.info(">>> 800008 분배금 내역통보 작업 종료")
+    #-------------------------800100 일자별 일정현황
+    log.info(">>> 800100 일자별 일정현황 시작")
+    close_all_tabs_via_context_menu((460,85), pngimg('context_menu'), pngimg('all_tab_close'))
+    filename = work_800100()
+    saved_files.append(filename)
+    log.info(">>> 800100 일자별 일정현황 종료")
+    #-------------------------800100 일자별 일정현황
+    log.info(">>> 500086 등록잔량서비스 시작")
+    close_all_tabs_via_context_menu((460,85), pngimg('context_menu'), pngimg('all_tab_close'))
+    filename = work_500086()
+    saved_files.append(filename)
+    log.info(">>> 500086 등록잔량서비스 종료")
+    
+    # 프로그램 종료
+    mouse_move_and_click(1901, 16, wait_seconds=1)
+    time.sleep(2)
+    pyautogui.press('space')
+    return saved_files
+
+def work_500068_tab1_pm():
+    # 화면번호 입력
+    log.info("화면번호 입력 500068 입력 후 엔터")
+    mouse_move_and_click(1760, 50, wait_seconds=1)
+    pyautogui.write("500068")
+    pyautogui.press('enter')
+
+    time.sleep(5)
+    log.info("기준가1 작업시작")
+    # 펀드 전체 체크박스 클릭
+    region = get_region(RegionName.RIGHT_TOP)
+    find_and_click(pngimg('fund_all_checkbox'), region=region, grayscale=True)
+
+    # 파일 다운로드 버튼 클릭
+    region = get_region(RegionName.LEFT_BOTTOM)
+    find_and_click(pngimg('download_combo'), region=region, grayscale=True, wait_seconds=2)
+
+    # 신규등록
+    mouse_move_and_click(1045,236, wait_seconds=1)
+    mouse_move_and_click(1045,236, wait_seconds=1)
+    mouse_move_and_click(1045,236, wait_seconds=1)
+
+
+    # 조회 버튼 클릭
+    region = get_region(RegionName.RIGHT_TOP)
+    find_and_click(pngimg('query'), region=region, wait_seconds=3)
+
+    # 조회 완료 확인
+    query_finish_check = wait_for_image(pngimg('query_finish_gun'), region=(1818,955,84,30), timeout=(60*10))
+    time.sleep(10)
+    move_and_press(800, 10, 'space', wait_seconds=1)
+    # 다운로드 옵션 클릭
+    region = get_region(RegionName.LEFT_BOTTOM) 
+    find_and_click(pngimg('download_combo'), region=region, grayscale=True)
+    press_keys(['down','down','enter'], wait_seconds=2)
+    
+    # Save As 파일명 입력
+    file_name = wait_for_image(pngimg('file_name'), grayscale=True)
+    if not file_name:
+        raise Exception("파일 이름 입력창을 찾을 수 없습니다.")
+    
+    x, y = get_point_with_location(file_name, Direction.RIGHT, 100)
+    mouse_move_and_click(x, y, wait_seconds=1)
+
+    # 저장 경로 입력
+    #-------- Rename file------------
+    default_filename = get_text_from_input_field()
+    screen_no = "500068_T1N"
+    saved_file_path = os.path.join(Config.SAVE_AS_PATH1, f"{todayYmd()}_{screen_no}.{default_filename.rsplit('.', 1)[-1]}")
+    put_keys(f'H:ctrl+a | P:delete | W:"{saved_file_path}"')
+    time.sleep(1)    
+    #--------------------------------
+    pyautogui.press('enter')
+    # time.sleep(10)
+    log.info(f"파일 저장 경로(신규등록): {saved_file_path}")
+    # warning과 alert체크
+    #find_and_press_key(pngimg('alert_icon'), 'space', grayscale=True, region=region, ignoreNotFound=True,  timeout=120)
+    # warning_and_alert_check()
+    time.sleep(5)
+
+    #안전장치 alert에 대한
+    log.info('안전장치 alert_icon.을 못 발견했었을 때를 위해서')
+    move_and_press(800, 10, 'space', wait_seconds=1)
+    #-------------------------------------------------------
+    #------------- 기준가2
+    #-------------------------------------------------------
+    mouse_move_and_click(440, 276, wait_seconds=3)
+    # 다운로드 옵션 클릭
+    region = get_region(RegionName.LEFT_BOTTOM) 
+    find_and_click(pngimg('download_combo'), region=region, grayscale=True)
+    press_keys(['down','down','down', 'enter'], wait_seconds=2)
+    
+    # Save As 파일명 입력
+    file_name = wait_for_image(pngimg('file_name'), grayscale=True)
+    if not file_name:
+        raise Exception("파일 이름 입력창을 찾을 수 없습니다.")
+    
+    x, y = get_point_with_location(file_name, Direction.RIGHT, 100)
+    mouse_move_and_click(x, y, wait_seconds=1)
+
+    # 저장 경로 입력
+    #-------- Rename file------------
+    default_filename = get_text_from_input_field()
+    screen_no = "500068_T2N"
+    saved_file_path1 = os.path.join(Config.SAVE_AS_PATH1, f"{todayYmd()}_{screen_no}.{default_filename.rsplit('.', 1)[-1]}")
+    put_keys(f'H:ctrl+a | P:delete | W:"{saved_file_path1}"')
+    time.sleep(1)    
+    #--------------------------------
+    pyautogui.press('enter')
+    # time.sleep(10)
+    log.info(f"파일 저장 경로(기준가1): {saved_file_path1}")
+    # warning과 alert체크
+    find_and_press_key(pngimg('alert_icon'), 'space', grayscale=True, region=region, ignoreNotFound=True,  timeout=120)
+    # warning_and_alert_check()
+    time.sleep(5)
+    #안전장치 alert에 대한
+    log.info('안전장치 alert_icon.을 못 발견했었을 때를 위해서')
+    move_and_press(800, 10, 'space', wait_seconds=1)
+    
+    return [saved_file_path, saved_file_path1]
+
+def esafe_auto_work_pm():
+    ''' 오후작업 '''
+    global hts_process  # finally에서 접근하기 위해 전역 변수 사용
+    hts_process = None  # 실행한 프로세스 핸들러
+    saved_files = []  # 저장된 파일 경로 리스트
+    
+    process_name = Config.PROCESS_NAME
+    if is_process_running(process_name):
+        kill_process(process_name)
+        log.info(f"{process_name} 가 이미 실행중이라서 프로세스 종료시킴")
+
+    log.info(">>> 프로그램 실행 및 인증서 선택 및 메인으로 진입 시작")
+    work_start_main()
+    log.info(">>> 프로그램 실행 및 인증서 선택 및 메인으로 진입 완료")
+    
+    #-------------------------기준가
+    log.info(">>> 500068 기준가 신규등록 시작")
+    filenames = work_500068_tab1_pm()
+    saved_files.extend(filenames)
+    log.info(">>> 500068 기준가 신규등록 종료")
+    
+    # 프로그램 종료
+    mouse_move_and_click(1901, 16, wait_seconds=1)
+    time.sleep(2)
+    pyautogui.press('space')
+    return saved_files
+
+
 if __name__ == "__main__":
     mode = "am"
     if "pm" in sys.argv:
         mode = "pm"
+
+    version = Config.VERSION
+    log.info("------------------------------------------------------")
+    log.info(f"auto_esafe 프로그램 시작 ver : {version} mode: {mode}")
+    log.info("------------------------------------------------------")
+
     # exit(1)
     pre_check()
     # 이름문자를 이미지로 만들어서 저장한다.
     create_user_name_imge()
     time.sleep(3)
-    version = Config.VERSION
-    log.info("------------------------------------------------------")
-    log.info(f"auto_esafe 프로그램 시작 ver : {version}")
-    log.info("------------------------------------------------------")
+    
     try:
         # 오늘이 휴일이면 그냥 종료한다.
         today_ymd = datetime.now().strftime("%Y%m%d")
@@ -711,10 +849,13 @@ if __name__ == "__main__":
             raise HolidayError(f"오늘({today_ymd})은 공휴일입니다.")
         
         # 이미 오늘의 파일이 존재하면 삭제한다
-        deleteTodayFiles(today_ymd)
+        deleteTodayFiles(today_ymd, mode)
 
         # esafe화면작업
-        filenames = esafe_auto_work()
+        if mode == "am":
+            filenames = esafe_auto_work()
+        else:
+            filenames = esafe_auto_work_pm()
     
         log.info(">>> CSV 변환 시작")
         for idx, filename in enumerate(filenames, start=1):
