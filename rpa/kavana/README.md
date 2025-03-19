@@ -24,3 +24,6 @@ pyinstaller kavana.spec
 - MOVE
 - RUN
 
+## todo
+1. set a = ["abc","def"] 에서 ""이 빠지고 인쇄됨
+2. custom function 더 테스트

@@ -3,10 +3,15 @@ from lib.core.commands.const_command import ConstCommand
 from lib.core.commands.endfunction_command import EndFunctionCommand
 from lib.core.commands.exit_command import ExitCommand
 from lib.core.commands.function_command import FunctionCommand
+from lib.core.commands.just_command import JustCommand
 from lib.core.commands.log_command import LogConfigCommand, LogDebugCommand, LogErrorCommand, LogInfoCommand, LogWarnCommand
 from lib.core.commands.print_command import PrintCommand
 from lib.core.commands.raise_command import RaiseCommand
 from lib.core.commands.return_command import ReturnCommand
+from lib.core.commands.rpa.app_close_command import AppCloseCommand
+from lib.core.commands.rpa.app_open_command import AppOpenCommand
+from lib.core.commands.rpa.close_child_windows_command import CloseChildWindowsCommand
+from lib.core.commands.rpa.wait_command import WaitCommand
 from lib.core.commands.set_command import SetCommand
 from lib.core.datatypes.kavana_datatype import Integer
 from lib.core.exceptions.kavana_exception import BreakException, CommandExecutionError, ContinueException
@@ -33,6 +38,7 @@ class CommandExecutor:
             "CONST" : ConstCommand(),
             "EXIT" : ExitCommand(),
             "RAISE" : RaiseCommand(),
+            "JUST"  : JustCommand(),
             # log 관련 명령어
             "LOG_CONFIG" : LogConfigCommand(),
             "LOG_DEBUG" : LogDebugCommand(),
@@ -40,17 +46,19 @@ class CommandExecutor:
             "LOG_WARN" : LogWarnCommand(),
             "LOG_ERROR" : LogErrorCommand(),
         }
+        # RPA 명령어 매핑
+        self.rpa_command_map = {
+            "APP_OPEN": AppOpenCommand(),
+            "APP_CLOSE": AppCloseCommand(),
+            "CLOSE_CHILD_WINDOWS": CloseChildWindowsCommand(),
+            "WAIT": WaitCommand(),
+
+        }
     def execute(self, command):
         cmd = command["cmd"]
       
         # ✅ IF 문 처리
         if cmd == "IF_BLOCK":
-            # condition = command["body"][0]["args"]
-            # bool_result = self.eval_express_boolean(condition)
-            # if bool_result:
-            #     for sub_command in command["body"][1:]:
-            #         self.execute(sub_command)
-            # return
             condition = command["body"][0]["args"]
             condition_met = self.eval_express_boolean(condition)  # 현재 블록이 실행될지 여부
             condition_found = condition_met  # 실행된 블록이 있는지 추적
@@ -136,6 +144,11 @@ class CommandExecutor:
         # ✅ CONTINUE 처리
         if cmd == "CONTINUE":
             raise ContinueException("continue 명령어 실행")
+
+        # ✅ RPA 명령어인지 확인 후 실행
+        if cmd in self.rpa_command_map:
+            self.execute_rpa_command(command)
+            return
 
         # ✅ 일반 명령어 실행
         self.execute_standard_command(command)
