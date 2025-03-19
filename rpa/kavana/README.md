@@ -23,3 +23,4 @@ pyinstaller kavana.spec
 - CLICK
 - MOVE
 - RUN
+
