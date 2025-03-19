@@ -7,7 +7,7 @@ script = """
 MAIN
     // 애플리케이션 실행
     SET notepad = Application("C:\\Windows\\System32\\\\notepad.exe")
-    APP_OPEN notepad maximize=True
+    APP_OPEN notepad, maximize=True
 
     // 5초 후 종료
     WAIT 5
