@@ -18,7 +18,7 @@ class BaseManager:
         if executor:
             executor.log_command("INFO", f"[{self.__class__.__name__}] Manager Initialized.")
 
-    def log(self, level, message):
+    def log(self, level:str, message:str):
         """✅ 로그 기록 헬퍼 함수"""
         if self.executor:
             self.executor.log_command(level, message)

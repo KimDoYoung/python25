@@ -242,7 +242,8 @@ class CommandExecutor:
 
         log_command = self.command_map.get(f"LOG_{level.upper()}")
         if log_command:
-            log_command.execute([message], self)
+            message_token = Token(data=String(message), type=TokenType.STRING)
+            log_command.execute([message_token], self)
         else:
             raise RuntimeError(f"로그 명령어 실행 실패: LOG_{level.upper()}")
 
