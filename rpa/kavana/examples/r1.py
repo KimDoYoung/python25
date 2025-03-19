@@ -5,12 +5,13 @@ from lib.core.command_preprocessor import CommandPreprocessor
 # 대입
 script = """
 MAIN
-    SET efriend = Application("C:\eFriend Plus\efriendplus\efriendplus.exe")
-    APP_OPEN efriend maximize=True
-    WAIT 10
-    CLOSE_CHILD_WINDOWS efriend
-    WAIT 10
-    APP_CLOSE efriend
+    // 애플리케이션 실행
+    SET notepad = Application("C:\\Windows\\System32\\\\notepad.exe")
+    APP_OPEN notepad maximize=True
+
+    // 5초 후 종료
+    WAIT 5
+    APP_CLOSE notepad
 END_MAIN
 """
 #---------------------------

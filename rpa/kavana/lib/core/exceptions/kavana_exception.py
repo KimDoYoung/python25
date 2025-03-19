@@ -60,6 +60,9 @@ class KavanaValueError(KavanaException):
 class KavanaTypeError(KavanaException):
     """값 오류"""
     pass
+class KavanaNameError(KavanaException):
+    '''변수명 오류'''
+    pass
 
 class KavanaFileNotFoundError(KavanaException):
     """파일이 존재하지 않는 경우"""

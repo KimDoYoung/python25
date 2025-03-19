@@ -13,7 +13,7 @@ from lib.core.commands.rpa.app_open_command import AppOpenCommand
 from lib.core.commands.rpa.close_child_windows_command import CloseChildWindowsCommand
 from lib.core.commands.rpa.wait_command import WaitCommand
 from lib.core.commands.set_command import SetCommand
-from lib.core.datatypes.kavana_datatype import Integer
+from lib.core.datatypes.kavana_datatype import Integer, String
 from lib.core.exceptions.kavana_exception import BreakException, CommandExecutionError, ContinueException
 from lib.core.expr_evaluator import ExprEvaluator
 from lib.core.token import Token
@@ -152,6 +152,14 @@ class CommandExecutor:
 
         # ✅ 일반 명령어 실행
         self.execute_standard_command(command)
+    
+    def execute_rpa_command(self, command):
+        """RPA 명령어 실행"""
+        cmd = command["cmd"]
+        args = command["args"]
+
+        if cmd in self.rpa_command_map:
+            self.rpa_command_map[cmd].execute(args, self)
 
     def execute_standard_command(self, command):
         """일반 명령어 실행"""
@@ -226,3 +234,24 @@ class CommandExecutor:
     def exit(self, code=0):
         """EXIT 실행"""
         sys.exit(code)
+
+    def log_command(self, level, message):
+        """로그 기록을 위한 헬퍼 함수"""
+        if level.upper() not in ["DEBUG", "INFO", "WARN", "ERROR"]:
+            raise ValueError(f"잘못된 로그 레벨: {level}")
+
+        log_command = self.command_map.get(f"LOG_{level.upper()}")
+        if log_command:
+            log_command.execute([message], self)
+        else:
+            raise RuntimeError(f"로그 명령어 실행 실패: LOG_{level.upper()}")
+
+    def raise_command(self, message):
+        """예외 발생을 위한 헬퍼 함수"""
+        raise_command = self.command_map.get("RAISE")
+        if raise_command:
+            tokenMsg = Token(data=String(message), type=TokenType.STRING)
+            tokenErrorCode = Token(data=Integer(1), type=TokenType.INTEGER)
+            raise_command.execute([tokenMsg, tokenErrorCode], self)
+        else:
+            raise RuntimeError("RAISE 명령어 실행 실패")

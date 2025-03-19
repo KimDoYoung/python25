@@ -279,30 +279,59 @@ class CommandParser:
 
     @staticmethod
     def decode_escaped_string(s: str) -> str:
-        """✅ 1바이트씩 읽어가면서 이스케이프 문자 변환"""
+        """✅ C 스타일 escape 변환 (`"\\n"` → `"\n"`)"""
         result = []
         i = 0
         while i < len(s):
-            if s[i] == "\\" and i + 1 < len(s):  # 🔥 이스케이프 문자 발견
+            if s[i] == "\\":
+                if i + 1 >= len(s):  # 🔥 단독 백슬래시는 오류
+                    raise ValueError("잘못된 문자열: 단독 백슬래시(`\\`)가 포함될 수 없습니다.")
+
                 escape_seq = s[i + 1]
 
                 if escape_seq == "n":
-                    result.append("\n")
+                    result.append("\n")  # ✅ `\\n` → `\n` (개행 문자 변환)
                 elif escape_seq == "t":
-                    result.append("\t")
+                    result.append("\t")  # ✅ `\\t` → `\t` (탭 문자 변환)
                 elif escape_seq == "\\":
-                    result.append("\\")
+                    result.append("\\")  # ✅ `\\` → `\`
                 elif escape_seq == '"':
-                    result.append('"')
+                    result.append('"')  # ✅ `\"` → `"`
                 else:
-                    result.append("\\" + escape_seq)  # ✅ 미리 정의되지 않은 경우 그대로 추가
+                    result.append("\\" + escape_seq)  # ✅ 알 수 없는 escape 문자 유지
 
-                i += 2  # 🔥 이스케이프 문자는 2바이트 처리
+                i += 2  # 🔥 이스케이프 문자 처리했으므로 두 글자 건너뛰기
             else:
                 result.append(s[i])
                 i += 1
 
         return "".join(result)
+
+    # def decode_escaped_string(s: str) -> str:
+    #     """✅ 1바이트씩 읽어가면서 이스케이프 문자 변환"""
+    #     result = []
+    #     i = 0
+    #     while i < len(s):
+    #         if s[i] == "\\" and i + 1 < len(s):  # 🔥 이스케이프 문자 발견
+    #             escape_seq = s[i + 1]
+
+    #             if escape_seq == "n":
+    #                 result.append("\n")
+    #             elif escape_seq == "t":
+    #                 result.append("\t")
+    #             elif escape_seq == "\\":
+    #                 result.append("\\")
+    #             elif escape_seq == '"':
+    #                 result.append('"')
+    #             else:
+    #                 result.append("\\" + escape_seq)  # ✅ 미리 정의되지 않은 경우 그대로 추가
+
+    #             i += 2  # 🔥 이스케이프 문자는 2바이트 처리
+    #         else:
+    #             result.append(s[i])
+    #             i += 1
+
+    #     return "".join(result)
     
     @staticmethod
     def tokenize(ppLine: PreprocessedLine) -> list:
@@ -376,6 +405,7 @@ class CommandParser:
             (r'=', TokenType.ASSIGN),  # ✅ '='을 별도로 할당 연산자로 분리            
 
 
+
             # ✅ 일반 식별자  
             (r'[a-zA-Z_\$][a-zA-Z0-9_]*', TokenType.IDENTIFIER),
 
@@ -384,7 +414,9 @@ class CommandParser:
             (r'\b\d+\b', TokenType.INTEGER),         # 정수 (예: 10, 42, 1000)
 
             # ✅ 모든 유니코드 문자 포함          
+            #(r'\br"([^"]*)"', TokenType.RAW_STRING),  # ✅ Raw String (escape 없이 그대로)
             (r'"((?:\\.|[^"\\])*)"', TokenType.STRING),  # ✅ 문자열 정규식 수정
+
         ]
         column_num = ppLine.original_column
         line_num = ppLine.original_line
@@ -407,7 +439,10 @@ class CommandParser:
                         raise SyntaxError(
                             f"Invalid string format: Use double quotes (\") instead of single quotes (') at line {line_num}, column {column_num}"
                         )
-                    if token_type == TokenType.STRING:
+                    if token_type == TokenType.RAW_STRING:
+                        value = raw_value
+                        tokens.append(Token(data=value, type=TokenType.STRING, line=line_num, column=column_num))                        
+                    elif token_type == TokenType.STRING:
                         value = CommandParser.decode_escaped_string(raw_value)  # ✅ 직접 변환 함수 호출
                         value_datatype_changed = TokenUtil.primitive_to_kavana_by_tokentype(value, token_type)
                         tokens.append(Token(data=value_datatype_changed, type=token_type, line=line_num, column=column_num))

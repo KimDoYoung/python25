@@ -12,6 +12,7 @@ class TokenType(Enum):
     INTEGER = "INTEGER"
     FLOAT = "FLOAT"
     STRING = "STRING"
+    RAW_STRING = "RAW_STRING"
     BOOLEAN = "BOOLEAN" # True, False
     YMDTIME = "YMDTIME"
     YMD = "YMD"
