@@ -141,36 +141,7 @@ class TokenUtil:
             i += 1
         return key_token, expresses, i    
 
-    @staticmethod
-    def extract_command_option(tokens: list[Token], start_index: int) -> tuple[Token, List[Token], int]:
-        """
-        주어진 토큰 리스트에서 key=<express> 구조를 파싱하는 함수
-        - key는 IDENTIFIER 토큰으로 시작해야 함
-        - '=' 연산자가 반드시 있어야 함
-        - express는 TokenType.COMMA 또는 tokens의 끝까지
-        - next_index 반환 (다음 key-express 파싱을 위한 인덱스)
-        """
-        if start_index >= len(tokens):
-            return None, None, start_index
-        
-        key_token = tokens[start_index]
-        if key_token.type != TokenType.IDENTIFIER:
-            raise KavanaSyntaxError("명령어의 옵션 키는 IDENTIFIER 타입이어야 합니다.")
-        
-        if start_index + 1 >= len(tokens) or tokens[start_index + 1].type != TokenType.ASSIGN:
-            raise KavanaSyntaxError(f"옵션 '{key_token.data.string}' 뒤에 '=' 연산자가 필요합니다.")
-        
-        expresses = []
-        i = start_index + 2  # '=' 다음 토큰부터 시작
-        while i < len(tokens):
-            token = tokens[i]
-            if token.type == TokenType.COMMA:
-                i += 1  # 다음 key-value로 이동하기 위해 인덱스 증가
-                break
-            expresses.append(token)
-            i += 1
-        
-        if not expresses:
-            raise KavanaSyntaxError(f"옵션 '{key_token.data.string}'의 값이 없습니다.")
-        
-        return key_token, expresses, i    
+
+    
+    
+    

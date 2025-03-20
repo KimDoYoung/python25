@@ -46,7 +46,7 @@ class WaitCommand(BaseCommand):
         while args[i].type == TokenType.COMMA:
             i += 1        
         while i < len(args):
-            key_token, express_tokens, next_index = TokenUtil.extract_command_option(args, i)
+            key_token, express_tokens, next_index = self.extract_command_option(args, i)
             
             if key_token is None:
                 break
@@ -89,7 +89,7 @@ class WaitCommand(BaseCommand):
                 region=region
             )
         except Exception as e:
-            executor.set_last_error("error: {str(e)}")
+            executor.set_last_error(f"error: {str(e)}")
             return
         
         if location:
