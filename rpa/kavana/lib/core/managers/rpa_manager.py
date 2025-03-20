@@ -11,19 +11,19 @@ class RPAManager(BaseManager):
         super().log("INFO", f"[RPA] {seconds}초 동안 대기...")
         time.sleep(seconds)
 
-    def wait_for_image(self, image_path: str, timeout: int = 10):
+    def wait_for_image(self, image_path: str, timeout: int = 10, confidence: float = 0.8, grayscale: bool = False, region=None):
         """✅ 특정 이미지가 화면에 나타날 때까지 대기"""
         super().log("INFO", f"[RPA] {timeout}초 동안 이미지 {image_path} 대기 중...")
         start_time = time.time()
-
+        
         while time.time() - start_time < timeout:
-            location = pyautogui.locateOnScreen(image_path, confidence=0.8)
+            location = pyautogui.locateOnScreen(image_path, confidence=confidence, grayscale=grayscale, region=region)
             if location:
                 super().log("INFO", f"[RPA] 이미지 {image_path} 발견됨.")
                 return location
             time.sleep(0.5)
 
-        super().log("WARNING", f"[RPA] 이미지 {image_path}를 {timeout}초 동안 찾을 수 없음.")
+        super().log("WARN", f"[RPA] 이미지 {image_path}를 {timeout}초 동안 찾을 수 없음.")
         return None
 
     def mouse_move(self, x: int, y: int, duration: float = 0.5):

@@ -1,4 +1,5 @@
 from lib.core.const_registry import ConstantRegistry
+from lib.core.datatypes.kavana_datatype import String
 from lib.core.datatypes.list_type import ListType
 from lib.core.token import Token
 from lib.core.token_type import TokenType
@@ -7,7 +8,8 @@ class VariableManager:
 
     def __init__(self):
         self.global_vars = {}  
-        self.local_vars_stack = []  
+        self.local_vars_stack = []
+        self.global_vars["$$LastError"] = Token(data=String(""), type=TokenType.STRING)
 
     def set_variable(self, var_name: str, token: Token, local=False):
         """✅ 변수 설정 (`CONST` 변경 불가)"""

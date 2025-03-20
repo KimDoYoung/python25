@@ -155,29 +155,6 @@ class CustomTokenMaker:
         ), i
 
 
-    # @staticmethod
-    # def image_token(tokens, start_idx):
-    #     """✅ `Image("path")` 또는 `Image "path"` 형식을 처리"""
-    #     i = start_idx + 1
-    #     has_parentheses = False
-
-    #     if i < len(tokens) and tokens[i].type == TokenType.LEFT_PAREN:
-    #         has_parentheses = True
-    #         i += 1  # `(` 스킵
-
-    #     if i >= len(tokens) or tokens[i].type != TokenType.STRING:
-    #         raise CustomTokenMakerError(f"Invalid IMAGE syntax: Expected string at position {i}", tokens[start_idx].line, tokens[start_idx].column)
-
-    #     arguments = [tokens[i]]
-    #     i += 1
-
-    #     if has_parentheses:
-    #         if i >= len(tokens) or tokens[i].type != TokenType.RIGHT_PAREN:
-    #             raise CustomTokenMakerError(f"Invalid IMAGE syntax: Expected ')' at position {i}", tokens[start_idx].line, tokens[start_idx].column)
-    #         i += 1  # `)` 스킵
-
-    #     return CustomToken(object_type=TokenType.IMAGE, arguments=arguments, line=tokens[start_idx].line, column=tokens[start_idx].column), i
-
     @staticmethod
     def window_token(tokens, start_idx):
         """✅ `Window("title")` 또는 `Window "title"` 형식을 처리"""
@@ -198,11 +175,11 @@ class CustomTokenMaker:
             has_parentheses = True
             i += 1  # `(` 스킵
 
-        if i >= len(tokens) or tokens[i].type != TokenType.STRING:
-            raise CustomTokenMakerError(
-                f"Invalid {object_type.name} syntax: Expected string at position {i}",
-                tokens[start_idx].line, tokens[start_idx].column
-            )
+        # if i >= len(tokens) or tokens[i].type != TokenType.STRING:
+        #     raise CustomTokenMakerError(
+        #         f"Invalid {object_type.name} syntax: Expected string at position {i}",
+        #         tokens[start_idx].line, tokens[start_idx].column
+        #     )
 
         arguments = [[tokens[i]]]  # ✅ List[List[Token]] 구조로 변경
         i += 1

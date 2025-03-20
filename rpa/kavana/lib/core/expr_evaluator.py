@@ -381,7 +381,7 @@ class ExprEvaluator:
                         result = self.OPERATORS[token.data][1](a.data.value, b.data.value)
                         result_type = TokenType.BOOLEAN
 
-                    elif a.type in {TokenType.INTEGER, TokenType.FLOAT, TokenType.BOOLEAN} and b.type in {TokenType.INTEGER, TokenType.FLOAT, TokenType.BOOLEAN}:
+                    elif a.type in {TokenType.INTEGER, TokenType.FLOAT, TokenType.BOOLEAN, TokenType.STRING} and b.type in {TokenType.INTEGER, TokenType.FLOAT, TokenType.BOOLEAN, TokenType.STRING}:
                         result = self.OPERATORS[token.data.value][1](a.data.value, b.data.value)
                         # ✅ 비교 연산자일 경우 결과는 항상 BOOLEAN
                         if token.data.value in {"==", "!=", ">", "<", ">=", "<="}:

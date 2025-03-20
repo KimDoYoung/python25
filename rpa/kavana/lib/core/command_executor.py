@@ -256,3 +256,8 @@ class CommandExecutor:
             raise_command.execute([tokenMsg, tokenErrorCode], self)
         else:
             raise RuntimeError("RAISE 명령어 실행 실패")
+        
+    def set_last_error(self, value:str):
+        """시스템 변수 설정"""
+        last_error_token = Token(data=String(value), type=TokenType.STRING)
+        self.variable_manager.set_variable("_LastError_", last_error_token)
