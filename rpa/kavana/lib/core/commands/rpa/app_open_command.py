@@ -43,7 +43,7 @@ class AppOpenCommand(BaseCommand):
                 i += 1
 
             while i < len(option_tokens):
-                key_token, express_tokens, next_index = self.extract_command_option(option_tokens, i)
+                key_token, express_tokens, next_index = self.extract_option1(option_tokens, i)
                 
                 if key_token is None:
                     break

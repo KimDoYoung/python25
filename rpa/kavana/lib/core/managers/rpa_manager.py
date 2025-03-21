@@ -1,6 +1,7 @@
 import time
 import pyautogui
 
+from lib.core.exceptions.kavana_exception import KavanaSyntaxError
 from lib.core.managers.base_manager import BaseManager
 
 class RPAManager(BaseManager):
@@ -25,6 +26,33 @@ class RPAManager(BaseManager):
 
         super().log("WARN", f"[RPA] 이미지 {image_path}를 {timeout}초 동안 찾을 수 없음.")
         return None
+
+
+    def click(self, click_type:str, x:int, y:int, click_count:int=1, duration:float=0.2):
+            """ 클릭 유형에 따라 적절한 pyautogui 동작을 실행 """
+            if click_type == "single":
+                for _ in range(click_count):
+                    pyautogui.click(x, y)
+            elif click_type == "double":
+                pyautogui.doubleClick(x, y)
+            elif click_type == "right":
+                pyautogui.rightClick(x, y)
+            elif click_type == "middle":
+                pyautogui.middleClick(x, y)
+            elif click_type == "triple":
+                pyautogui.tripleClick(x, y)
+            elif click_type == "drag":
+                pyautogui.mouseDown(x, y)
+            elif click_type == "drop":
+                pyautogui.mouseUp(x, y)
+            elif click_type == "hold":
+                pyautogui.mouseDown(x, y)
+                time.sleep(duration)
+            elif click_type == "release":
+                pyautogui.mouseUp(x, y)
+            else:
+                super().log("ERROR", f"CLICK 명령어의 type 옵션 '{click_type}'은 올바르지 않습니다.")
+
 
     def mouse_move(self, x: int, y: int, duration: float = 0.5):
         """✅ 마우스를 특정 위치로 이동"""

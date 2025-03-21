@@ -7,7 +7,7 @@ from typing import Callable, Optional, Tuple
 import pyperclip
 from lib.core.datatypes.point import Point
 from lib.core.datatypes.region import Region
-from logger import Logger
+from lib.core.logger import Logger
 
 
 log = Logger()

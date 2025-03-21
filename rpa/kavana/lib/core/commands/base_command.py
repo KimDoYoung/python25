@@ -13,7 +13,7 @@ class BaseCommand(ABC):
     def execute(self, args, executor):
         pass
 
-    def count_express(tokens: List[Token]) -> int:
+    def count_express(self, tokens: List[Token]) -> int:
             """
             tokens 리스트에서 ','(COMMA)의 개수를 세고, 괄호나 대괄호 안에 있는 경우 제외.
             - 괄호 내부의 ','는 무시함.
@@ -37,7 +37,7 @@ class BaseCommand(ABC):
             
             return count + 1 if count > 0 else 1
 
-    def is_key_exists(tokens: List[Token], key: str) -> bool:
+    def is_key_exists(self, tokens: List[Token], key: str) -> bool:
         """
         tokens 리스트에서 특정 key가 '=' (ASSIGN) 왼쪽에 존재하는지 확인.
         - 괄호 ()나 대괄호 [] 안에 있는 경우 제외.
@@ -65,7 +65,7 @@ class BaseCommand(ABC):
         
         return False    
     
-    def extract_command_option(tokens: list[Token], start_index: int) -> tuple[Token, List[Token], int]:
+    def extract_option1(self, tokens: list[Token], start_index: int) -> tuple[Token, List[Token], int]:
         """
         주어진 토큰 리스트에서 key=<express> 구조를 파싱하는 함수
         - key는 IDENTIFIER 토큰으로 시작해야 함
@@ -139,12 +139,22 @@ class BaseCommand(ABC):
         - key는 IDENTIFIER
         - '=' 연산자가 반드시 있어야 함
         - value는 ',' 또는 tokens 끝까지 표현식을 포함
+        {
+            "limit": {
+                "key_token": Token(IDENTIFIER, 'limit'),
+                "express": [Token(INTEGER, '100')]
+            },
+            "offset": {
+                "key_token": Token(IDENTIFIER, 'offset'),
+                "express": [Token(INTEGER, '20')]
+            }
+        }        
         """
         options = {}
         i = start_idx
         
         while i < len(tokens):
-            key_token, express_tokens, next_index = self.extract_command_option(tokens, i)
+            key_token, express_tokens, next_index = self.extract_option1(tokens, i)
             if key_token is None:
                 break
             key = key_token.data.string.strip().lower()

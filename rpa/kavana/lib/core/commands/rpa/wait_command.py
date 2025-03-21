@@ -46,7 +46,7 @@ class WaitCommand(BaseCommand):
         while args[i].type == TokenType.COMMA:
             i += 1        
         while i < len(args):
-            key_token, express_tokens, next_index = self.extract_command_option(args, i)
+            key_token, express_tokens, next_index = self.extract_option1(args, i)
             
             if key_token is None:
                 break

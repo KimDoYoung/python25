@@ -1,120 +1,90 @@
+import pyautogui
+from lib.actions.actions import wait_for_image
 from lib.core.commands.base_command import BaseCommand
+from lib.core.exceptions.kavana_exception import KavanaSyntaxError
+from lib.core.expr_evaluator import ExprEvaluator
+from lib.core.managers.rpa_manager import RPAManager
 from lib.core.token import Token
+from lib.core.token_type import TokenType
 
-
-class AppOpenCommand(BaseCommand):
-    def execute(self, args: list[Token], executor):
+class ClickCommand(BaseCommand):
+    def execute(self, args, executor):
         """
+        CLICK 10, 20 [count=1] [duration=0.2] [type="single"]
         CLICK <x: int>, <y: int>
         CLICK image_path=<express> confidence=<express:float 0.8>, region=<express:region default None>, grayscale=<express:boolean>, type=<express:string "single">
         CLICK <object: Point | Region | Rectangle>
         """
-        express_count = self.count_express(args)
-        exists_x = self.is_key_exists(args, "x")
-        exists_type = self.is_key_exists(args, "type")
-        exists_image_path = self.is_key_exists(args, "image_path")
+        # key_value_map, i = self.extract_all_options(args, 0)
+        # exists_x = "x" in key_value_map
+        # exists_y = "y" in key_value_map
+        # exists_type = "type" in key_value_map
+        # exists_image_path = "image_path" in key_value_map
+        # exists_point_name = "point_name" in key_value_map
         
-        i = 0
-        if express_count == 2:
-            # 기본 좌표 클릭
-            i, express1 = self.get_express(args, i)
-            i, express2 = self.get_express(args, i)
-            x = self.evaluate_expression(express1, executor)
-            y = self.evaluate_expression(express2, executor)
-            click_type = "single"
-            pyautogui.click(x, y)
-            executor.system_variables["$$LastError"] = ""
+        # click_type = key_value_map.get("type", {"express": [Token(TokenType.STRING, "single")]})["express"]
+        # click_count = key_value_map.get("count", {"express": [Token(TokenType.INTEGER, 1)]})["express"]
+        # duration = key_value_map.get("duration", {"express": [Token(TokenType.INTEGER, 0)]})["express"]
+        option_map = {
+            "count": {"default": 1, "allowed_types": [TokenType.INTEGER]},
+            "duration": {"default": 0.2, "allowed_types": [TokenType.FLOAT]},
+            "type": {"default": "single", "allowed_types": [TokenType.STRING]},
+        }
+        
+        # 옵션 값 초기화
+        option_values = {key: option_map[key].get("default", None) for key in option_map}        
+        rpa_manager = RPAManager(executor=executor)
+        executor.set_last_error("")
+        if (len(args) >= 2  # click 10,20
+            and args[0].type == TokenType.INTEGER  
+            and args[1].type == TokenType.COMMA  
+            and args[2].type == TokenType.INTEGER):
+            # 좌표 클릭
+            x = ExprEvaluator(executor=executor).evaluate([args[0]]).data.value
+            y = ExprEvaluator(executor=executor).evaluate([args[2]]).data.value
+            options, i = self.extract_all_options(args, 3) # options 추출
+            if options:
+                for key, value in options:
+                    if key in option_values:    
+                        option_values[key] = ExprEvaluator(executor=executor).evaluate([args[2]]).data.value
+            rpa_manager.click(x=x, y=y, click_type=option_values["type"], click_count=option_values["count"], duration=option_values["duration"])
             return
         
-        if express_count == 3 and exists_type:
-            # 좌표 클릭 + type 옵션 (예: 더블 클릭)
-            i, express1 = self.get_express(args, i)
-            i, express2 = self.get_express(args, i)
-            i, express3 = self.get_express(args, i)
-            x = self.evaluate_expression(express1, executor)
-            y = self.evaluate_expression(express2, executor)
-            click_type = self.evaluate_expression(express3, executor)
-            self.perform_click(click_type, x, y)
-            executor.system_variables["$$LastError"] = ""
-            return
+        # if args[0].type in [TokenType.REGION, TokenType.RECTANGLE]:
+        #     # 영역 클릭 (추가 옵션 point_name 지원)
+        #     region = args[0].data.value
+        #     point_name = key_value_map.get("point_name", {"express": [Token(TokenType.STRING, "center")]})["express"]
+        #     x, y = region.get_point(point_name)
+        #     self.perform_click(click_type, x, y, click_count, duration)
+        #     executor.system_variables["$$LastError"] = ""
+        #     return
         
-        if exists_image_path:
-            # 이미지 클릭
-            key_value_map = {}
-            i = 0
-            while i < len(args):
-                key_token, express_tokens, next_index = self.extract_command_option(args, i)
-                if key_token is None:
-                    break
-                key = key_token.data.string.strip().lower()
-                key_value_map[key] = self.evaluate_expression(express_tokens, executor)
-                i = next_index
+        # if exists_x and exists_y:
+        #     # 명시적 x, y 좌표 클릭
+        #     x = self.evaluate_expression(key_value_map["x"]["express"], executor)
+        #     y = self.evaluate_expression(key_value_map["y"]["express"], executor)
+        #     self.perform_click(click_type, x, y, click_count, duration)
+        #     executor.system_variables["$$LastError"] = ""
+        #     return
+        
+        # if exists_image_path:
+        #     # 이미지 클릭
+        #     image_path = key_value_map["image_path"]["express"]
+        #     timeout = key_value_map.get("timeout", {"express": [Token(TokenType.INTEGER, 10)]})["express"]
+        #     confidence = key_value_map.get("confidence", {"express": [Token(TokenType.FLOAT, 0.8)]})["express"]
+        #     region = key_value_map.get("region", {"express": None})["express"]
+        #     grayscale = key_value_map.get("grayscale", {"express": [Token(TokenType.BOOLEAN, False)]})["express"]
             
-            image_path = key_value_map["image_path"]
-            timeout = key_value_map.get("timeout", 10)
-            confidence = key_value_map.get("confidence", 0.8)
-            region = key_value_map.get("region", None)
-            grayscale = key_value_map.get("grayscale", False)
-            click_type = key_value_map.get("type", "single").lower()
-            
-            try:
-                location = wait_for_image(image_path, timeout, confidence, region, grayscale, executor)
-                if location:
-                    x, y = pyautogui.center(location)
-                    self.perform_click(click_type, x, y)
-                    executor.system_variables["$$LastError"] = ""
-                else:
-                    executor.system_variables["$$LastError"] = "not found"
-            except Exception as e:
-                executor.system_variables["$$LastError"] = f"error: {str(e)}"
-            return
-        
-        if express_count == 1:
-            # 객체 클릭 (Point, Region, Rectangle)
-            i, express1 = self.get_express(args, i)
-            obj = self.evaluate_expression(express1, executor)
-            if isinstance(obj, Point):
-                x, y = obj.x, obj.y
-            elif isinstance(obj, Region) or isinstance(obj, Rectangle):
-                x = obj.x + obj.width // 2
-                y = obj.y + obj.height // 2
-            click_type = "single"
-            self.perform_click(click_type, x, y)
-            executor.system_variables["$$LastError"] = ""
-            return
-        
-        if express_count == 2 and exists_type:
-            # 객체 클릭 + type 옵션
-            i, express1 = self.get_express(args, i)
-            i, express2 = self.get_express(args, i)
-            obj = self.evaluate_expression(express1, executor)
-            click_type = self.evaluate_expression(express2, executor)
-            if isinstance(obj, Point):
-                x, y = obj.x, obj.y
-            elif isinstance(obj, Region) or isinstance(obj, Rectangle):
-                x = obj.x + obj.width // 2
-                y = obj.y + obj.height // 2
-            self.perform_click(click_type, x, y)
-            executor.system_variables["$$LastError"] = ""
-            return
-        
-        if exists_x:
-            # 키워드 인자 기반 클릭 (예: 드래그, 드롭, 홀드, 릴리즈)
-            key_value_map = {}
-            i = 0
-            while i < len(args):
-                key_token, express_tokens, next_index = self.extract_command_option(args, i)
-                if key_token is None:
-                    break
-                key = key_token.data.string.strip().lower()
-                key_value_map[key] = self.evaluate_expression(express_tokens, executor)
-                i = next_index
-            
-            x = key_value_map["x"]
-            y = key_value_map["y"]
-            click_type = key_value_map.get("type", "single").lower()
-            self.perform_click(click_type, x, y, key_value_map)
-            executor.system_variables["$$LastError"] = ""
-            return
+        #     try:
+        #         location = wait_for_image(image_path, timeout, confidence, region, grayscale, executor)
+        #         if location:
+        #             x, y = pyautogui.center(location)
+        #             self.perform_click(click_type, x, y, click_count, duration)
+        #             executor.system_variables["$$LastError"] = ""
+        #         else:
+        #             executor.system_variables["$$LastError"] = "not found"
+        #     except Exception as e:
+        #         executor.system_variables["$$LastError"] = f"error: {str(e)}"
+        #     return
         
         raise KavanaSyntaxError("CLICK 명령어는 좌표(x, y), 이미지(image_path), 또는 객체(Point, Region, Rectangle) 중 하나를 사용해야 합니다.")
