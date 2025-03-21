@@ -26,4 +26,5 @@ parsed_commands = parser.parse(command_preprocssed_lines)
 commandExecutor = CommandExecutor()
 
 for command in parsed_commands:
+    print(command)
     commandExecutor.execute(command)

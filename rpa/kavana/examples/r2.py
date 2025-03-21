@@ -6,11 +6,14 @@ from lib.core.command_preprocessor import CommandPreprocessor
 script = """
 MAIN
     //CLICK 10, 20
-    CLICK 10, 20, count=2, duration=0.5, type="double"
-    CLICK x=10, y=20
-    CLICK image_path="C:\\Users\\PC\\Pictures\\SophiaCapture\\esafe\\login_button.png" confidence=0.8 region=None grayscale=False type="single"
-    SET r = Region(10, 20, 30, 40)
-    CLICK r point_name="center"
+    //CLICK 10, 20, count=2, duration=0.5, type="double"
+    //CLICK x=10, y=20
+    //SET p1 = Point(30,40)
+    //CLICK p1
+    //CLICK Point(10,20)
+    //SET r = Region(10, 20, 30, 40)
+    //CLICK r, point_name="center"
+    CLICK image_path="C:\\Users\\PC\\Pictures\\SophiaCapture\\esafe\\login_button.png", confidence=0.8, search_region=None, grayscale=False, type="single"
 END_MAIN
 """
 #---------------------------

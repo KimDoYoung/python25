@@ -48,6 +48,12 @@ class Region(KavanaDataType):
     def __str__(self):
         return f"Region(x={self.x}, y={self.y}, width={self.width}, height={self.height})"
 
+    def __iter__(self):
+        yield self.x
+        yield self.y
+        yield self.width
+        yield self.height
+
     @property
     def string(self):
         """Region을 문자열로 변환"""

@@ -32,6 +32,12 @@ class Rectangle(KavanaDataType):
     def __str__(self):
         return f"Rectangle({self.p1}, {self.p2})"
 
+    def __iter__(self):
+        yield self.p1.x
+        yield self.p1.y
+        yield self.p2.x
+        yield self.p2.y
+
     @property
     def string(self):
         """사각형을 문자열로 변환"""

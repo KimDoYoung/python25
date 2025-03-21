@@ -11,7 +11,10 @@ class Point(KavanaDataType):
         self.x += dx
         self.y += dy
         self.value = (self.x, self.y)  # ✅ value 업데이트
-
+    def get_x(self):
+        return self.x
+    def get_y(self):
+        return self.y
     def __str__(self):
         return f"({self.x}, {self.y})"
 

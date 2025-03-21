@@ -2,6 +2,7 @@ from abc import ABC, abstractmethod
 from typing import List
 
 from lib.core.exceptions.kavana_exception import KavanaSyntaxError
+from lib.core.expr_evaluator import ExprEvaluator
 from lib.core.token import Token
 from lib.core.token_type import TokenType
 
@@ -65,40 +66,6 @@ class BaseCommand(ABC):
         
         return False    
     
-    def extract_option1(self, tokens: list[Token], start_index: int) -> tuple[Token, List[Token], int]:
-        """
-        주어진 토큰 리스트에서 key=<express> 구조를 파싱하는 함수
-        - key는 IDENTIFIER 토큰으로 시작해야 함
-        - '=' 연산자가 반드시 있어야 함
-        - express는 TokenType.COMMA 또는 tokens의 끝까지
-        - next_index 반환 (다음 key-express 파싱을 위한 인덱스)
-        """
-        if start_index >= len(tokens):
-            return None, None, start_index
-        
-        key_token = tokens[start_index]
-        if key_token.type != TokenType.IDENTIFIER:
-            raise KavanaSyntaxError("명령어의 옵션 키는 IDENTIFIER 타입이어야 합니다.")
-        
-        if start_index + 1 >= len(tokens) or tokens[start_index + 1].type != TokenType.ASSIGN:
-            raise KavanaSyntaxError(f"옵션 '{key_token.data.string}' 뒤에 '=' 연산자가 필요합니다.")
-        
-        expresses = []
-        i = start_index + 2  # '=' 다음 토큰부터 시작
-        while i < len(tokens):
-            token = tokens[i]
-            if token.type == TokenType.COMMA:
-                i += 1  # 다음 key-value로 이동하기 위해 인덱스 증가
-                break
-            expresses.append(token)
-            i += 1
-        
-        if not expresses:
-            raise KavanaSyntaxError(f"옵션 '{key_token.data.string}'의 값이 없습니다.")
-        
-        return key_token, expresses, i
-
-
     def get_express(self, tokens, start_idx):
         """
         주어진 tokens에서 start_idx부터 시작하여 ',' 또는 끝까지 표현식을 추출하는 함수
@@ -162,3 +129,132 @@ class BaseCommand(ABC):
             i = next_index
         
         return options, i    
+    
+    def extract_option1(self, tokens: list[Token], start_index: int) -> tuple[Token, List[Token], int]:
+        """
+        - key=express 파싱
+        - 괄호 안의 =, , 는 무시
+        - key는 = 앞의 토큰
+        - express는 = 뒤부터 괄호 고려해서 , 또는 끝까지
+        """
+        if start_index >= len(tokens):
+            return None, None, start_index
+
+        # 괄호 스택을 사용해 중첩 추적
+        bracket_stack = []
+        assign_index = -1
+        i = start_index
+
+        # 1. ASSIGN(=) 토큰 찾기 (괄호 밖에서)
+        while i < len(tokens):
+            token = tokens[i]
+
+            if token.type in (TokenType.LEFT_PAREN, TokenType.LEFT_BRACKET):
+                bracket_stack.append(token.type)
+            elif token.type == TokenType.RIGHT_PAREN:
+                if bracket_stack and bracket_stack[-1] == TokenType.LEFT_PAREN:
+                    bracket_stack.pop()
+                else:
+                    raise KavanaSyntaxError("괄호 '(' 와 ')'가 맞지 않습니다.")
+            elif token.type == TokenType.RIGHT_BRACKET:
+                if bracket_stack and bracket_stack[-1] == TokenType.LEFT_BRACKET:
+                    bracket_stack.pop()
+                else:
+                    raise KavanaSyntaxError("괄호 '[' 와 ']'가 맞지 않습니다.")
+            elif token.type == TokenType.ASSIGN and not bracket_stack:
+                assign_index = i
+                break
+
+            i += 1
+
+        if assign_index == -1:
+            raise KavanaSyntaxError("옵션에 '=' 연산자가 없습니다.")
+
+        if assign_index == start_index:
+            raise KavanaSyntaxError("'=' 앞에 key 토큰이 없습니다.")
+
+        key_token = tokens[assign_index - 1]
+        if key_token.type != TokenType.IDENTIFIER:
+            raise KavanaSyntaxError("옵션의 key는 IDENTIFIER 타입이어야 합니다.")
+
+        # 2. express 수집 (괄호 안의 , 는 무시)
+        expresses = []
+        i = assign_index + 1
+        bracket_stack.clear()
+
+        while i < len(tokens):
+            token = tokens[i]
+
+            if token.type in (TokenType.LEFT_PAREN, TokenType.LEFT_BRACKET):
+                bracket_stack.append(token.type)
+            elif token.type == TokenType.RIGHT_PAREN:
+                if bracket_stack and bracket_stack[-1] == TokenType.LEFT_PAREN:
+                    bracket_stack.pop()
+                else:
+                    raise KavanaSyntaxError("괄호 '(' 와 ')'가 맞지 않습니다.")
+            elif token.type == TokenType.RIGHT_BRACKET:
+                if bracket_stack and bracket_stack[-1] == TokenType.LEFT_BRACKET:
+                    bracket_stack.pop()
+                else:
+                    raise KavanaSyntaxError("괄호 '[' 와 ']'가 맞지 않습니다.")
+
+            # 괄호 밖에서 , 만나면 종료
+            if token.type == TokenType.COMMA and not bracket_stack:
+                i += 1  # 다음 옵션으로 넘어가기 위해 인덱스 증가
+                break
+
+            expresses.append(token)
+            i += 1
+
+        if not expresses:
+            raise KavanaSyntaxError(f"옵션 '{key_token.data.string}'의 값이 없습니다.")
+
+        return key_token, expresses, i
+
+
+    def parse_and_validate_options(self, options: dict, option_map: dict, executor) -> dict:
+        """
+        주어진 options를 option_map 기준으로 검증하고 최종 값 딕셔너리를 리턴한다.
+        - 타입 체크, required 체크, default 적용 포함
+        options, i = self.extract_all_options(args, 0)
+
+        option_map = {
+            "count": {"default": 1, "allowed_types": [TokenType.INTEGER]},
+            "duration": {"default": 0.2, "allowed_types": [TokenType.FLOAT]},
+            "type": {"default": "single", "allowed_types": [TokenType.STRING]},
+            "x": {"required": True, "allowed_types": [TokenType.INTEGER]},
+        }
+
+        option_values = parse_and_validate_options(options, option_map, executor)        
+        """
+        option_values = {}
+
+        # 1. 주어진 옵션 해석 및 타입 체크
+        for key, value_dict in options.items():
+            if key not in option_map:
+                raise KavanaSyntaxError(f"알 수 없는 옵션: '{key}'")
+
+            value_express = value_dict["express"]
+            evaluated = ExprEvaluator(executor=executor).evaluate(value_express)
+
+            allowed_types = option_map[key].get("allowed_types", [])
+            if evaluated.type not in allowed_types:
+                raise KavanaSyntaxError(
+                    f"옵션 '{key}'의 타입이 올바르지 않습니다. "
+                    f"허용된 타입: {', '.join(t.name for t in allowed_types)}, "
+                    f"실제 타입: {evaluated.type.name}"
+                )
+
+            option_values[key] = evaluated.data.value
+
+        # 2. 필수 옵션 누락 체크
+        for key, opt in option_map.items():
+            if opt.get("required", False) and key not in option_values:
+                raise KavanaSyntaxError(f"필수 옵션 '{key}'가 누락되었습니다.")
+
+        # 3. 기본값 적용
+        for key, opt in option_map.items():
+            if key not in option_values and "default" in opt:
+                option_values[key] = opt["default"]
+
+        return option_values

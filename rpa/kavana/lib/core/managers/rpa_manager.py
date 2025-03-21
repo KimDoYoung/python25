@@ -1,6 +1,7 @@
 import time
 import pyautogui
 
+from lib.core.builtins.builtin_consts import PointName
 from lib.core.exceptions.kavana_exception import KavanaSyntaxError
 from lib.core.managers.base_manager import BaseManager
 
@@ -72,3 +73,36 @@ class RPAManager(BaseManager):
         """✅ 특정 키 입력"""
         super().log("INFO", f"[RPA] 키 입력: {key}")
         pyautogui.press(key)
+
+    def get_point_with_name(self, region, point_name: str):
+        """✅ Region 객체에서 point_name에 해당하는 좌표를 반환"""
+        x,y,w,h = region
+        point_enum = PointName(point_name.lower())
+        if point_enum == PointName.CENTER:
+            return x + w // 2, y + h // 2
+        elif point_enum == PointName.LEFT_TOP:
+            return x, y
+        elif point_enum == PointName.LEFT_MIDDLE:
+            return x, y + h // 2
+        elif point_enum == PointName.LEFT_BOTTOM:
+            return x, y + h
+        elif point_enum == PointName.MIDDLE_TOP:
+            return x + w // 2, y
+        elif point_enum == PointName.MIDDLE_BOTTOM:
+            return x + w // 2, y + h
+        elif point_enum == PointName.RIGHT_TOP:
+            return x + w, y
+        elif point_enum == PointName.RIGHT_MIDDLE:
+            return x + w, y + h // 2
+        elif point_enum == PointName.RIGHT_BOTTOM:
+            return x + w, y + h
+        else:
+            raise KavanaSyntaxError(f"Region에서 지원하지 않는 PointName: {point_name}")
+
+    def find_image(self, image_path: str, search_region=None,confidence=0.8, grayscale=False):
+        try:
+            super().log("INFO", f"[RPA] 이미지 {image_path} 찾기 시도...")
+            found_region =  pyautogui.locateOnScreen(image_path, confidence=confidence, region=search_region, grayscale=grayscale)
+            return found_region
+        except pyautogui.ImageNotFoundException:
+            return None
