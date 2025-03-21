@@ -7,18 +7,16 @@ from lib.core.managers.rpa_manager import RPAManager
 from lib.core.token import Token
 from lib.core.token_type import TokenType
 
-class ClickCommand(BaseCommand):
+class MouseMoveCommand(BaseCommand):
     def execute(self, args, executor):
         """
-        CLICK 10, 20 [count=1] [duration=0.2] [type="single"]
-        CLICK <x: int>, <y: int> [count=1] [duration=0.2] [type="single"]
-        CLICK image_path=<express> confidence=<express:float 0.8>, region=<express:region default None>, grayscale=<express:boolean>, type=<express:string "single">
-        CLICK <object: Point | Region | Rectangle> point_name=<express:string "center"> [count=1] [duration=0.2] [type="single"]
+        MOUSE_MOVE 10, 20 [, duration=<express:float 0.5>]
+        MOUSE_MOVE x=<express:int>, y=<express:int> [, duration=<express:float 0.5>]
+        MOUSE_MOVE image_path=<express> confidence=<express:float 0.8>, search_region=<express:region default None>, grayscale=<express:boolean>
+        MOUSE_MOVE <object: Point | Region | Rectangle> point_name=<express:string "center"> 
         """
         option_map = {
-            "count": {"default": 1, "allowed_types": [TokenType.INTEGER]},
-            "duration": {"default": 0.2, "allowed_types": [TokenType.FLOAT]},
-            "type": {"default": "single", "allowed_types": [TokenType.STRING]},
+            "duration": {"default": 0.5, "allowed_types": [TokenType.FLOAT]},
         }
         
         # 옵션 값 초기화
@@ -38,15 +36,14 @@ class ClickCommand(BaseCommand):
                     value_express = value_dict["express"]
                     if key in option_values:    
                         option_values[key] = ExprEvaluator(executor=executor).evaluate(value_express).data.value
-            rpa_manager.click(x=x, y=y, click_type=option_values["type"], click_count=option_values["count"], duration=option_values["duration"])
+            rpa_manager.mouse_move(x=x, y=y, duration=option_values["duration"])
             return
         if self.is_key_exists(args, "x"):
             option_map["x"] = { "required": True,"allowed_types": [TokenType.INTEGER] }
             option_map["y"] = { "required": True,"allowed_types": [TokenType.INTEGER] }
             options, i = self.extract_all_options(args, 0) # options 추출
             option_values = self.parse_and_validate_options(options, option_map, executor)
-            rpa_manager.click(x=option_values["x"], y=option_values["y"], 
-                            click_type=option_values["type"], click_count=option_values["count"], duration=option_values["duration"])
+            rpa_manager.mouse_move(x=option_values["x"], y=option_values["y"], duration=option_values["duration"])
             return
         if self.is_key_exists(args, "image_path"):
             option_map["image_path"] = { "required": True,"allowed_types": [TokenType.STRING] }
@@ -61,7 +58,7 @@ class ClickCommand(BaseCommand):
             image_region = rpa_manager.find_image(image_path, search_region=option_values["search_region"])
             if image_region:
                 x, y = rpa_manager.get_point_with_name(image_region, point_name)
-                rpa_manager.click(x=x,y=y,click_type=option_values["type"], click_count=option_values["count"], duration=option_values["duration"])
+                rpa_manager.mouse_move(x=x,y=y,duration=option_values["duration"])
             else:
                 executor.set_last_error(f"NotFound")
             return
@@ -73,8 +70,6 @@ class ClickCommand(BaseCommand):
             x:int = 0
             y:int = 0
             if first_token.type == TokenType.POINT:
-                # i,express= self.get_express(args,0)
-                # point_token = ExprEvaluator(executor=executor).evaluate(express)
                 x = first_token.data.get_x()
                 y = first_token.data.get_y()
                 options, i = self.extract_all_options(args, i)
@@ -92,9 +87,9 @@ class ClickCommand(BaseCommand):
                 point_name = option_values["point_name"]
                 x, y = rpa_manager.get_point_with_name(first_token.data.to_region(), point_name)
             else:
-                raise KavanaSyntaxError("CLICK 명령어는 좌표(x, y), 이미지(image_path), 또는 객체(Point, Region, Rectangle) 중 하나를 사용해야 합니다.")
+                raise KavanaSyntaxError("MOUSE_MOVE 명령어는 좌표(x, y), 이미지(image_path), 또는 객체(Point, Region, Rectangle) 중 하나를 사용해야 합니다.")
 
-            rpa_manager.click(x=x,y=y,click_type=option_values["type"], click_count=option_values["count"], duration=option_values["duration"])
+            rpa_manager.mouse_move(x=x,y=y,duration=option_values["duration"])
             return
         
-        raise KavanaSyntaxError("CLICK 명령어는 좌표(x, y), 이미지(image_path), 또는 객체(Point, Region, Rectangle) 중 하나를 사용해야 합니다.")
+        raise KavanaSyntaxError("MOUSE_MOVE 명령어는 좌표(x, y), 이미지(image_path), 또는 객체(Point, Region, Rectangle) 중 하나를 사용해야 합니다.")
