@@ -13,7 +13,8 @@ MAIN
     //CLICK Point(10,20)
     //SET r = Region(10, 20, 30, 40)
     //CLICK r, point_name="center"
-    CLICK image_path="C:\\Users\\PC\\Pictures\\SophiaCapture\\esafe\\login_button.png", confidence=0.8, search_region=None, grayscale=False, type="single"
+    //CLICK image_path="C:\\Users\\PC\\Pictures\\SophiaCapture\\esafe\\login_button.png", confidence=0.8, search_region=None, grayscale=False, type="single"
+    CLICK rectangle(10,10,100,200), point_name="center"
 END_MAIN
 """
 #---------------------------
