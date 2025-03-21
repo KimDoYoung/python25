@@ -24,7 +24,7 @@ class KeyInCommand(BaseCommand):
         # 첫번째 express를 해석해본다.
         i,express= self.get_express(args,0)
         first_token = ExprEvaluator(executor=executor).evaluate(express)
-        if first_token.type == TokenType:
+        if first_token.type == TokenType.LIST_EX:
             pass
         elif first_token.type == TokenType.STRING:
             pass
