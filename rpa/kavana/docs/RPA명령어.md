@@ -12,6 +12,11 @@
     3 CLICK <express:point or region or rectange>
   
     > 구분 expression이 1개 이면 3번, expression이 2개이면 1번, key value에 image_path가 있으면 2번
+ 4. MOUSE_MOVE
+ 5. KEY_IN
+    KEY_IN [<express:string>, <express:string>..], speed=<express:float, default=0.5>
+    example: KEY_IN ["enter", "space", "ctrl+c"]
+
  >
 ```kavana-script
 CLICK 100, 200  // 기본 클릭

@@ -56,6 +56,7 @@ class CommandExecutor:
             "WAIT": WaitCommand(),
             "CLICK": ClickCommand(),
             "MOUSE_MOVE": MouseMoveCommand(),
+            "KEY_IN" :KeyInCommand()
 
         }
     def execute(self, command):
