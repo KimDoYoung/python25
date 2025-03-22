@@ -1,6 +1,7 @@
 import time
 from typing import List
 import pyautogui
+import pyperclip
 
 from lib.core.builtins.builtin_consts import PointName
 from lib.core.exceptions.kavana_exception import KavanaSyntaxError
@@ -10,12 +11,12 @@ class RPAManager(BaseManager):
     """RPA 기능을 담당하는 매니저"""
     
     def wait(self, seconds: int):
-        """✅ WAIT 명령어 실행 (일반 대기)"""
+        """ WAIT 명령어 실행 (일반 대기)"""
         super().log("INFO", f"[RPA] {seconds}초 동안 대기...")
         time.sleep(seconds)
 
     def wait_for_image(self, image_path: str, timeout: int = 10, confidence: float = 0.8, grayscale: bool = False, region=None):
-        """✅ 특정 이미지가 화면에 나타날 때까지 대기"""
+        """ 특정 이미지가 화면에 나타날 때까지 대기"""
         super().log("INFO", f"[RPA] {timeout}초 동안 이미지 {image_path} 대기 중...")
         start_time = time.time()
         
@@ -57,12 +58,12 @@ class RPAManager(BaseManager):
 
 
     def mouse_move(self, x: int, y: int, duration: float = 0.5):
-        """✅ 마우스를 특정 위치로 이동"""
+        """ 마우스를 특정 위치로 이동"""
         super().log("INFO", f"[RPA] 마우스 이동: ({x}, {y})")
         pyautogui.moveTo(x, y, duration=duration)
 
     def mouse_click(self, x: int = None, y: int = None, button="left"):
-        """✅ 마우스 클릭"""
+        """ 마우스 클릭"""
         if x is not None and y is not None:
             super().log("INFO", f"[RPA] 마우스 클릭: ({x}, {y}) 버튼={button}")
             pyautogui.click(x, y, button=button)
@@ -71,12 +72,12 @@ class RPAManager(BaseManager):
             pyautogui.click(button=button)
 
     def key_press(self, key: str):
-        """✅ 특정 키 입력"""
+        """ 특정 키 입력"""
         super().log("INFO", f"[RPA] 키 입력: {key}")
         pyautogui.press(key)
 
     def get_point_with_name(self, region, point_name: str):
-        """✅ Region 객체에서 point_name에 해당하는 좌표를 반환"""
+        """ Region 객체에서 point_name에 해당하는 좌표를 반환"""
         x,y,w,h = region
         point_enum = PointName(point_name.lower())
         if point_enum == PointName.CENTER:
@@ -101,6 +102,7 @@ class RPAManager(BaseManager):
             raise KavanaSyntaxError(f"Region에서 지원하지 않는 PointName: {point_name}")
 
     def find_image(self, image_path: str, search_region=None,confidence=0.8, grayscale=False):
+        """ 이미지를 찾아서 이미지의 영역을 리턴,실패시 None 리턴 """
         try:
             super().log("INFO", f"[RPA] 이미지 {image_path} 찾기 시도...")
             found_region =  pyautogui.locateOnScreen(image_path, confidence=confidence, region=search_region, grayscale=grayscale)
@@ -109,7 +111,7 @@ class RPAManager(BaseManager):
             return None
     
     def key_in(self, keys: List[str], speed: float = 0.5):
-        """✅ 특정 키 입력"""
+        """ 특정 키 입력 """
         super().log("INFO", f"[RPA] 키 입력: {key}")
         for key in keys:
             lower_key = key.lower()
@@ -118,3 +120,10 @@ class RPAManager(BaseManager):
             else:
                 pyautogui.press(lower_key, interval=speed)
             
+    def put_text(self, text: str):
+        """ 텍스트 입력 """
+        super().log("INFO", f"[RPA] 텍스트 입력: {text}")
+        # pyautogui.typewrite(text)
+        pyperclip.copy(text)  # 클립보드에 복사
+        time.sleep(0.2)  # 복사가 완료될 때까지 잠깐 대기
+        pyautogui.hotkey("ctrl", "v")  # Ctrl+V로 붙여넣기        

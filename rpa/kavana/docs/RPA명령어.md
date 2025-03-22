@@ -12,11 +12,14 @@
     3 CLICK <express:point or region or rectange>
   
     > 구분 expression이 1개 이면 3번, expression이 2개이면 1번, key value에 image_path가 있으면 2번
- 4. MOUSE_MOVE
- 5. KEY_IN
+4. MOUSE_MOVE
+5. KEY_IN
     KEY_IN [<express:string>, <express:string>..], speed=<express:float, default=0.5>
     example: KEY_IN ["enter", "space", "ctrl+c"]
 
+6. PUT_TEXT
+    - PUT_TEXT <express:string>
+    - GET_TEXT  INTO var clipboard=true
  >
 ```kavana-script
 CLICK 100, 200  // 기본 클릭
@@ -29,6 +32,7 @@ CLICK x=250, y=350, type="drop"  // 드래그 끝 (드롭)
 CLICK x=150, y=250, type="hold", duration=2  // 2초간 길게 누름
 CLICK x=150, y=250, type="release"  // 길게 누름 해제
 ```
+
 express_count = self.count_express(args)
 exists_x = self.is_key_exists(args,"x")
 exists_type = self.is_key_exists(args,"type")
