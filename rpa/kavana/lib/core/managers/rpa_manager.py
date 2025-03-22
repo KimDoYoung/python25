@@ -1,4 +1,5 @@
 import time
+from typing import List
 import pyautogui
 
 from lib.core.builtins.builtin_consts import PointName
@@ -106,3 +107,14 @@ class RPAManager(BaseManager):
             return found_region
         except pyautogui.ImageNotFoundException:
             return None
+    
+    def key_in(self, keys: List[str], speed: float = 0.5):
+        """✅ 특정 키 입력"""
+        super().log("INFO", f"[RPA] 키 입력: {key}")
+        for key in keys:
+            lower_key = key.lower()
+            if '+' in lower_key:
+                pyautogui.hotkey(*lower_key.split('+'), interval=speed)
+            else:
+                pyautogui.press(lower_key, interval=speed)
+            
