@@ -126,4 +126,10 @@ class RPAManager(BaseManager):
         # pyautogui.typewrite(text)
         pyperclip.copy(text)  # 클립보드에 복사
         time.sleep(0.2)  # 복사가 완료될 때까지 잠깐 대기
-        pyautogui.hotkey("ctrl", "v")  # Ctrl+V로 붙여넣기        
+        pyautogui.hotkey("ctrl", "v")  # Ctrl+V로 붙여넣기
+    
+    def capture_screen(self, image_path: str=None, region=None):
+        """ 화면 캡쳐 """
+        """ 전체 화면 캡쳐 """
+        super().log("INFO", "[RPA] 전체 화면 캡쳐")
+        return pyautogui.screenshot(imageFilename=image_path, region=region)
