@@ -19,8 +19,13 @@
 
 6. PUT_TEXT
     - PUT_TEXT <express:string>
-    - GET_TEXT  INTO var clipboard=true
- >
+    - GET_TEXT  VAR_TO=<var:string> clipboard=true
+7. CAPTURE : 모니터의 screen을 캡쳐한다.
+    - CAPTURE
+    - CAPTURE <region:express>, SAVE_TO=<path :express>, VAR_TO <string>
+    - CAPTURE <rectangle:express>, SAVE_TO <path :express> VAR_TO <string>
+    -
+
 ```kavana-script
 CLICK 100, 200  // 기본 클릭
 CLICK 100, 200, type="double"  // 더블 클릭

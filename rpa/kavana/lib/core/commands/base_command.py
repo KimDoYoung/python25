@@ -98,7 +98,7 @@ class BaseCommand(ABC):
             expresses.append(token)
             i += 1
         
-        return i, expresses
+        return expresses, i
     
     def extract_all_options(self, tokens: List[Token], start_idx: int):
         """

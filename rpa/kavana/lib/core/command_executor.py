@@ -269,3 +269,8 @@ class CommandExecutor:
         """시스템 변수 설정"""
         last_error_token = Token(data=String(value), type=TokenType.STRING)
         self.variable_manager.set_variable("_LastError_", last_error_token)
+    
+    def set_variable(self, var_name, token):
+        """변수 설정"""
+        self.variable_manager.set_variable(var_name, token)
+        

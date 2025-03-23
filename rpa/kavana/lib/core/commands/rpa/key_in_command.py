@@ -22,7 +22,7 @@ class KeyInCommand(BaseCommand):
         executor.set_last_error("")
 
         # 첫번째 express를 해석해본다.
-        i,express= self.get_express(args,0)
+        express, i = self.get_express(args,0)
         first_token = ExprEvaluator(executor=executor).evaluate(express)
         options, i = self.extract_all_options(args, i) # options 추출
         option_values = self.parse_and_validate_options(options, option_map, executor)

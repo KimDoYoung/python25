@@ -66,15 +66,13 @@ class ClickCommand(BaseCommand):
                 executor.set_last_error(f"NotFound")
             return
         # 첫번째 express를 해석해본다.
-        i,express= self.get_express(args,0)
+        express, i = self.get_express(args,0)
         first_token = ExprEvaluator(executor=executor).evaluate(express)
 
         if first_token.type in { TokenType.RECTANGLE, TokenType.REGION, TokenType.POINT }:
             x:int = 0
             y:int = 0
             if first_token.type == TokenType.POINT:
-                # i,express= self.get_express(args,0)
-                # point_token = ExprEvaluator(executor=executor).evaluate(express)
                 x = first_token.data.get_x()
                 y = first_token.data.get_y()
                 options, i = self.extract_all_options(args, i)
