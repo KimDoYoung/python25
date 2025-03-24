@@ -26,6 +26,8 @@ class TokenType(Enum):
     LEFT_BRACKET = "LEFT_BRACKET"    # [ 
     RIGHT_BRACKET = "RIGHT_BRACKET"  # ]
     LIST_EX = "LIST" # LIST
+    HASH_MAP = "HASHMAP" # HASHMAP
+    COLON = ":" # :
 
     # ✅ 사용자 정의 데이터 타입 (POINT, REGION 등)
     POINT = "POINT"

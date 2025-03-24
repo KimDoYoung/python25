@@ -15,11 +15,11 @@
 - 변수는 대입되는 값에 의해서 결정된다.
 
 ## 현재명령어들들
+
 - include, load
 - set, print, function(end_function), return, const
 - if(end_if), for(end_for), while(end_while)
 - builtin functions : string, numeric, ymd_time관련 함수들들
-
 
 ## 전제적인 구조
 
@@ -264,14 +264,17 @@ END_FOR;
 10. SET init_screen = CAPTURE_SCREEN 화면캡쳐해서 이미지변수에 저장
 
 ## TODO
+
 ```text
 kavana script에 대해서 어느정도 core가 된 것 같아.
 지금꺄지한 것을 좀 정리를 하자면
 ```
+
 - include, load
 - set, print, function(end_function), return, const
 - if(end_if), for(end_for), while(end_while)
 - builtin functions : string, numeric, ymd_time관련 함수들들
+
 ```
 위와 같아. 기본적인 datatype에 대해서 동작과 수식해석, [ [1,2,3],[4,5,6]]과 같은 2중배열 구현
 
@@ -280,12 +283,14 @@ kavana script에 대해서 어느정도 core가 된 것 같아.
 3. 예를 들어 file관련 built인 함수를 만들어서 처리할 것인가? 아니면 명령어를 만들어야할까?
 4. exit 명령어를 만들어할 듯.
 ```
+
 main
     //something
     if result == 'NK'
         EXIT 1
     end_if
 end_main
+
 ```
 5. exception이 나면 어떻게 처리할까? try문을 만들까?(try catch는 너무 복잡한 게 아닐까?)
    아니면 그냥 exception... end_exception.으로 처리할까?
@@ -296,9 +301,3 @@ end_main
 
    
 ```
-### 진도
-1. exit
-2. on_exception ... end_exception, raise "문자열" 
-3. log, log_info..
-4. list builtin function, file builtin function...
-이런 순으로 만들어봅시다.

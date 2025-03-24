@@ -10,6 +10,7 @@ from lib.core.commands.raise_command import RaiseCommand
 from lib.core.commands.return_command import ReturnCommand
 from lib.core.commands.rpa.app_close_command import AppCloseCommand
 from lib.core.commands.rpa.app_open_command import AppOpenCommand
+from lib.core.commands.rpa.capture_screen_command import CaptureScreenCommand
 from lib.core.commands.rpa.click_command import ClickCommand
 from lib.core.commands.rpa.close_child_windows_command import CloseChildWindowsCommand
 from lib.core.commands.rpa.get_text_command import GetTextCommand
@@ -63,11 +64,10 @@ class CommandExecutor:
             "PUT_TEXT" : PutTextCommand(),
             "GET_TEXT" : GetTextCommand(),
             "CAPTURE_SCREEN" : CaptureScreenCommand()
-
         }
     def execute(self, command):
         cmd = command["cmd"]
-      
+    
         # ✅ IF 문 처리
         if cmd == "IF_BLOCK":
             condition = command["body"][0]["args"]

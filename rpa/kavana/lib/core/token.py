@@ -1,5 +1,6 @@
 from dataclasses import dataclass, field
 from typing import List, Literal, Optional
+from lib.core.datatypes.hash_map import HashMap
 from lib.core.datatypes.kavana_datatype import KavanaDataType, String
 from lib.core.datatypes.list_type import ListType
 from lib.core.datatypes.ymd_time import Ymd, YmdTime
@@ -108,6 +109,22 @@ class ListExToken(Token):
     def __post_init__(self):
         if not isinstance(self.data, ListType):
             raise TypeError("ListExToken must contain a ListType")
+
+from dataclasses import dataclass, field
+from typing import Dict, List, Literal
+
+@dataclass
+class HashMapToken(Token):
+    """HashMap 표현식을 나타내는 토큰"""
+    data: HashMap  # ✅ 실제 HashMap 데이터
+    type: TokenType = field(default=TokenType.HASH_MAP, init=False)  # ✅ 고정 타입
+    key_expr_map: Dict[str, List[Token]] = field(default_factory=dict)  # 각 key에 대응하는 value 표현식
+    status: Literal["Parsed", "Evaled"] = "Parsed"
+
+    def __post_init__(self):
+        if not isinstance(self.data, HashMap):
+            raise TypeError("HashMapToken must contain a HashMap instance")
+
 
 @dataclass
 class ListIndexToken(Token):

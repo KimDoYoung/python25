@@ -10,7 +10,8 @@ class ConstantRegistry:
         """✅ `CONST` 정의 (이미 존재하면 오류 발생)"""
         name = name.upper()
         if name in cls._constants:
-            raise ValueError(f"상수 {name}은 이미 정의되었습니다.")
+            # raise ValueError(f"상수 {name}은 이미 정의되었습니다.")
+            return
         cls._constants[name] = value
 
     @classmethod
