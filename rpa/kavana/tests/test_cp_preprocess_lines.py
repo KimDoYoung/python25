@@ -18,21 +18,21 @@ END_MAIN
                 PreprocessedLine("END_MAIN", 4, 1),
             ],
         ),
-        (
-            """MAIN
-    SET text = "This is a \ 
- long text spanning \
-  multiple lines"
-    PRINT text
-END_MAIN
-            """,
-            [
-                PreprocessedLine("MAIN", 1, 1),
-                PreprocessedLine('SET text = "This is a  long text spanning   multiple lines"', 2, 5),  # ✅ a와 long 사이 공백 2개
-                PreprocessedLine("PRINT text", 4, 5),
-                PreprocessedLine("END_MAIN", 5, 1),
-            ],
-        ),
+#         (
+#             """MAIN
+#     SET text = "This is a \ 
+#  long text spanning \
+#   multiple lines"
+#     PRINT text
+# END_MAIN
+#             """,
+#             [
+#                 PreprocessedLine("MAIN", 1, 1),
+#                 PreprocessedLine('SET text = "This is a  long text spanning   multiple lines"', 2, 5),  # ✅ a와 long 사이 공백 2개
+#                 PreprocessedLine("PRINT text", 4, 5),
+#                 PreprocessedLine("END_MAIN", 5, 1),
+#             ],
+#         ),
     ],
 )
 

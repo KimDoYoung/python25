@@ -1,5 +1,5 @@
 from dataclasses import dataclass, field
-from typing import List, Literal, Optional
+from typing import Dict, List, Literal, Optional
 from lib.core.datatypes.hash_map import HashMap
 from lib.core.datatypes.kavana_datatype import KavanaDataType, String
 from lib.core.datatypes.list_type import ListType
@@ -109,9 +109,6 @@ class ListExToken(Token):
     def __post_init__(self):
         if not isinstance(self.data, ListType):
             raise TypeError("ListExToken must contain a ListType")
-
-from dataclasses import dataclass, field
-from typing import Dict, List, Literal
 
 @dataclass
 class HashMapToken(Token):
