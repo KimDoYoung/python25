@@ -417,7 +417,6 @@ class CommandParser:
             (r'\b\d+\b', TokenType.INTEGER),         # 정수 (예: 10, 42, 1000)
 
             # ✅ 모든 유니코드 문자 포함          
-            #(r'\br"([^"]*)"', TokenType.RAW_STRING),  # ✅ Raw String (escape 없이 그대로)
             (r'"((?:\\.|[^"\\])*)"', TokenType.STRING),  # ✅ 문자열 정규식 수정
 
         ]

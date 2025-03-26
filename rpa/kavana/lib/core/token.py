@@ -19,6 +19,12 @@ class Token:
         return f"Token(data={self.data}, type={self.type}, line={self.line}, column={self.column})"
 
 @dataclass
+class StringToken(Token):
+    is_raw: bool = False
+    is_formatted: bool = False
+    expressions: Optional[List[List[Token]]] = None  # f-string인 경우
+
+@dataclass
 class FunctionToken(Token):
     """✅ 함수 호출을 표현하는 토큰"""
     function_name: str =""  # ✅ 함수 이름
