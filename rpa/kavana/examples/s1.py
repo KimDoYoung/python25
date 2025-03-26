@@ -5,9 +5,11 @@ from lib.core.command_preprocessor import CommandPreprocessor
 # 대입
 script = """
 MAIN
-    SET text = "aaa \ 
-bbbb \
-ccc"
+    SET text = \"\"\"
+    Hello, World!
+    We are the champions, my friends!
+    \"\"\"
+
     PRINT "{text}"
 END_MAIN
 """

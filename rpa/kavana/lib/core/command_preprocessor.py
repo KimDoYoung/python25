@@ -38,85 +38,8 @@ class CommandPreprocessor:
 
         return  column_position  # **정확한 시작 컬럼 번호를 반환**
 
-    # def preprocess(self, script_lines=[], remove_comments=True) -> List[ PreprocessedLine ]:
-    #     """스크립트를 전처리하여 줄 병합 및 주석 제거를 수행"""
-    #     if script_lines:
-    #         self.script_lines = script_lines
-    #     merged_lines = []
-    #     current_line = ""
-    #     merging = False  # 여러 줄 병합 중인지 여부
-    #     merged_column_start = 0  # 병합 시작 컬럼
-    #     last_line_num = None  # 마지막 줄 번호 추적
-    #     open_brace_count = 0  # `{}`여는 중괄호 개수
-    #     open_bracket_count = 0  # `[]`여는 대괄호 개수
-    #     inside_string = False  # 문자열 내부인지 감지
-
-    #     for i, line in enumerate(self.script_lines):
-    #         # 빈 줄은 추가하지 않음
-    #         if not line.strip():
-    #             continue
-
-    #         original_line_num = i + 1  # 줄 번호를 1부터 유지 (빈 줄 포함)
-
-    #         original_column_start = self.get_leading_space_info(line)  # 정확한 컬럼 정보 가져오기
-
-    #         # 주석 제거
-    #         if remove_comments:
-    #             line = re.sub(r'//.*', '', line).rstrip()
-
-
-    #         # 줄 병합 처리 (`\`로 끝나는 줄을 병합)
-    #         if line.rstrip().endswith("\\"):
-    #             if not merging:
-    #                 merging = True
-    #                 merged_column_start = original_column_start  # 병합 시작 위치 저장
-    #                 last_line_num = original_line_num  # 병합 시작 줄 번호 저장
-    #             current_line = current_line.rstrip() + line[:-1]  # ✅ 백슬래시 제거 후 공백 유지
-    #         # 리스트(`[]`) 또는 맵(`{}`) 블록이 시작되는 경우
-    #         elif line.strip().endswith("[") or line.strip().endswith("{"):
-    #             if not merging:
-    #                 merging = True
-    #                 merged_column_start = original_column_start  # 병합 시작 위치 저장
-    #                 last_line_num = original_line_num  # 병합 시작 줄 번호 저장
-                
-    #             current_line = line.strip()  # 시작하는 줄 추가
-    #             if line.strip().endswith("["):
-    #                 open_bracket_count += 1
-    #             if line.strip().endswith("{"):
-    #                 open_brace_count += 1
-    #             continue  # 다음 줄을 계속 읽음                
-    #         if merging:
-    #             current_line += " " + line.strip()  # ✅ 줄바꿈 없이 이어 붙이기
-
-    #             # `[]` 또는 `{}` 블록 감지 (문자열 내부가 아닐 때만)
-    #             for char in line:
-    #                 if char == '"':
-    #                     inside_string = not inside_string  # 문자열 토글
-    #                 elif not inside_string:
-    #                     if char == "[":
-    #                         open_bracket_count += 1
-    #                     elif char == "]":
-    #                         open_bracket_count -= 1
-    #                     elif char == "{":
-    #                         open_brace_count += 1
-    #                     elif char == "}":
-    #                         open_brace_count -= 1
-
-    #             # `[]` 또는 `{}` 블록이 끝난 경우 병합 종료
-    #             if open_brace_count == 0 and open_bracket_count == 0 and not inside_string:
-    #                 merged_lines.append(PreprocessedLine(current_line, last_line_num, merged_column_start))
-    #                 current_line = ""
-    #                 merging = False
-    #                 last_line_num = None  # 병합 끝났으므로 초기화
-    #             continue
-
-    #     # 일반적인 한 줄 실행
-    #         merged_lines.append(PreprocessedLine(line.strip(), original_line_num, original_column_start))
-
-    #     return merged_lines
-
+    
     # def preprocess(self, script_lines=[], remove_comments=True) -> List[PreprocessedLine]:
-    #     """스크립트를 전처리하여 줄 병합 및 주석 제거를 수행"""
     #     if script_lines:
     #         self.script_lines = script_lines
     #     merged_lines = []
@@ -127,6 +50,9 @@ class CommandPreprocessor:
     #     open_brace_count = 0
     #     open_bracket_count = 0
     #     inside_string = False
+    #     # """...""" 문자열 처리용 변수들
+    #     inside_multiline_string = False
+    #     multiline_string_delimiter = '"""'        
 
     #     for i, line in enumerate(self.script_lines):
     #         if not line.strip():
@@ -140,7 +66,12 @@ class CommandPreprocessor:
 
     #         line_stripped = line.strip()
 
-    #         # 병합 중인 상태에서 문자열 추가
+    #         # ✅ 멀티라인 문자열 시작/종료 감지
+    #         if multiline_string_delimiter in line:
+    #             count = line.count(multiline_string_delimiter)
+    #             if count % 2 == 1:
+    #                 inside_multiline_string = not inside_multiline_string
+
     #         if merging:
     #             current_line += " " + line_stripped
     #         else:
@@ -148,66 +79,241 @@ class CommandPreprocessor:
     #             merged_column_start = original_column_start
     #             last_line_num = original_line_num
 
-    #         # 괄호 카운팅
-    #         for char in line:
-    #             if char == '"':
-    #                 inside_string = not inside_string
-    #             elif not inside_string:
-    #                 if char == "[":
-    #                     open_bracket_count += 1
-    #                 elif char == "]":
-    #                     open_bracket_count -= 1
-    #                 elif char == "{":
-    #                     open_brace_count += 1
-    #                 elif char == "}":
-    #                     open_brace_count -= 1
+    #         if not inside_multiline_string:
+    #             for char in line:
+    #                 if char == '"':
+    #                     inside_string = not inside_string
+    #                 elif not inside_string:
+    #                     if char == "[":
+    #                         open_bracket_count += 1
+    #                     elif char == "]":
+    #                         open_bracket_count -= 1
+    #                     elif char == "{":
+    #                         open_brace_count += 1
+    #                     elif char == "}":
+    #                         open_brace_count -= 1
 
-    #         # 괄호가 아직 열려 있는 경우 병합 유지
-    #         merging = (open_brace_count > 0 or open_bracket_count > 0)
+    #             # 불일치한 괄호 감지
+    #             if open_bracket_count < 0:
+    #                 raise KavanaSyntaxError(f"대괄호 ']'가 너무 많이 닫혔습니다: {original_line_num}번째 줄")
+    #             if open_brace_count < 0:
+    #                 raise KavanaSyntaxError(f"중괄호 '}}'가 너무 많이 닫혔습니다: {original_line_num}번째 줄")
 
-    #         # 병합 종료 시점
-    #         if not merging and (open_brace_count == 0 and open_bracket_count == 0):
+    #         merging = (open_brace_count > 0 or open_bracket_count > 0 or inside_multiline_string)
+
+    #         if not merging and (open_brace_count == 0 and open_bracket_count == 0 and not inside_multiline_string):
+    #             if inside_string:
+    #                 raise KavanaSyntaxError(f"문자열 리터럴이 닫히지 않았습니다: {original_line_num}번째 줄")
     #             merged_lines.append(PreprocessedLine(current_line.strip(), last_line_num, merged_column_start))
     #             current_line = ""
     #             last_line_num = None
 
-    #     # 루프가 끝나고 병합이 남아있다면 추가
-    #     if current_line and (not merging):
-    #         merged_lines.append(PreprocessedLine(current_line.strip(), last_line_num, merged_column_start))
+    #     # 파일이 끝났는데 괄호가 안 닫힘
+    #     if open_bracket_count > 0:
+    #         raise KavanaSyntaxError("리스트 인덱싱의 괄호가 올바르게 닫히지 않았습니다.")
+    #     if open_brace_count > 0:
+    #         raise KavanaSyntaxError("맵 정의의 중괄호가 올바르게 닫히지 않았습니다.")
+    #     if inside_string:
+    #         raise KavanaSyntaxError("문자열 리터럴이 닫히지 않았습니다.")
+
+    #     return merged_lines
+
+    # def preprocess(self, script_lines=[], remove_comments=True) -> List[PreprocessedLine]:
+    #     if script_lines:
+    #         self.script_lines = script_lines
+    #     merged_lines = []
+    #     current_line = ""
+    #     merging = False
+    #     merged_column_start = 0
+    #     last_line_num = None
+    #     open_brace_count = 0
+    #     open_bracket_count = 0
+    #     inside_string = False
+    #     inside_multiline_string = False
+    #     multiline_string_delimiter = '"""'
+
+    #     for i, line in enumerate(self.script_lines):
+    #         if not line.strip():
+    #             continue
+
+    #         original_line_num = i + 1
+    #         original_column_start = self.get_leading_space_info(line)
+
+    #         if remove_comments and not inside_multiline_string:
+    #             line = re.sub(r'//.*', '', line).rstrip()
+
+    #         line_stripped = line.strip()
+
+    #         # ✅ 이 줄에서 멀티라인 문자열 토글이 일어날지 미리 확인
+    #         toggle_multiline_string = False
+    #         if multiline_string_delimiter in line:
+    #             count = line.count(multiline_string_delimiter)
+    #             if count % 2 == 1:
+    #                 toggle_multiline_string = True
+
+    #         if merging:
+    #             current_line += " " + line_stripped
+    #         else:
+    #             current_line = line_stripped
+    #             merged_column_start = original_column_start
+    #             last_line_num = original_line_num
+
+    #         # ✅ 괄호 및 문자열 처리 (멀티라인 문자열 안에서는 생략)
+    #         if not inside_multiline_string:
+    #             for char in line:
+    #                 if char == '"':
+    #                     inside_string = not inside_string
+    #                 elif not inside_string:
+    #                     if char == "[":
+    #                         open_bracket_count += 1
+    #                     elif char == "]":
+    #                         open_bracket_count -= 1
+    #                     elif char == "{":
+    #                         open_brace_count += 1
+    #                     elif char == "}":
+    #                         open_brace_count -= 1
+
+    #             # 불일치한 괄호 감지
+    #             if open_bracket_count < 0:
+    #                 raise KavanaSyntaxError(f"대괄호 ']'가 너무 많이 닫혔습니다: {original_line_num}번째 줄")
+    #             if open_brace_count < 0:
+    #                 raise KavanaSyntaxError(f"중괄호 '}}'가 너무 많이 닫혔습니다: {original_line_num}번째 줄")
+
+    #         # ✅ 병합 여부 판단
+    #         merging = (open_brace_count > 0 or open_bracket_count > 0 or inside_multiline_string)
+
+    #         # ✅ 병합 종료 시점
+    #         if not merging and (open_brace_count == 0 and open_bracket_count == 0 and not inside_multiline_string):
+    #             if inside_string:
+    #                 raise KavanaSyntaxError(f"문자열 리터럴이 닫히지 않았습니다: {original_line_num}번째 줄")
+    #             merged_lines.append(PreprocessedLine(current_line.strip(), last_line_num, merged_column_start))
+    #             current_line = ""
+    #             last_line_num = None
+
+    #         # ✅ 멀티라인 문자열 상태 토글은 줄 끝에서 수행
+    #         if toggle_multiline_string:
+    #             inside_multiline_string = not inside_multiline_string
+
+    #     # ✅ 최종 종료 검사
+    #     if open_bracket_count > 0:
+    #         raise KavanaSyntaxError("리스트 인덱싱의 괄호가 올바르게 닫히지 않았습니다.")
+    #     if open_brace_count > 0:
+    #         raise KavanaSyntaxError("맵 정의의 중괄호가 올바르게 닫히지 않았습니다.")
+    #     if inside_string:
+    #         raise KavanaSyntaxError("문자열 리터럴이 닫히지 않았습니다.")
+    #     if inside_multiline_string:
+    #         raise KavanaSyntaxError('멀티라인 문자열("""...""")이 닫히지 않았습니다.')
+
+    #     return merged_lines
+
+    # def preprocess(self, script_lines=[], remove_comments=True) -> List[PreprocessedLine]:
+    #     if script_lines:
+    #         self.script_lines = script_lines
+    #     merged_lines = []
+    #     current_line = ""
+    #     merging = False
+    #     merged_column_start = 0
+    #     last_line_num = None
+    #     open_brace_count = 0
+    #     open_bracket_count = 0
+    #     inside_string = False
+    #     inside_multiline_string = False
+    #     multiline_string_delimiter = '"""'
+
+    #     for i, line in enumerate(self.script_lines):
+    #         if not line.strip():
+    #             continue
+
+    #         original_line_num = i + 1
+    #         original_column_start = self.get_leading_space_info(line)
+
+    #         # ✅ 상태 백업
+    #         was_inside_multiline_string = inside_multiline_string
+    #         toggle_multiline_string = False
+
+    #         # ✅ 멀티라인 문자열 시작/종료 감지 (상태는 줄 처리 후에 토글)
+    #         if multiline_string_delimiter in line:
+    #             count = line.count(multiline_string_delimiter)
+    #             if count % 2 == 1:
+    #                 toggle_multiline_string = True
+
+    #         # ✅ 주석 제거 (멀티라인 문자열 안이 아닐 때만)
+    #         if remove_comments and not was_inside_multiline_string:
+    #             line = re.sub(r'//.*', '', line).rstrip()
+
+    #         line_stripped = line.strip()
+
+    #         # ✅ 줄 병합 처리
+    #         if merging:
+    #             current_line += " " + line_stripped
+    #         else:
+    #             current_line = line_stripped
+    #             merged_column_start = original_column_start
+    #             last_line_num = original_line_num
+
+    #         # ✅ 괄호 및 문자열 처리 (멀티라인 문자열 내부일 때는 건너뜀)
+    #         if not was_inside_multiline_string:
+    #             for char in line:
+    #                 if char == '"':
+    #                     inside_string = not inside_string
+    #                 elif not inside_string:
+    #                     if char == "[":
+    #                         open_bracket_count += 1
+    #                     elif char == "]":
+    #                         open_bracket_count -= 1
+    #                     elif char == "{":
+    #                         open_brace_count += 1
+    #                     elif char == "}":
+    #                         open_brace_count -= 1
+
+    #             # 불일치한 괄호 감지
+    #             if open_bracket_count < 0:
+    #                 raise KavanaSyntaxError(f"대괄호 ']'가 너무 많이 닫혔습니다: {original_line_num}번째 줄")
+    #             if open_brace_count < 0:
+    #                 raise KavanaSyntaxError(f"중괄호 '}}'가 너무 많이 닫혔습니다: {original_line_num}번째 줄")
+
+    #         # ✅ 병합 여부 결정
+    #         merging = (open_brace_count > 0 or open_bracket_count > 0 or inside_multiline_string)
+
+    #         # ✅ 병합 종료 시점
+    #         if not merging and (open_brace_count == 0 and open_bracket_count == 0 and not inside_multiline_string):
+    #             if inside_string:
+    #                 raise KavanaSyntaxError(f"문자열 리터럴이 닫히지 않았습니다: {original_line_num}번째 줄")
+    #             merged_lines.append(PreprocessedLine(current_line.strip(), last_line_num, merged_column_start))
+    #             current_line = ""
+    #             last_line_num = None
+
+    #         # ✅ 줄 끝난 후 멀티라인 문자열 상태 토글
+    #         if toggle_multiline_string:
+    #             inside_multiline_string = not inside_multiline_string
+
+    #     # ✅ 종료 검사
+    #     if open_bracket_count > 0:
+    #         raise KavanaSyntaxError("리스트 인덱싱의 괄호가 올바르게 닫히지 않았습니다.")
+    #     if open_brace_count > 0:
+    #         raise KavanaSyntaxError("맵 정의의 중괄호가 올바르게 닫히지 않았습니다.")
+    #     if inside_string:
+    #         raise KavanaSyntaxError("문자열 리터럴이 닫히지 않았습니다.")
+    #     if inside_multiline_string:
+    #         raise KavanaSyntaxError('멀티라인 문자열("""...""")이 닫히지 않았습니다.')
 
     #     return merged_lines
 
     def preprocess(self, script_lines=[], remove_comments=True) -> List[PreprocessedLine]:
         if script_lines:
             self.script_lines = script_lines
+
         merged_lines = []
         current_line = ""
-        merging = False
-        merged_column_start = 0
         last_line_num = None
-        open_brace_count = 0
+        merged_column_start = 0
+
         open_bracket_count = 0
+        open_brace_count = 0
         inside_string = False
 
-        for i, line in enumerate(self.script_lines):
-            if not line.strip():
-                continue
-
-            original_line_num = i + 1
-            original_column_start = self.get_leading_space_info(line)
-
-            if remove_comments:
-                line = re.sub(r'//.*', '', line).rstrip()
-
-            line_stripped = line.strip()
-
-            if merging:
-                current_line += " " + line_stripped
-            else:
-                current_line = line_stripped
-                merged_column_start = original_column_start
-                last_line_num = original_line_num
-
+        def update_structure_depth(line: str):
+            nonlocal open_bracket_count, open_brace_count, inside_string
             for char in line:
                 if char == '"':
                     inside_string = not inside_string
@@ -221,26 +327,44 @@ class CommandPreprocessor:
                     elif char == "}":
                         open_brace_count -= 1
 
-            # 불일치한 괄호 감지
+        def is_structure_open() -> bool:
+            return open_bracket_count > 0 or open_brace_count > 0
+
+        for i, line in enumerate(self.script_lines):
+            if not line.strip():
+                continue
+
+            original_line_num = i + 1
+            original_column_start = self.get_leading_space_info(line)
+
+            if remove_comments:
+                line = re.sub(r'//.*', '', line).rstrip()
+
+            line_stripped = line.strip()
+
+            if current_line:
+                current_line += " " + line_stripped
+            else:
+                current_line = line_stripped
+                merged_column_start = original_column_start
+                last_line_num = original_line_num
+
+            update_structure_depth(line)
+
             if open_bracket_count < 0:
                 raise KavanaSyntaxError(f"대괄호 ']'가 너무 많이 닫혔습니다: {original_line_num}번째 줄")
             if open_brace_count < 0:
                 raise KavanaSyntaxError(f"중괄호 '}}'가 너무 많이 닫혔습니다: {original_line_num}번째 줄")
 
-            merging = (open_brace_count > 0 or open_bracket_count > 0)
-
-            if not merging and (open_brace_count == 0 and open_bracket_count == 0):
+            if not is_structure_open():
                 if inside_string:
                     raise KavanaSyntaxError(f"문자열 리터럴이 닫히지 않았습니다: {original_line_num}번째 줄")
                 merged_lines.append(PreprocessedLine(current_line.strip(), last_line_num, merged_column_start))
                 current_line = ""
                 last_line_num = None
 
-        # 파일이 끝났는데 괄호가 안 닫힘
-        if open_bracket_count > 0:
-            raise KavanaSyntaxError("리스트 인덱싱의 괄호가 올바르게 닫히지 않았습니다.")
-        if open_brace_count > 0:
-            raise KavanaSyntaxError("맵 정의의 중괄호가 올바르게 닫히지 않았습니다.")
+        if is_structure_open():
+            raise KavanaSyntaxError("괄호가 올바르게 닫히지 않았습니다.")
         if inside_string:
             raise KavanaSyntaxError("문자열 리터럴이 닫히지 않았습니다.")
 
