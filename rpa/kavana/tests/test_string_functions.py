@@ -3,7 +3,7 @@ from lib.core.builtins.string_functions import StringFunctions
 from lib.core.token import TokenType
 from lib.core.datatypes.kavana_datatype import Integer, String, Boolean
 from lib.core.token import ArrayToken
-from lib.core.datatypes.list_type import Array
+from lib.core.datatypes.array import Array
 
 def test_length():
     """LENGTH() 함수 테스트"""

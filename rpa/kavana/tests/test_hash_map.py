@@ -19,7 +19,7 @@ def test_hash_map_token_creation():
     assert token.data == hashmap
     assert token.type == TokenType.HASH_MAP
     assert token.status == "Parsed"
-    assert isinstance(token.key_expr_map, dict)
+    assert isinstance(token.key_express_map, dict)
 
 def test_hash_map_token_invalid_data_type():
     with pytest.raises(TypeError):

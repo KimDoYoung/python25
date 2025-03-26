@@ -62,11 +62,11 @@ class Array(KavanaDataType):
                     # 리스트가 비어 있으면 타입 결정
                     self.data_type = type(token)
                 elif not isinstance(token, self.data_type):
-                    raise TypeError("All elements in the list must be of the same type")
+                    raise KavanaTypeError("배열의 요소는 모두 동일한 데이터 타입이어야 합니다")
                 
                 self.data[row] = token
             else:
-                raise IndexError("리스트의 인덱스가 범위를 벗어났습니다")
+                raise KavanaIndexError("리스트의 인덱스가 범위를 벗어났습니다")
         else:
             # 2차원 리스트에서 값 변경
             if not isinstance(self.data[row], list):

@@ -3,7 +3,7 @@ from lib.core.builtins.numeric_functions import NumericFunctions
 from lib.core.token import TokenType
 from lib.core.datatypes.kavana_datatype import Integer
 from lib.core.token import ArrayToken
-from lib.core.datatypes.list_type import Array
+from lib.core.datatypes.array import Array
 
 def test_random():
     """RANDOM() 함수 테스트"""

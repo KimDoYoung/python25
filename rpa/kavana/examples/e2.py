@@ -2,7 +2,7 @@ from lib.core.command_executor import CommandExecutor
 from lib.core.command_parser import CommandParser
 from lib.core.command_preprocessor import CommandPreprocessor
 
-# LIST
+# Array and Map multiple lines
 script = """
 MAIN
     SET list1 = [
@@ -11,7 +11,13 @@ MAIN
     ]
     SET list2 = [1, 2, 
     3, 4, 5]
-    print "{list1}  {list2}"
+    SET map1 = {
+        "a": 1,
+        "b": 2,
+        "c": 3
+    }
+    set s = map1["a"]
+    print "{list1}  {list2} {s}"
 END_MAIN
 """
 #---------------------------
