@@ -1,4 +1,5 @@
 from lib.core.datatypes.kavana_datatype import KavanaDataType
+from lib.core.exceptions.kavana_exception import KavanaIndexError, KavanaTypeError, KavanaValueError
 
 
 class Array(KavanaDataType):
@@ -6,7 +7,7 @@ class Array(KavanaDataType):
         if len(values) > 0:
             self.data_type = type(values[0])
             if not all(isinstance(v, self.data_type) for v in values):
-                raise TypeError("All elements in the list must be of the same type")
+                raise KavanaTypeError("배열의 요소는 모두 동일한 데이터 타입이어야 합니다")
         else:
             self.data_type = None
         
@@ -22,7 +23,7 @@ class Array(KavanaDataType):
         if self.data_type is None:
             self.data_type = type(value)
         elif not isinstance(value, self.data_type):
-            raise TypeError("All elements in the list must be of the same type")
+            raise KavanaTypeError("배열의 요소는 모두 동일한 데이터 타입이어야 합니다")
         
         self.data.append(value)
 
@@ -31,26 +32,26 @@ class Array(KavanaDataType):
         if self.data_type is None:
             self.data_type = type(value)
         elif not isinstance(value, self.data_type):
-            raise TypeError("All elements in the list must be of the same type")
+            raise KavanaTypeError("배열의 요소는 모두 동일한 데이터 타입이어야 합니다")
         
         if 0 <= index <= len(self.data):
             self.data.insert(index, value)
         else:
-            raise IndexError("List index out of range")
+            raise KavanaIndexError("배열의 인덱스가 범위를 벗어났습니다.")
 
     def remove(self, value):
         """요소 값을 직접 삭제 가능하도록 변경"""
         if value in self.data:
             self.data.remove(value)
         else:
-            raise ValueError("Value not found in list")
+            raise KavanaValueError("배열의 값을 찾을 수 없습니다.")
 
     def remove_at(self, index):
         """기존의 인덱스 삭제 기능 유지"""
         if 0 <= index < len(self.data):
             del self.data[index]
         else:
-            raise IndexError("List index out of range")
+            raise KavanaIndexError("배열의 인덱스가 범위를 벗어났습니다.")
 
     def set(self, row, col=None, token=None):
         """✅ 지정된 인덱스의 값을 변경 (1차원/2차원 리스트 지원)"""
@@ -65,16 +66,16 @@ class Array(KavanaDataType):
                 
                 self.data[row] = token
             else:
-                raise IndexError("리스트의 인덱스 범위를 벗어났습니다")
+                raise IndexError("리스트의 인덱스가 범위를 벗어났습니다")
         else:
             # 2차원 리스트에서 값 변경
             if not isinstance(self.data[row], list):
-                raise TypeError("Attempting to set a value in a non-list element")
+                raise KavanaTypeError("배열의 요소는 모두 동일한 데이터 타입이어야 합니다")
             
             if 0 <= row < len(self.data) and 0 <= col < len(self.data[row]):
                 self.data[row][col] = token
             else:
-                raise IndexError("List index out of range")
+                raise IndexError("리스트의 인덱스가 범위를 벗어났습니다")
 
 
     def length(self):
@@ -88,16 +89,16 @@ class Array(KavanaDataType):
             if 0 <= row < len(self.data):
                 return self.data[row]
             else:
-                raise IndexError("리스트의 인덱스를 벗어났습니다(get)")
+                raise KavanaIndexError("배열의 인덱스를 벗어났습니다(get)")
         else:
             # 2차원 리스트에서 값 가져오기
             if not isinstance(self.data[row], list):
-                raise TypeError("배열의 요소가 2중배열이 아닙니다(get)")
+                raise KavanaTypeError("배열의 요소가 2중배열이 아닙니다(get)")
             
             if 0 <= row < len(self.data) and 0 <= col < len(self.data[row]):
                 return self.data[row][col]
             else:
-                raise IndexError("리스트의 인덱스를 벗어났습니다(get)")
+                raise KavanaIndexError("배열의 인덱스를 벗어났습니다(get)")
 
 
     def __repr__(self):

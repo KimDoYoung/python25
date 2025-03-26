@@ -2,7 +2,7 @@ from lib.core.command_executor import CommandExecutor
 from lib.core.command_parser import CommandParser
 from lib.core.command_preprocessor import CommandPreprocessor
 
-# LIST
+# HashMap
 script = """
 MAIN
     SET map1 = {1: "one", 2: "two", 3: "three"}
@@ -19,7 +19,8 @@ MAIN
     }
     SET a = "a"
     SET list = map4[a]
-    //print "{map1} {map2} {map3} {map4} {list}"
+    SET s= map1[1] + "111"+map4["c"]
+    PRINT "{s}"
 END_MAIN
 """
 #---------------------------

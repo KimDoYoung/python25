@@ -67,3 +67,11 @@ class KavanaNameError(KavanaException):
 class KavanaFileNotFoundError(KavanaException):
     """파일이 존재하지 않는 경우"""
     pass
+
+class KavanaIndexError(KavanaException):
+    """인덱스 오류"""
+    pass
+
+class KavanaKeyError(KavanaException):
+    """키 오류"""
+    pass

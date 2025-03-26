@@ -319,10 +319,11 @@ class ExprEvaluator:
                         evaluated_value_token = exprEval.evaluate(express)
                         if not isinstance(evaluated_value_token.data, KavanaDataType):
                             raise KavanaTypeError(f"HashMap의 값은 KavanaDataType이어야 합니다: {evaluated_value_token.data}")
-                        evaluated_map[key] = evaluated_value_token.data
+                        # evaluated_map[key] = evaluated_value_token.data
+                        evaluated_map[key] = evaluated_value_token
 
                     token.status = 'Evaluated'
-                    token.data = HashMap(*evaluated_map)
+                    token.data = HashMap(value=evaluated_map)
                 output.append(token)
                 i += 1
                 continue
