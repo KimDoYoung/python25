@@ -1,11 +1,11 @@
 from dataclasses import dataclass, field
-from typing import Dict
+from typing import Dict, Union
 
 from lib.core.datatypes.kavana_datatype import KavanaDataType
 
 @dataclass
 class HashMap(KavanaDataType):
-    value: Dict[str, KavanaDataType] = field(default_factory=dict)
+    value: Dict[Union[str, int], KavanaDataType] = field(default_factory=dict)
 
     def get(self, key: str) -> KavanaDataType:
         if key not in self.value:

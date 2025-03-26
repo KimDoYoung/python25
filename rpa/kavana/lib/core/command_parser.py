@@ -8,7 +8,7 @@ from lib.core.datatypes.array import Array
 from lib.core.datatypes.point import Point
 from lib.core.datatypes.ymd_time import YmdTime
 from lib.core.exception_registry import ExceptionRegistry
-from lib.core.exceptions.kavana_exception import CommandParserError, DataTypeError
+from lib.core.exceptions.kavana_exception import CommandParserError, DataTypeError, KavanaSyntaxError
 from lib.core.token import ArrayToken, AccessIndexToken,  Token
 from lib.core.token_type import TokenType
 from lib.core.function_registry import FunctionRegistry
@@ -436,8 +436,8 @@ class CommandParser:
 
                     # ❌ 작은따옴표(`' '`) 사용 감지 시 `SyntaxError` 발생
                     if token_type is None:
-                        raise SyntaxError(
-                            f"Invalid string format: Use double quotes (\") instead of single quotes (') at line {line_num}, column {column_num}"
+                        raise KavanaSyntaxError(
+                            f"잘못된 문자열 형식입니다: 쌍따옴표를 사용해 주십시오 (\") 줄번호 {line_num}, 컬럼번호 {column_num}"
                         )
                     if token_type == TokenType.RAW_STRING:
                         value = raw_value
@@ -458,7 +458,6 @@ class CommandParser:
                     break
 
             if not matched and line:  # ✅ 더 이상 처리할 수 없는 문자가 있으면 예외 발생
-                # print(f"알려지지 않은 Token:  line {line_num}, column {column_num} : {line[0]}")
                 line = line[1:]  # ✅ 한 글자 줄여서 진행하여 무한 루프 방지
                 column_num += 1
         tokens = CommandParser.post_process_tokens(tokens)
@@ -467,7 +466,7 @@ class CommandParser:
  
     @staticmethod
     def post_process_tokens(tokens: List[Token]) -> List[Token]:
-        ''' ListExToken, ListIndexToken을 생성해서 대체한다'''
+        ''' Array, AccessIndexToken을 생성해서 대체한다'''
         if not tokens:
             return []
 
@@ -493,7 +492,7 @@ class CommandParser:
                     column_express=column_express  # ✅ 내부 표현식 변환
                 ))
 
-            # ✅ 리스트 (`ListExToken`) 처리
+            # ✅ 리스트 (`Array`) 처리
             elif token.type == TokenType.LEFT_BRACKET:
                 list_elements = []
                 current_element = []
