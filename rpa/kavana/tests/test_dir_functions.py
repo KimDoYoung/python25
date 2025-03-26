@@ -28,7 +28,7 @@ def test_dir_list():
         f.write("test content")
 
     result = DirFunctions.DIR_LIST(TEST_DIR)
-    assert result.type == TokenType.LIST_EX
+    assert result.type == TokenType.ARRAY
     # assert TEST_FILE in [token.value for token in result.data.value]  # 파일이 목록에 있는지 확인
 
 def test_dir_delete():

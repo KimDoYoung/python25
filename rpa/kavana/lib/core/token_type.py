@@ -2,7 +2,7 @@ from enum import Enum
 
 class TokenType(Enum):
     # COMMAND
-    LIST_INDEX = "LIST_INDEX"
+    ACCESS_INDEX = "LIST_INDEX"
     MAP_KEY = "MAP_KEY"
     COMMAND = "COMMAND"
     
@@ -26,7 +26,9 @@ class TokenType(Enum):
     RIGHT_PAREN = "RIGHT_PAREN" # )
     LEFT_BRACKET = "LEFT_BRACKET"    # [ 
     RIGHT_BRACKET = "RIGHT_BRACKET"  # ]
-    LIST_EX = "LIST" # LIST
+    LEFT_BRACE = "{" # {
+    RIGHT_BRACE = "}" # }
+    ARRAY = "ARRAY" # ARRAY
     HASH_MAP = "HASHMAP" # HASHMAP
     COLON = ":" # :
 

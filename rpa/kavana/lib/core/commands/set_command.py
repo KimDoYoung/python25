@@ -26,7 +26,7 @@ class SetCommand(BaseCommand):
         exprEvaluator = ExprEvaluator(executor)
         value_token = exprEvaluator.evaluate(expression)
         # 변수 저장
-        if args[0].type == TokenType.LIST_INDEX: # SET list[0] = 10
+        if args[0].type == TokenType.ACCESS_INDEX: # SET list[0] = 10
             # 리스트 요소 대입
             var_name = args[0].data.value
             list_index_token = executor.variable_manager.get_variable(var_name)

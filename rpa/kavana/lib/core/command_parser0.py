@@ -1,21 +1,20 @@
 from datetime import date, datetime
 import re
 import os
-from typing import Any, Dict, List, Tuple, Union
+from typing import Any, List, Tuple
 from lib.core.command_preprocessor import CommandPreprocessor, PreprocessedLine
-from lib.core.datatypes.hash_map import HashMap
 from lib.core.datatypes.kavana_datatype import Boolean,  Float, Integer, KavanaDataType, NoneType, String
 from lib.core.datatypes.array import Array
 from lib.core.datatypes.point import Point
 from lib.core.datatypes.ymd_time import YmdTime
 from lib.core.exception_registry import ExceptionRegistry
 from lib.core.exceptions.kavana_exception import CommandParserError, DataTypeError, KavanaSyntaxError
-from lib.core.token import ArrayToken, AccessIndexToken, HashMapToken,  Token
+from lib.core.token import ArrayToken, AccessIndexToken,  Token
 from lib.core.token_type import TokenType
 from lib.core.function_registry import FunctionRegistry
 from lib.core.token_util import TokenUtil
 
-class CommandParser:
+class CommandParser0:
     """
     Kavana 스크립트의 명령어를 분석하는 파서.
     - `main ... end_main` 블록 안에서 실행
@@ -400,11 +399,7 @@ class CommandParser:
             (r'\)', TokenType.RIGHT_PAREN),
             (r'\[', TokenType.LEFT_BRACKET),
             (r'\]', TokenType.RIGHT_BRACKET),
-            (r'\{', TokenType.LEFT_BRACE),
-            (r'\}', TokenType.RIGHT_BRACE),
             (r',', TokenType.COMMA),
-            (r':', TokenType.COLON),
-
 
             (r'==|!=|>=|<=|[+\-*/%<>]', TokenType.OPERATOR),  # ✅ '=' 제거
             (r'=', TokenType.ASSIGN),  # ✅ '='을 별도로 할당 연산자로 분리            
@@ -466,6 +461,7 @@ class CommandParser:
         tokens = CommandParser.post_process_tokens(tokens)
         return tokens
 
+ 
     @staticmethod
     def post_process_tokens(tokens: List[Token]) -> List[Token]:
         ''' Array, AccessIndexToken을 생성해서 대체한다'''
@@ -474,144 +470,79 @@ class CommandParser:
 
         processed_tokens = []
         i = 0
-
+        
+        
         while i < len(tokens):
             token = tokens[i]
+            # ✅ 리스트 인덱스 (`ListIndexToken`) 처리
+            if token.type == TokenType.IDENTIFIER and i + 1 < len(tokens) and tokens[i + 1].type == TokenType.LEFT_BRACKET:                
+                var_name = token.data.value
+                i = i + 1  # '['부터 시작
+                end_idx = CommandParser.find_matching_bracket(tokens, i)
+                row_sub_express, column_sub_express, pos = CommandParser.extract_row_column_expresses(tokens, i, end_idx)
+                row_express = CommandParser.post_process_tokens(row_sub_express)  
+                column_express = CommandParser.post_process_tokens(column_sub_express) if column_sub_express else []
 
-            if CommandParser._is_access_index_start(tokens, i):
-                access_token, i = CommandParser.make_access_index_token(tokens, i)
-                processed_tokens.append(access_token)
+                i =  pos +1 # ✅ 재귀 호출이 끝난 위치로 `i` 이동
+                processed_tokens.append(AccessIndexToken(
+                    data=String(var_name),
+                    row_express=row_express,  # ✅ 내부 표현식 변환
+                    column_express=column_express  # ✅ 내부 표현식 변환
+                ))
 
+            # ✅ 리스트 (`Array`) 처리
             elif token.type == TokenType.LEFT_BRACKET:
-                array_token, i = CommandParser.make_array_token(tokens, i)
-                processed_tokens.append(array_token)
-            elif token.type == TokenType.LEFT_BRACE:
-                hash_token, i = CommandParser.make_hash_map_token(tokens, i)
-                processed_tokens.append(hash_token)
+                list_elements = []
+                current_element = []
+                end_idx = CommandParser.find_matching_bracket(tokens, i)  # `]`의 위치 찾기
+                i += 1  # `[` 다음 토큰부터 시작
+
+                while i <= end_idx:  # `]`까지 포함하여 처리
+                    if tokens[i].type == TokenType.IDENTIFIER and i + 1 < len(tokens) and tokens[i + 1].type == TokenType.LEFT_BRACKET:                
+                        var_name = tokens[i].data.value
+                        i = i + 1  # '['부터 시작
+                        end_sub_idx = CommandParser.find_matching_bracket(tokens, i)
+                        row_sub_express, column_sub_express, pos = CommandParser.extract_row_column_expresses(tokens, i, end_sub_idx)
+                        row_express = CommandParser.post_process_tokens(row_sub_express)  
+                        column_express = CommandParser.post_process_tokens(column_sub_express) if column_sub_express else []
+
+                        i =  pos  # ✅ 재귀 호출이 끝난 위치로 `i` 이동
+                        current_element.append(AccessIndexToken(
+                            data=String(var_name),
+                            row_express=row_express,  # ✅ 내부 표현식 변환
+                            column_express=column_express  # ✅ 내부 표현식 변환
+                        ))                    
+                    elif tokens[i].type == TokenType.COMMA:
+                        if current_element:
+                            list_elements.append(CommandParser.post_process_tokens(current_element))
+                            current_element = []
+                    elif tokens[i].type == TokenType.LEFT_BRACKET:
+                        sub_end_idx = CommandParser.find_matching_bracket(tokens, i)
+                        sub_list_tokens = tokens[i :sub_end_idx+1]  # 내부 리스트 추출
+                        current_element.extend(CommandParser.post_process_tokens(sub_list_tokens))
+                        i = sub_end_idx  # `]` 위치로 이동
+                    elif tokens[i].type == TokenType.RIGHT_BRACKET:
+                        if current_element:
+                            list_elements.append(CommandParser.post_process_tokens(current_element))
+                            current_element = []                            
+                        break
+                    else:
+                        current_element.append(tokens[i])
+
+                    i += 1
+
+                processed_tokens.append(ArrayToken(
+                    data=Array([]),
+                    element_expresses=list_elements  # ✅ 중첩 리스트 포함
+                ))
+                i = end_idx + 1  # `]` 다음 위치로 이동
+
+            # ✅ 기본 토큰 처리
             else:
                 processed_tokens.append(token)
                 i += 1
 
         return processed_tokens
-
-    @staticmethod
-    def _is_access_index_start(tokens: List[Token], i: int) -> bool:
-        return (
-            i + 1 < len(tokens)
-            and tokens[i].type == TokenType.IDENTIFIER
-            and tokens[i + 1].type == TokenType.LEFT_BRACKET
-        )
-
-    @staticmethod
-    def make_hash_map_token(tokens: List[Token], start_index: int) -> Tuple[HashMapToken, int]:
-        assert tokens[start_index].type == TokenType.LEFT_BRACE
-
-        i = start_index + 1
-        end_idx = CommandParser.find_matching_brace(tokens, start_index)
-        hashmap_content: Dict[Union[str, int], List[Token]] = {}
-
-        while i < end_idx:
-            key_token = tokens[i]
-            if key_token.type not in [TokenType.STRING, TokenType.INTEGER]:
-                raise CommandParserError("HashMap의 key는 문자열 또는 정수만 가능합니다.", key_token.line, key_token.column)
-
-            key = key_token.data.value
-            i += 1
-
-            if i >= len(tokens) or tokens[i].type != TokenType.COLON:
-                raise CommandParserError("HashMap 항목에 ':' 구문이 빠졌습니다.", tokens[i].line, tokens[i].column)
-            i += 1
-
-            value_tokens = []
-            while i < end_idx and tokens[i].type != TokenType.COMMA:
-                if tokens[i].type == TokenType.LEFT_BRACE:
-                    sub_hashmap_token, i = CommandParser.make_hash_map_token(tokens, i)
-                    value_tokens.append(sub_hashmap_token)
-                elif tokens[i].type == TokenType.LEFT_BRACKET:
-                    sub_array_token, i = CommandParser.make_array_token(tokens, i)
-                    value_tokens.append(sub_array_token)
-                elif CommandParser._is_access_index_start(tokens, i):
-                    access_token, i = CommandParser.make_access_index_token(tokens, i)
-                    value_tokens.append(access_token)
-                else:
-                    value_tokens.append(tokens[i])
-                    i += 1
-
-            hashmap_content[key] = CommandParser.post_process_tokens(value_tokens)
-
-            if i < end_idx and tokens[i].type == TokenType.COMMA:
-                i += 1
-
-        return HashMapToken(
-            data=HashMap({}),
-            key_express_map=hashmap_content
-        ), end_idx + 1
-
-
-    @staticmethod
-    def find_matching_brace(tokens: List[Token], start_idx: int) -> int:
-        count = 1
-        i = start_idx + 1
-        while i < len(tokens):
-            if tokens[i].type == TokenType.LEFT_BRACE:
-                count += 1 
-            elif tokens[i].type == TokenType.RIGHT_BRACE:
-                count -= 1
-                if count == 0:
-                    return i
-            i += 1
-        raise CommandParserError("HashMap 중괄호가 닫히지 않았습니다.", tokens[start_idx].line, tokens[start_idx].column)
-
-
-    @staticmethod
-    def make_access_index_token(tokens: List[Token], start_index: int) -> Tuple[AccessIndexToken, int]:
-        var_name = tokens[start_index].data.value
-        i = start_index + 1  # '[' 시작 위치
-        end_idx = CommandParser.find_matching_bracket(tokens, i)
-        row_sub, col_sub, pos = CommandParser.extract_row_column_expresses(tokens, i, end_idx)
-        row_expr = CommandParser.post_process_tokens(row_sub)
-        col_expr = CommandParser.post_process_tokens(col_sub) if col_sub else []
-
-        return AccessIndexToken(data=String(var_name), row_express=row_expr, column_express=col_expr), pos + 1
-
-    @staticmethod
-    def make_array_token(tokens: List[Token], start_index: int) -> Tuple[ArrayToken, int]:
-        list_elements = []
-        current_element = []
-        end_idx = CommandParser.find_matching_bracket(tokens, start_index)
-        i = start_index + 1
-
-        while i <= end_idx:
-            token = tokens[i]
-
-            if CommandParser._is_access_index_start(tokens, i):
-                access_token, i = CommandParser.make_access_index_token(tokens, i)
-                current_element.append(access_token)
-                continue  # ✅ 이미 i가 이동됐으므로 skip
-
-            elif token.type == TokenType.LEFT_BRACKET:
-                sub_array_token, i = CommandParser.make_array_token(tokens, i)
-                current_element.append(sub_array_token)
-                continue  # ✅ i 이미 이동됨
-
-            elif token.type == TokenType.COMMA:
-                if current_element:
-                    list_elements.append(CommandParser.post_process_tokens(current_element))
-                    current_element = []
-                i += 1
-                continue
-
-            elif token.type == TokenType.RIGHT_BRACKET:
-                if current_element:
-                    list_elements.append(CommandParser.post_process_tokens(current_element))
-                break  # ✅ while 탈출 (i는 end_idx + 1로 반환됨)
-
-            else:
-                current_element.append(token)
-                i += 1  # ✅ 일반 토큰일 경우에도 증가
-
-        return ArrayToken(data=Array([]), element_expresses=list_elements), end_idx + 1
-
 
     @staticmethod
     def find_matching_bracket(tokens: List[Token], start_idx: int) -> int:

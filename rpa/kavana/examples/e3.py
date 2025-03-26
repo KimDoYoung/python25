@@ -8,11 +8,18 @@ MAIN
     SET map1 = {1: "one", 2: "two", 3: "three"}
     SET map2 = {"a": 1, "b": 2, "c": 3}
     SET map3 = {
-        "aaa": 1,
-        "bbb": 2,
-        "ccc": 3
+        "aaa": 1+1,
+        "bbb": 2+2,
+        "ccc": 3+(1+2)
     }
-    print "{map1} {map2} {map3}"
+    SET map4 = {
+        "a": [1,2,3],
+        "b": [4,5,6],
+        "c": "홍길동"
+    }
+    SET a = "a"
+    SET list = map4[a]
+    //print "{map1} {map2} {map3} {map4} {list}"
 END_MAIN
 """
 #---------------------------

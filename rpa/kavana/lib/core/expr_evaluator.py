@@ -5,6 +5,7 @@ from datetime import datetime, timedelta
 from lib.core.command_parser import CommandParser
 
 from lib.core.datatypes.application import Application
+from lib.core.datatypes.hash_map import HashMap
 from lib.core.datatypes.image import Image
 from lib.core.datatypes.kavana_datatype import Boolean,  Float, Integer, KavanaDataType, String
 from lib.core.datatypes.array import Array
@@ -13,7 +14,7 @@ from lib.core.datatypes.rectangle import Rectangle
 from lib.core.datatypes.region import Region
 from lib.core.datatypes.window import Window
 from lib.core.datatypes.ymd_time import Ymd, YmdTime
-from lib.core.exceptions.kavana_exception import ExprEvaluationError, KavanaException
+from lib.core.exceptions.kavana_exception import ExprEvaluationError, KavanaException, KavanaTypeError
 from lib.core.custom_token_maker import CustomTokenMaker
 from lib.core.token_type import TokenType
 from lib.core.function_executor import FunctionExecutor
@@ -169,6 +170,39 @@ class ExprEvaluator:
         
         raise ExprEvaluationError(f"Unsupported token type: {value}")
 
+    def make_map_index_token(self, tokens: List[Token], start_index: int) -> Tuple[Token, int]:
+        """ Hashmap 인덱싱 토큰을 파싱하는 함수 (중첩 인덱싱 지원) """
+        
+        if start_index + 2 >= len(tokens):  # 최소한 list[0] 형태가 있어야 함
+            return [], start_index  # 인덱스 초과 방지
+
+        var_token = tokens[start_index]  # 리스트 변수
+
+        if tokens[start_index + 1].value == "[":  # 리스트 접근 시작
+            express = []
+            i = start_index + 2
+
+            bracket_count = 1  # `[` 개수를 추적하여 중첩된 인덱싱 확인
+            while i < len(tokens) and bracket_count > 0:
+                if tokens[i].value == "[":
+                    bracket_count += 1
+                elif tokens[i].value == "]":
+                    bracket_count -= 1
+                    if bracket_count == 0:  # 마지막 `]`을 찾았으면 종료
+                        break
+                express.append(tokens[i])
+                i += 1
+
+            if bracket_count > 0:  # 닫는 `]`가 부족하면 오류
+                raise ExprEvaluationError("리스트 인덱스의 `]`가 부족합니다.", tokens[start_index].line, tokens[start_index].column)
+
+            # 리스트 인덱스 토큰 생성
+            list_index_token = AccessIndexToken(express=express, data=String(var_token.value))
+
+            return list_index_token, i + 1  # 생성한 토큰과 새로운 위치 반환
+        
+        return None, start_index  # 리스트 인덱스가 아니라면 원래 위치 유지
+
 
     def make_list_index_token(self, tokens: List[Token], start_index: int) -> Tuple[Token, int]:
         """ 리스트 인덱싱 토큰을 파싱하는 함수 (중첩 인덱싱 지원) """
@@ -221,18 +255,22 @@ class ExprEvaluator:
                     combined_token, i = FunctionParser.make_function_token(tokens, start_index=i)
                     output.append(combined_token)
                     continue
-                else: # list[express]과 같은 형태
-                    var_token = self.variable_manager.get_variable(token.data.value)
+                # else: # list[express]과 같은 형태
+                #     var_token = self.variable_manager.get_variable(token.data.value) # list가 변수이면서 
 
-                    if var_token is not None and var_token.type == TokenType.LIST_EX:
-                        list_index_token,i = self.make_list_index_token(tokens, i)
-                        if list_index_token is not None and len(list_index_token) > 0:
-                            output.append(list_index_token)
-                            continue
-                        else: # 아무것도 없이 단독으로 사용된 변수
-                            output.append(var_token)
-                            i += 1
-                            continue    
+                #     if var_token is not None: 
+                #         if var_token.type ==  TokenType.ARRAY :
+                #             access_index_token,i = self.make_list_index_token(tokens, i)
+                #         elif var_token.type == TokenType.HASH_MAP:
+                #             access_index_token,i = self.make_map_index_token(tokens, i)
+
+                #         if access_index_token is not None and len(access_index_token) > 0:
+                #             output.append(access_index_token)
+                #             continue
+                #     else: # 아무것도 없이 단독으로 사용된 변수
+                #         output.append(var_token)
+                #         i += 1
+                #         continue
 
 
             # ✅ 연산자 처리
@@ -254,14 +292,14 @@ class ExprEvaluator:
                 stack.append(custom_token)
                 continue
 
-            if token.type == TokenType.LIST_EX:
+            if token.type == TokenType.ARRAY:
                 if token.status == 'Parsed':
-                    # ListExToken의 expresses를 평가해서 ListType에 넣는다.
+                    # ArrayToken의 expresses를 평가해서 Array에 넣는다.
                     exprEval = ExprEvaluator(self.executor)
                     result_values = []
                     for express in token.element_expresses:
                         element_token = exprEval.evaluate(express)
-                        if element_token.type == TokenType.LIST_EX: # 2중배열
+                        if element_token.type == TokenType.ARRAY: # 2중배열
                             result_values.append(element_token.data.to_list())
                             token.element_type = element_token.element_type
                         else:
@@ -272,6 +310,23 @@ class ExprEvaluator:
                 output.append(token)
                 i += 1
                 continue
+            if token.type == TokenType.HASH_MAP:
+                if token.status == 'Parsed':
+                    # HashMapToken의 expresses를 평가해서 HashMap에 넣는다.
+                    exprEval = ExprEvaluator(self.executor)
+                    evaluated_map  = {}
+                    for key, express in token.key_express_map.items():
+                        evaluated_value_token = exprEval.evaluate(express)
+                        if not isinstance(evaluated_value_token.data, KavanaDataType):
+                            raise KavanaTypeError(f"HashMap의 값은 KavanaDataType이어야 합니다: {evaluated_value_token.data}")
+                        evaluated_map[key] = evaluated_value_token.data
+
+                    token.status = 'Evaluated'
+                    token.data = HashMap(*evaluated_map)
+                output.append(token)
+                i += 1
+                continue
+
             # ✅ 괄호 처리
             if token.type == TokenType.LEFT_PAREN:
                 stack.append(token)
@@ -325,7 +380,7 @@ class ExprEvaluator:
             elif token.type == TokenType.IDENTIFIER:
                 valueToken = self.variable_manager.get_variable(token.data.value)
                 if valueToken is None:
-                    raise ExprEvaluationError(f"Undefined variable: {token.data}", token.line, token.column)                
+                    raise ExprEvaluationError(f"정의되지 않은 변수: {token.data}", token.line, token.column)                
                 stack.append(valueToken)
             
             elif token.type == TokenType.OPERATOR or token.type == TokenType.LOGICAL_OPERATOR:
@@ -340,16 +395,16 @@ class ExprEvaluator:
                     result_type = TokenType.UNKNOWN
                     if token.data.value == "%":
                         if not a.type == TokenType.INTEGER or not b.type == TokenType.INTEGER:
-                            raise ExprEvaluationError(f"Unsupported operand types for %: {a.type} and {b.type}")
+                            raise ExprEvaluationError(f"%는 지원하지 않는 타입입니다 : {a.type} and {b.type}")
                         result = Integer(a.data.value % b.data.value)
                         result_type = TokenType.INTEGER
-                    if token.data.value == '+' and a.type == TokenType.LIST_EX and b.type == TokenType.LIST_EX:
+                    if token.data.value == '+' and a.type == TokenType.ARRAY and b.type == TokenType.ARRAY:
                         # list + list
                         if a.element_type != b.element_type:
-                            raise ExprEvaluationError("Cannot add lists of different types", token.line, token.column)
+                            raise ExprEvaluationError("배열에는 다른 데이터 타입을 추가할 수 없습니다.", token.line, token.column)
                         new_list = Array(*(a.data.to_list() + b.data.to_list()))
                         result = new_list
-                        result_type = TokenType.LIST_EX
+                        result_type = TokenType.ARRAY
                     # YmdTime 연산 : Ymd + Integer, Ymd - Integer, Ymd - Ymd
                     elif a.type == TokenType.YMDTIME and b.type == TokenType.INTEGER:
                         dt = a.data.value + timedelta(days=b.data.value) if token.data.value == "+" else a.data.value - timedelta(days=b.data.value)
@@ -439,21 +494,24 @@ class ExprEvaluator:
                     raise ExprEvaluationError(f"지원하지 않는 객체 타입입니다: {token.object_type}")
                 stack.append(result_token)
 
-            elif token.type == TokenType.LIST_EX:
+            elif token.type in { TokenType.ARRAY, TokenType.HASH_MAP }:
                 stack.append(token)
-            elif token.type == TokenType.LIST_INDEX: # list[express] 형태
+            elif token.type == TokenType.ACCESS_INDEX: # list[express] 또는 map[express] 형태
                 var_name = token.data.value
                 # row,col 값 계산
                 row = ExprEvaluator(self.executor).evaluate(token.row_express).data.value
                 evaluator = ExprEvaluator(self.executor).evaluate(token.column_express)
                 col = None if evaluator is None else evaluator.data.value
                 # list token 가져오기
-                list_var_token = self.variable_manager.get_variable(var_name)
-                if list_var_token is None or list_var_token.type != TokenType.LIST_EX:
-                    ExprEvaluationError(f"리스트 변수가 없거나 변수가 리스트 타입이 아닙니다: {var_name}", token.line, token.column)
-                # 인덱스 값 계산
-                element_token = list_var_token.data.get(row,col)
+                list_or_map_var_token = self.variable_manager.get_variable(var_name)
+                if list_or_map_var_token.type == TokenType.ARRAY:    
+                    element_token = list_or_map_var_token.data.get(row,col)
+                elif list_or_map_var_token.type == TokenType.HASH_MAP:
+                    element_token = list_or_map_var_token.data.get(row)
+                else:
+                    ExprEvaluationError(f"리스트 또는 Map 변수가 없거나 타입이 올바르지 않습니다: {var_name}", token.line, token.column)
                 stack.append(element_token)
+
             
             else:
                 raise ExprEvaluationError(f"지원하지 않는 Token타입입니다.: {token.data.value} {token.type}", token.line, token.column)  

@@ -101,7 +101,7 @@ class YmdToken(Token):
 class ArrayToken(Token):
     ''' 리스트 표현식을 표현하는 토큰 '''
     data: Array  # ✅ `data`는 ListType 타입
-    type: TokenType = field(default=TokenType.LIST_EX, init=False)  # ✅ `type`을 LIST로 고정
+    type: TokenType = field(default=TokenType.ARRAY, init=False)  # ✅ `type`을 LIST로 고정
     element_type: TokenType = field(default=TokenType.UNKNOWN)  # 요소의 토큰 타입
     element_expresses: List[List[Token]] = field(default_factory=list)  # 각 요소의 표현 리스트
     status: Literal["Parsed", "Evaled"] = "Parsed"
@@ -115,7 +115,7 @@ class HashMapToken(Token):
     """HashMap 표현식을 나타내는 토큰"""
     data: HashMap  # ✅ 실제 HashMap 데이터
     type: TokenType = field(default=TokenType.HASH_MAP, init=False)  # ✅ 고정 타입
-    key_expr_map: Dict[str, List[Token]] = field(default_factory=dict)  # 각 key에 대응하는 value 표현식
+    key_express_map: Dict[str|int, List[Token]] = field(default_factory=dict)  # 각 key에 대응하는 value 표현식
     status: Literal["Parsed", "Evaled"] = "Parsed"
 
     def __post_init__(self):
@@ -131,7 +131,7 @@ class AccessIndexToken(Token):
     key_express: List[Token] = field(default_factory=list) # HashMap에서 사용
     data: String  # ✅ `data`는 String 타입 (생성 시 반드시 입력해야 함)
     #type: TokenType = field(default=TokenType.LIST_INDEX, init=False)  # ✅ `type`을 LIST_INDEX 고정
-    type: TokenType = TokenType.LIST_INDEX  # ✅ 기본값은 LIST_INDEX지만 변경 가능
+    type: TokenType = TokenType.ACCESS_INDEX  # ✅ 기본값은 LIST_INDEX지만 변경 가능
 
     def __post_init__(self):
         """추가적인 유효성 검사"""
@@ -142,7 +142,7 @@ class AccessIndexToken(Token):
         row_expr_str = ", ".join(repr(e) for e in self.row_express) if self.row_express else "None"
         col_expr_str = ", ".join(repr(e) for e in self.column_express) if self.column_express else "None"
         
-        return (f"ListIndexToken("
+        return (f"AccessIndexToken("
                 f"row_express=[{row_expr_str}], "
                 f"column_express=[{col_expr_str}], "
                 f"data={repr(self.data)}, "

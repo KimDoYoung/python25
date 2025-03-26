@@ -93,7 +93,7 @@ def test_file_lines():
         f.write("line1\nline2\nline3")
 
     result = FileFunctions.FILE_LINES(TEST_FILE_PATH)
-    assert result.type == TokenType.LIST_EX
+    assert result.type == TokenType.ARRAY
     # r = [item.data.value for item in result.data]
     # print(r)
     # assert r == ["line1", "line2", "line3"]

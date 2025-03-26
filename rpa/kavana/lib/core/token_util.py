@@ -18,12 +18,12 @@ class TokenUtil:
         for token in tokens:
             if isinstance(token, list):
                 TokenUtil.tokens_to_string(token)
-            elif token.type == TokenType.LIST_INDEX:
+            elif token.type == TokenType.ACCESS_INDEX:
                 row_express = TokenUtil.tokens_to_string(token.row_express)
                 col_express = TokenUtil.tokens_to_string(token.column_express)
                 var_name = token.data.value
                 strs.append(f"name={var_name}, row_express:{row_express}, col_express:{col_express}")
-            elif token.type == TokenType.LIST_EX:
+            elif token.type == TokenType.ARRAY:
                 expresses = []
                 for express in token.element_expresses:
                     expresses.append(TokenUtil.tokens_to_string(express))
@@ -88,7 +88,7 @@ class TokenUtil:
             elif token_type == TokenType.STRING:
                 return String(str(value))
 
-            elif token_type == TokenType.LIST_EX:
+            elif token_type == TokenType.ARRAY:
                 if isinstance(value, list):  # ✅ 이미 리스트인 경우
                     return Array(*value)
                 if isinstance(value, str) and value.startswith("[") and value.endswith("]"):
@@ -116,7 +116,7 @@ class TokenUtil:
         elif isinstance(value, str):
             return TokenType.STRING
         elif isinstance(value, list):
-            return TokenType.LIST_EX
+            return TokenType.ARRAY
         else:
             return type(value)
         

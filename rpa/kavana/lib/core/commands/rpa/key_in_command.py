@@ -27,7 +27,7 @@ class KeyInCommand(BaseCommand):
         options, i = self.extract_all_options(args, i) # options 추출
         option_values = self.parse_and_validate_options(options, option_map, executor)
         speed = option_values["speed"]
-        if first_token.type == TokenType.LIST_EX:
+        if first_token.type == TokenType.ARRAY:
             rpa_manager.key_press(first_token.data.value, speed=speed)
         elif first_token.type == TokenType.STRING:
             rpa_manager.key_press([first_token.data.value], speed=speed)

@@ -143,15 +143,15 @@ class FileFunctions:
         try:
             with open(file_path, "r", encoding="utf-8") as f:
                 lines = [String(line.strip()) for line in f.readlines()]
-            return Token(data=Array(lines), type=TokenType.LIST_EX)
+            return Token(data=Array(lines), type=TokenType.ARRAY)
         except Exception:
-            return Token(data=Array([]), type=TokenType.LIST_EX)
+            return Token(data=Array([]), type=TokenType.ARRAY)
 
     @staticmethod
     def FILE_FIND(directory: str, pattern: str) -> Token:
         """특정 디렉토리에서 패턴과 일치하는 파일 찾기"""
         try:
             files = glob.glob(os.path.join(directory, pattern))
-            return Token(data=Array([String(os.path.basename(f)) for f in files]), type=TokenType.LIST_EX)
+            return Token(data=Array([String(os.path.basename(f)) for f in files]), type=TokenType.ARRAY)
         except Exception:
-            return Token(data=Array([]), type=TokenType.LIST_EX)
+            return Token(data=Array([]), type=TokenType.ARRAY)

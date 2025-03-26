@@ -210,7 +210,7 @@ class CommandExecutor:
         loop_var = args[0]
         iterable_express = args[in_index + 1:]
         list_token = self.eval_express(iterable_express)
-        if list_token.type != TokenType.LIST_EX:
+        if list_token.type != TokenType.ARRAY:
             raise CommandExecutionError("FOR 문의 IN 다음은 리스트여야 합니다.", args[0].line, args[0].column)
         iterable = list_token.data.primitive
         return loop_var.data.value, iterable

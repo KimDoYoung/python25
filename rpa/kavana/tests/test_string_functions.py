@@ -33,7 +33,7 @@ def test_split():
     """SPLIT() 함수 테스트"""
     result = StringFunctions.SPLIT("hello,world", ",")
     assert isinstance(result, ArrayToken)
-    assert result.type == TokenType.LIST_EX
+    assert result.type == TokenType.ARRAY
 
 def test_join():
     """JOIN() 함수 테스트"""
