@@ -170,72 +170,6 @@ class ExprEvaluator:
         
         raise ExprEvaluationError(f"Unsupported token type: {value}")
 
-    def make_map_index_token(self, tokens: List[Token], start_index: int) -> Tuple[Token, int]:
-        """ Hashmap 인덱싱 토큰을 파싱하는 함수 (중첩 인덱싱 지원) """
-        
-        if start_index + 2 >= len(tokens):  # 최소한 list[0] 형태가 있어야 함
-            return [], start_index  # 인덱스 초과 방지
-
-        var_token = tokens[start_index]  # 리스트 변수
-
-        if tokens[start_index + 1].value == "[":  # 리스트 접근 시작
-            express = []
-            i = start_index + 2
-
-            bracket_count = 1  # `[` 개수를 추적하여 중첩된 인덱싱 확인
-            while i < len(tokens) and bracket_count > 0:
-                if tokens[i].value == "[":
-                    bracket_count += 1
-                elif tokens[i].value == "]":
-                    bracket_count -= 1
-                    if bracket_count == 0:  # 마지막 `]`을 찾았으면 종료
-                        break
-                express.append(tokens[i])
-                i += 1
-
-            if bracket_count > 0:  # 닫는 `]`가 부족하면 오류
-                raise ExprEvaluationError("리스트 인덱스의 `]`가 부족합니다.", tokens[start_index].line, tokens[start_index].column)
-
-            # 리스트 인덱스 토큰 생성
-            list_index_token = AccessIndexToken(express=express, data=String(var_token.value))
-
-            return list_index_token, i + 1  # 생성한 토큰과 새로운 위치 반환
-        
-        return None, start_index  # 리스트 인덱스가 아니라면 원래 위치 유지
-
-
-    def make_list_index_token(self, tokens: List[Token], start_index: int) -> Tuple[Token, int]:
-        """ 리스트 인덱싱 토큰을 파싱하는 함수 (중첩 인덱싱 지원) """
-        
-        if start_index + 2 >= len(tokens):  # 최소한 list[0] 형태가 있어야 함
-            return [], start_index  # 인덱스 초과 방지
-
-        var_token = tokens[start_index]  # 리스트 변수
-
-        if tokens[start_index + 1].value == "[":  # 리스트 접근 시작
-            express = []
-            i = start_index + 2
-
-            bracket_count = 1  # `[` 개수를 추적하여 중첩된 인덱싱 확인
-            while i < len(tokens) and bracket_count > 0:
-                if tokens[i].value == "[":
-                    bracket_count += 1
-                elif tokens[i].value == "]":
-                    bracket_count -= 1
-                    if bracket_count == 0:  # 마지막 `]`을 찾았으면 종료
-                        break
-                express.append(tokens[i])
-                i += 1
-
-            if bracket_count > 0:  # 닫는 `]`가 부족하면 오류
-                raise ExprEvaluationError("리스트 인덱스의 `]`가 부족합니다.", tokens[start_index].line, tokens[start_index].column)
-
-            # 리스트 인덱스 토큰 생성
-            list_index_token = AccessIndexToken(express=express, data=String(var_token.value))
-
-            return list_index_token, i + 1  # 생성한 토큰과 새로운 위치 반환
-        
-        return None, start_index  # 리스트 인덱스가 아니라면 원래 위치 유지
 
     def to_postfix(self, tokens: List[Token]) -> List[Token]:
         """토큰 리스트를  후위 표기법(RPN)으로 변환"""
@@ -255,23 +189,6 @@ class ExprEvaluator:
                     combined_token, i = FunctionParser.make_function_token(tokens, start_index=i)
                     output.append(combined_token)
                     continue
-                # else: # list[express]과 같은 형태
-                #     var_token = self.variable_manager.get_variable(token.data.value) # list가 변수이면서 
-
-                #     if var_token is not None: 
-                #         if var_token.type ==  TokenType.ARRAY :
-                #             access_index_token,i = self.make_list_index_token(tokens, i)
-                #         elif var_token.type == TokenType.HASH_MAP:
-                #             access_index_token,i = self.make_map_index_token(tokens, i)
-
-                #         if access_index_token is not None and len(access_index_token) > 0:
-                #             output.append(access_index_token)
-                #             continue
-                #     else: # 아무것도 없이 단독으로 사용된 변수
-                #         output.append(var_token)
-                #         i += 1
-                #         continue
-
 
             # ✅ 연산자 처리
             if token.type == TokenType.OPERATOR or token.type == TokenType.LOGICAL_OPERATOR:
