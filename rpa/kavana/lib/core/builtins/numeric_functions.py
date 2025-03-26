@@ -1,8 +1,8 @@
 import random
 from lib.core.datatypes.kavana_datatype import Integer
-from lib.core.datatypes.list_type import ListType
+from lib.core.datatypes.array import Array
 from lib.core.exceptions.kavana_exception import KavanaValueError, KavanaTypeError
-from lib.core.token import  ListExToken, Token
+from lib.core.token import  ArrayToken, Token
 from lib.core.token_type import TokenType
 
 class NumericFunctions:
@@ -140,7 +140,7 @@ class NumericFunctions:
         return Token(data=Integer(i % 2 == 1), type=TokenType.INTEGER)
 
     @staticmethod
-    def RANGE(*args) -> ListExToken:
+    def RANGE(*args) -> ArrayToken:
         """RANGE(stop) 또는 RANGE(start, stop, step) 형태로 동작"""
         arg_len = len(args)
 
@@ -162,5 +162,5 @@ class NumericFunctions:
             raise KavanaValueError("RANGE()의 step 값은 0이 될 수 없습니다.")
 
         range_list = list(range(start, stop, step))
-        resultToken = ListExToken(data=ListType(*range_list), element_type=TokenType.INTEGER)
+        resultToken = ArrayToken(data=Array(*range_list), element_type=TokenType.INTEGER)
         return resultToken

@@ -6,7 +6,7 @@ import shutil
 from typing import List
 
 from lib.core.datatypes.kavana_datatype import Boolean, Integer, String
-from lib.core.datatypes.list_type import ListType
+from lib.core.datatypes.array import Array
 from lib.core.datatypes.ymd_time import YmdTime
 from lib.core.exceptions.kavana_exception import KavanaException, KavanaFileNotFoundError
 from lib.core.token import Token
@@ -143,15 +143,15 @@ class FileFunctions:
         try:
             with open(file_path, "r", encoding="utf-8") as f:
                 lines = [String(line.strip()) for line in f.readlines()]
-            return Token(data=ListType(lines), type=TokenType.LIST_EX)
+            return Token(data=Array(lines), type=TokenType.LIST_EX)
         except Exception:
-            return Token(data=ListType([]), type=TokenType.LIST_EX)
+            return Token(data=Array([]), type=TokenType.LIST_EX)
 
     @staticmethod
     def FILE_FIND(directory: str, pattern: str) -> Token:
         """특정 디렉토리에서 패턴과 일치하는 파일 찾기"""
         try:
             files = glob.glob(os.path.join(directory, pattern))
-            return Token(data=ListType([String(os.path.basename(f)) for f in files]), type=TokenType.LIST_EX)
+            return Token(data=Array([String(os.path.basename(f)) for f in files]), type=TokenType.LIST_EX)
         except Exception:
-            return Token(data=ListType([]), type=TokenType.LIST_EX)
+            return Token(data=Array([]), type=TokenType.LIST_EX)

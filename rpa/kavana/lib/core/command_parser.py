@@ -4,12 +4,12 @@ import os
 from typing import Any, List, Tuple
 from lib.core.command_preprocessor import CommandPreprocessor, PreprocessedLine
 from lib.core.datatypes.kavana_datatype import Boolean,  Float, Integer, KavanaDataType, NoneType, String
-from lib.core.datatypes.list_type import ListType
+from lib.core.datatypes.array import Array
 from lib.core.datatypes.point import Point
 from lib.core.datatypes.ymd_time import YmdTime
 from lib.core.exception_registry import ExceptionRegistry
 from lib.core.exceptions.kavana_exception import CommandParserError, DataTypeError
-from lib.core.token import ListExToken, ListIndexToken,  Token
+from lib.core.token import ArrayToken, AccessIndexToken,  Token
 from lib.core.token_type import TokenType
 from lib.core.function_registry import FunctionRegistry
 from lib.core.token_util import TokenUtil
@@ -487,7 +487,7 @@ class CommandParser:
                 column_express = CommandParser.post_process_tokens(column_sub_express) if column_sub_express else []
 
                 i =  pos +1 # ✅ 재귀 호출이 끝난 위치로 `i` 이동
-                processed_tokens.append(ListIndexToken(
+                processed_tokens.append(AccessIndexToken(
                     data=String(var_name),
                     row_express=row_express,  # ✅ 내부 표현식 변환
                     column_express=column_express  # ✅ 내부 표현식 변환
@@ -510,7 +510,7 @@ class CommandParser:
                         column_express = CommandParser.post_process_tokens(column_sub_express) if column_sub_express else []
 
                         i =  pos  # ✅ 재귀 호출이 끝난 위치로 `i` 이동
-                        current_element.append(ListIndexToken(
+                        current_element.append(AccessIndexToken(
                             data=String(var_name),
                             row_express=row_express,  # ✅ 내부 표현식 변환
                             column_express=column_express  # ✅ 내부 표현식 변환
@@ -534,8 +534,8 @@ class CommandParser:
 
                     i += 1
 
-                processed_tokens.append(ListExToken(
-                    data=ListType([]),
+                processed_tokens.append(ArrayToken(
+                    data=Array([]),
                     element_expresses=list_elements  # ✅ 중첩 리스트 포함
                 ))
                 i = end_idx + 1  # `]` 다음 위치로 이동

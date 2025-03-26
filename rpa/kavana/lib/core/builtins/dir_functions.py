@@ -1,6 +1,6 @@
 import os
 from lib.core.datatypes.kavana_datatype import Boolean
-from lib.core.datatypes.list_type import ListType
+from lib.core.datatypes.array import Array
 from lib.core.token import Token, TokenType,  String
 
 class DirFunctions:
@@ -9,9 +9,9 @@ class DirFunctions:
         """특정 디렉토리의 파일 목록 반환"""
         try:
             files = os.listdir(directory)
-            return Token(data=ListType([String(f) for f in files]), type=TokenType.LIST_EX)
+            return Token(data=Array([String(f) for f in files]), type=TokenType.LIST_EX)
         except Exception:
-            return Token(data=ListType([]), type=TokenType.LIST_EX)  # 오류 시 빈 리스트 반환
+            return Token(data=Array([]), type=TokenType.LIST_EX)  # 오류 시 빈 리스트 반환
 
     @staticmethod
     def DIR_EXISTS(directory: str) -> Token:

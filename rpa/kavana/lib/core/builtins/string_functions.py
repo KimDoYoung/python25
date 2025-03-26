@@ -1,9 +1,9 @@
 from typing import Any, List
 
 from lib.core.datatypes.kavana_datatype import Boolean, Integer, String
-from lib.core.datatypes.list_type import ListType
+from lib.core.datatypes.array import Array
 from lib.core.exceptions.kavana_exception import KavanaTypeError, KavanaValueError
-from lib.core.token import  ListExToken, Token
+from lib.core.token import  ArrayToken, Token
 from lib.core.token_type import TokenType
 
 
@@ -71,8 +71,8 @@ class StringFunctions:
     def SPLIT(s: str, sep: str) -> List[str]:
         if isinstance(s, str) and isinstance(sep, str):
             result = s.split(sep)
-            list_type = ListType(result)
-            return ListExToken(data=list_type)
+            list_type = Array(result)
+            return ArrayToken(data=list_type)
         raise KavanaTypeError("사용형식 : SPLIT(문자열, 구분자)")
     
     @staticmethod

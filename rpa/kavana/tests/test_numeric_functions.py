@@ -2,8 +2,8 @@ import pytest
 from lib.core.builtins.numeric_functions import NumericFunctions
 from lib.core.token import TokenType
 from lib.core.datatypes.kavana_datatype import Integer
-from lib.core.token import ListExToken
-from lib.core.datatypes.list_type import ListType
+from lib.core.token import ArrayToken
+from lib.core.datatypes.list_type import Array
 
 def test_random():
     """RANDOM() 함수 테스트"""
@@ -56,11 +56,11 @@ def test_is_odd():
 def test_range():
     """RANGE() 함수 테스트"""
     result = NumericFunctions.RANGE(5)
-    assert isinstance(result, ListExToken)
-    assert result.data == ListType(0, 1, 2, 3, 4)
+    assert isinstance(result, ArrayToken)
+    assert result.data == Array(0, 1, 2, 3, 4)
 
     result = NumericFunctions.RANGE(2, 6)
-    assert result.data == ListType(2, 3, 4, 5)
+    assert result.data == Array(2, 3, 4, 5)
 
     result = NumericFunctions.RANGE(1, 10, 2)
-    assert result.data == ListType(1, 3, 5, 7, 9)
+    assert result.data == Array(1, 3, 5, 7, 9)

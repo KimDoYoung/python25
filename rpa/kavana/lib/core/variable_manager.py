@@ -1,7 +1,7 @@
 from lib.core.builtins.builtin_consts import DirectionName, PointName, RegionName
 from lib.core.const_registry import ConstantRegistry
 from lib.core.datatypes.kavana_datatype import Integer, String
-from lib.core.datatypes.list_type import ListType
+from lib.core.datatypes.array import Array
 from lib.core.token import Token
 from lib.core.token_type import TokenType
 class VariableManager:

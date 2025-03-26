@@ -3,7 +3,7 @@ from datetime import date, datetime
 import re
 from typing import Any, List
 from lib.core.datatypes.kavana_datatype import Boolean, Float, Integer, KavanaDataType, NoneType, String
-from lib.core.datatypes.list_type import ListType
+from lib.core.datatypes.array import Array
 from lib.core.datatypes.ymd_time import Ymd, YmdTime
 from lib.core.exceptions.kavana_exception import DataTypeError, KavanaSyntaxError
 from lib.core.token import Token
@@ -40,7 +40,7 @@ class TokenUtil:
         주어진 value 값으로 해당하는 KavanaDataType을 반환한다.
         """
         if isinstance(primitive, list):  # 리스트 타입이면 내부 요소 확인
-            return ListType(*[TokenUtil.primitive_to_kavana(p) for p in primitive])
+            return Array(*[TokenUtil.primitive_to_kavana(p) for p in primitive])
 
         # 개별 값에 대한 타입 결정
         if isinstance(primitive, int):
@@ -90,10 +90,10 @@ class TokenUtil:
 
             elif token_type == TokenType.LIST_EX:
                 if isinstance(value, list):  # ✅ 이미 리스트인 경우
-                    return ListType(*value)
+                    return Array(*value)
                 if isinstance(value, str) and value.startswith("[") and value.endswith("]"):
                     elements = [int(v.strip()) for v in value.strip("[]").split(",")]
-                    return ListType(*elements)
+                    return Array(*elements)
             else:
                 return String(str(value))
         except DataTypeError as e:

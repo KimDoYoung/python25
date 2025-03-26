@@ -1,7 +1,7 @@
 from lib.core.datatypes.kavana_datatype import KavanaDataType
 
 
-class ListType(KavanaDataType):
+class Array(KavanaDataType):
     def __init__(self, *values):
         if len(values) > 0:
             self.data_type = type(values[0])
@@ -105,7 +105,7 @@ class ListType(KavanaDataType):
         
         def extract_value(item):
             """DataType이면 value 추출, 아니면 그대로 반환"""
-            if isinstance(item, ListType):
+            if isinstance(item, Array):
                 return f"[{', '.join(map(str, (extract_value(i) for i in item.data.primitive)))}]"  # ListType 내부 변환
             return item.value if hasattr(item, 'value') else item  # Integer, Float 등 지원
 
@@ -115,18 +115,18 @@ class ListType(KavanaDataType):
     @property    
     def string(self):
         """✅ 항상 문자열(str)로 변환, ListType이면 '[ ]'를 붙여 출력"""
-        from lib.core.token import Token, ListExToken  # 필요한 토큰 불러오기
+        from lib.core.token import Token, ArrayToken  # 필요한 토큰 불러오기
 
         def extract_value(item):
             """DataType이면 value 추출, ListType이면 재귀적으로 변환"""
             
             # ✅ 리스트 타입이면 내부 요소를 변환
-            if isinstance(item, ListType):
+            if isinstance(item, Array):
                 converted_elements = [extract_value(i) for i in item.data]
                 return f"[{', '.join(map(str, converted_elements))}]"
 
             # ✅ ListExToken인 경우, 내부의 `element_expresses`에서 값을 추출
-            if isinstance(item, ListExToken):
+            if isinstance(item, ArrayToken):
                 flattened_values = []
                 for element_group in item.element_expresses:  # [[Token], [Token], [Token]]
                     for token in element_group:

@@ -7,7 +7,7 @@ from lib.core.command_parser import CommandParser
 from lib.core.datatypes.application import Application
 from lib.core.datatypes.image import Image
 from lib.core.datatypes.kavana_datatype import Boolean,  Float, Integer, KavanaDataType, String
-from lib.core.datatypes.list_type import ListType
+from lib.core.datatypes.array import Array
 from lib.core.datatypes.point import Point
 from lib.core.datatypes.rectangle import Rectangle
 from lib.core.datatypes.region import Region
@@ -19,7 +19,7 @@ from lib.core.token_type import TokenType
 from lib.core.function_executor import FunctionExecutor
 from lib.core.function_parser import FunctionParser
 from lib.core.function_registry import FunctionRegistry
-from lib.core.token import ListExToken, ListIndexToken, Token
+from lib.core.token import ArrayToken, AccessIndexToken, Token
 from lib.core.token_util import TokenUtil
 from lib.core.variable_manager import VariableManager
 
@@ -197,7 +197,7 @@ class ExprEvaluator:
                 raise ExprEvaluationError("리스트 인덱스의 `]`가 부족합니다.", tokens[start_index].line, tokens[start_index].column)
 
             # 리스트 인덱스 토큰 생성
-            list_index_token = ListIndexToken(express=express, data=String(var_token.value))
+            list_index_token = AccessIndexToken(express=express, data=String(var_token.value))
 
             return list_index_token, i + 1  # 생성한 토큰과 새로운 위치 반환
         
@@ -268,7 +268,7 @@ class ExprEvaluator:
                             result_values.append(element_token)
                             token.element_type = element_token.type
                     token.status = 'Evaluated'
-                    token.data = ListType(*result_values)
+                    token.data = Array(*result_values)
                 output.append(token)
                 i += 1
                 continue
@@ -347,7 +347,7 @@ class ExprEvaluator:
                         # list + list
                         if a.element_type != b.element_type:
                             raise ExprEvaluationError("Cannot add lists of different types", token.line, token.column)
-                        new_list = ListType(*(a.data.to_list() + b.data.to_list()))
+                        new_list = Array(*(a.data.to_list() + b.data.to_list()))
                         result = new_list
                         result_type = TokenType.LIST_EX
                     # YmdTime 연산 : Ymd + Integer, Ymd - Integer, Ymd - Ymd

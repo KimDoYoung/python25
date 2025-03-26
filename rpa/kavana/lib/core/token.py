@@ -2,7 +2,7 @@ from dataclasses import dataclass, field
 from typing import Dict, List, Literal, Optional
 from lib.core.datatypes.hash_map import HashMap
 from lib.core.datatypes.kavana_datatype import KavanaDataType, String
-from lib.core.datatypes.list_type import ListType
+from lib.core.datatypes.array import Array
 from lib.core.datatypes.ymd_time import Ymd, YmdTime
 from lib.core.token_type import TokenType
 
@@ -98,16 +98,16 @@ class YmdToken(Token):
 
 
 @dataclass
-class ListExToken(Token):
+class ArrayToken(Token):
     ''' 리스트 표현식을 표현하는 토큰 '''
-    data: ListType  # ✅ `data`는 ListType 타입
+    data: Array  # ✅ `data`는 ListType 타입
     type: TokenType = field(default=TokenType.LIST_EX, init=False)  # ✅ `type`을 LIST로 고정
     element_type: TokenType = field(default=TokenType.UNKNOWN)  # 요소의 토큰 타입
     element_expresses: List[List[Token]] = field(default_factory=list)  # 각 요소의 표현 리스트
     status: Literal["Parsed", "Evaled"] = "Parsed"
 
     def __post_init__(self):
-        if not isinstance(self.data, ListType):
+        if not isinstance(self.data, Array):
             raise TypeError("ListExToken must contain a ListType")
 
 @dataclass
@@ -124,13 +124,14 @@ class HashMapToken(Token):
 
 
 @dataclass
-class ListIndexToken(Token):
+class AccessIndexToken(Token):
     """✅ 리스트에 접근하기 위한 인덱스 토큰"""
-    # express: List[Token] = field(default_factory=list)  
     row_express: List[Token] = field(default_factory=list)  
     column_express: List[Token] = field(default_factory=list)
+    key_express: List[Token] = field(default_factory=list) # HashMap에서 사용
     data: String  # ✅ `data`는 String 타입 (생성 시 반드시 입력해야 함)
-    type: TokenType = field(default=TokenType.LIST_INDEX, init=False)  # ✅ `type`을 LIST_INDEX 고정
+    #type: TokenType = field(default=TokenType.LIST_INDEX, init=False)  # ✅ `type`을 LIST_INDEX 고정
+    type: TokenType = TokenType.LIST_INDEX  # ✅ 기본값은 LIST_INDEX지만 변경 가능
 
     def __post_init__(self):
         """추가적인 유효성 검사"""

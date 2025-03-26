@@ -2,8 +2,8 @@ import pytest
 from lib.core.builtins.string_functions import StringFunctions
 from lib.core.token import TokenType
 from lib.core.datatypes.kavana_datatype import Integer, String, Boolean
-from lib.core.token import ListExToken
-from lib.core.datatypes.list_type import ListType
+from lib.core.token import ArrayToken
+from lib.core.datatypes.list_type import Array
 
 def test_length():
     """LENGTH() 함수 테스트"""
@@ -32,7 +32,7 @@ def test_replace():
 def test_split():
     """SPLIT() 함수 테스트"""
     result = StringFunctions.SPLIT("hello,world", ",")
-    assert isinstance(result, ListExToken)
+    assert isinstance(result, ArrayToken)
     assert result.type == TokenType.LIST_EX
 
 def test_join():
