@@ -23,7 +23,7 @@
 
 ## 전제적인 구조
 
-```text
+```kvs
 INCLUDE "./common_func.kvs"
 LOAD ".env"
 

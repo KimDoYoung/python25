@@ -13,7 +13,7 @@ from lib.utils.check import syntax_check
 from lib.utils.pretty import format_pretty
 
 
-VERSION = "0.1.0"  # ✅ 버전 정보
+VERSION = "0.0.1"  # ✅ 버전 정보
 def main():
     if len(sys.argv) < 2:
         print("Usage: python kavana.py <script.kvs> [--check] [--pretty] [--version]")

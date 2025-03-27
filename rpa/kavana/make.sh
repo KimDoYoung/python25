@@ -53,7 +53,11 @@ else
 fi
 
 # 결과 확인
-TARGET_EXE="$INSTALL_DIR/$APP_NAME/$APP_NAME.exe"
+if [[ "$MODE" == "onedir" ]]; then
+    TARGET_EXE="$INSTALL_DIR/$APP_NAME/$APP_NAME.exe"
+else
+    TARGET_EXE="$INSTALL_DIR/$APP_NAME.exe"
+fi
 if [ ! -f "$TARGET_EXE" ]; then
     echo "❌ 빌드 실패: 실행 파일이 없습니다 → $TARGET_EXE"
     exit 1

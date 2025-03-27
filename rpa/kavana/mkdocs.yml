@@ -1,0 +1,20 @@
+site_name: Kavana Script Manual
+theme:
+  name: material
+  language: ko
+  palette:
+    primary: teal
+    accent: lime
+nav:
+  - 소개: index.md
+  - 시작 가이드: getting-started.md
+  - 문법: grammar.md
+  - 명령어: commands.md
+  - 예제: examples.md
+markdown_extensions:
+  - toc:
+      permalink: true
+  - admonition
+  - codehilite
+  - pymdownx.highlight
+  - pymdownx.superfences
