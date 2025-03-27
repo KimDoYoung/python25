@@ -9,21 +9,19 @@
 ## make.sh
 
 - make.sh로 compile
-
+- 기능
+    * venv 확인 및 활성화
+    * pyinstaller 위치 확인 (venv 안에 있어야 함)
+    * MODE=onedir 또는 MODE=onefile 선택 가능
+    * onefile 모드 → --runtime-tmpdir 지정
+    * onedir 모드 → kavana 폴더 전체 복사
+    * 실행 파일 또는 실행 폴더를 $HOME/bin으로 복사
 ```shell
 pyi-makespec --onefile --name kavana kavana.py
 pyinstaller kavana.spec
 ```
-
-## RPA commands
-
-- CAPTURE
-- SLEEP
-- WAIT
-- CLICK
-- MOVE
-- RUN
-
-## todo
-1. set a = ["abc","def"] 에서 ""이 빠지고 인쇄됨
-2. custom function 더 테스트
+```bash
+./make.sh           # 기본: --onefile
+./make.sh onefile   # 명시적: --onefile
+./make.sh onedir    # 빠른 실행을 위한 --onedir 빌드
+```
