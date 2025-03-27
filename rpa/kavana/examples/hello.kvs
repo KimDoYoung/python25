@@ -1,0 +1,4 @@
+// kavana hello.kvs
+MAIN
+    PRINT "Hi! kavana"
+END_MAIN
