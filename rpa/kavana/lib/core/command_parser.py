@@ -621,6 +621,8 @@ class CommandParser:
 
     @staticmethod
     def parse_string_token(raw_string: str, line_num: int, column_num: int) -> StringToken:
+        ''' 문자열을 파싱하여 StringToken 객체로 변환 '''
+        import re
         match = re.match(r'(?i)(rf|fr|r|f)?("((?:\\.|[^"\\])*)")', raw_string)
 
         if not match:
