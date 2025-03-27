@@ -25,3 +25,12 @@ pyinstaller kavana.spec
 ./make.sh onefile   # 명시적: --onefile
 ./make.sh onedir    # 빠른 실행을 위한 --onedir 빌드
 ```
+
+
+## mkdocs사용
+
+```shell
+mkdocs serve           # 브라우저로 확인
+mkdocs build           # site/ 폴더 생성
+mkdocs gh-deploy       # GitHub Pages로 배포 가능
+```
