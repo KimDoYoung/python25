@@ -20,12 +20,22 @@ else
     fi
 fi
 
+# ✅ PyInstaller 위치 확인
+PYINSTALLER_PATH=$(which pyinstaller)
+
+if [[ "$PYINSTALLER_PATH" != "$VENV_DIR"* ]]; then
+    echo "❌ PyInstaller가 가상 환경 내에 설치되어 있지 않습니다."
+    echo "   → pip install pyinstaller 로 가상환경에 설치하세요."
+    echo "   현재 pyinstaller 위치: $PYINSTALLER_PATH"
+    exit 1
+fi
+
 # 설정: 실행 파일을 저장할 디렉토리
 INSTALL_DIR="$HOME/bin"
 
 # 빌드 디렉토리 정리
 echo "🛠 기존 빌드 파일 삭제..."
-rm -rf build/ dist/ kavana.exe
+rm -rf build/ dist/ logs/ kavana.exe
 
 # PyInstaller를 사용하여 실행 파일 빌드
 echo "🚀 PyInstaller로 kavana.exe 빌드 중..."
