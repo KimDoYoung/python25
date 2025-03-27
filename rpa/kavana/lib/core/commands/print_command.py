@@ -2,6 +2,7 @@ import re
 from lib.core.command_parser import CommandParser
 from lib.core.command_preprocessor import CommandPreprocessor
 from lib.core.commands.base_command import BaseCommand
+from lib.core.exceptions.kavana_exception import KavanaSyntaxError
 from lib.core.expr_evaluator import ExprEvaluator
 from lib.core.token import Token
 from lib.core.token_type import TokenType
@@ -11,21 +12,25 @@ class PrintCommand(BaseCommand):
 
     def execute(self, args: list[Token], executor):
         if not args:
-            raise SyntaxError("PRINT 명령어는 최소 하나의 인자가 필요합니다.")
+            raise KavanaSyntaxError("PRINT 명령어는 최소 하나의 문자열 인자가 필요합니다.")
 
-        # ✅ 콤마(COMMA) 무시하고 문자열 결합
-        filtered_tokens = [token for token in args if token.type != TokenType.COMMA]
+        filtered_tokens = []
+        for token in args:
+            if token.type == TokenType.COMMA:
+                continue
+            if token.type != TokenType.STRING:
+                raise KavanaSyntaxError(f"PRINT 인자는 문자열만 허용됩니다. (잘못된 토큰: {token})")
+            filtered_tokens.append(token)
 
-        # ✅ 여러 인자를 공백으로 연결하여 문자열 생성
+        # ✅ 여러 문자열을 공백으로 연결
         raw_message = " ".join(token.data.string for token in filtered_tokens)
 
-        # ✅ 2단계: `{}` 표현식을 평가
+        # ✅ 문자열 안의 `{}` 표현식 평가
         message = self._evaluate_message(raw_message, executor)
 
-        # ✅ `__LBRACE__`, `__RBRACE__` 복원 (출력 시 `{{`와 `}}` 유지)
+        # ✅ `{{` / `}}` 복원
         message = message.replace("__LBRACE__", "{{").replace("__RBRACE__", "}}")
 
-        # ✅ 최종 출력
         print(message)
 
     def _evaluate_message(self, message: str, executor, allow_recurse=True):

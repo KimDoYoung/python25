@@ -5,16 +5,16 @@ from lib.core.command_preprocessor import CommandPreprocessor
 # 대입
 script = """
 MAIN
-    SET text = \"\"\"
-    Hello, World!
-    We are the champions, my friends!
-    \"\"\"
     SET name="Kavana"
+    SET f="Hong"
     SET s1 = f"Hello, {name}"
-    SET s2 = r"Hello,\nWorld!"
-    SET s3 = f"Hello,\n{name}"
-    SET s4 = rf"Hello,\n{name}"
-    PRINT "{text}"
+    SET s2 = r"Hello,\\nWorld!"
+    SET s3 = f"Hello,\\n{name}"
+    SET s4 = rf"Hello,\\n{name}"
+    //PRINT "{name}"
+    //PRINT f"{s1}\\n{s2}"
+    //PRINT r"1\\n2\\t\\3"
+    PRINT rf"{s1}\\n{s3}" 
 END_MAIN
 """
 #---------------------------

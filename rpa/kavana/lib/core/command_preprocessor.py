@@ -123,6 +123,8 @@ class CommandPreprocessor:
 
             if remove_comments:
                 line = re.sub(r'//.*', '', line).rstrip()
+                if line.strip() == "":
+                    continue
 
             line_stripped = line.strip()
 

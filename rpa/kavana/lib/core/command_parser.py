@@ -10,7 +10,7 @@ from lib.core.datatypes.point import Point
 from lib.core.datatypes.ymd_time import YmdTime
 from lib.core.exception_registry import ExceptionRegistry
 from lib.core.exceptions.kavana_exception import CommandParserError, DataTypeError, KavanaSyntaxError
-from lib.core.token import ArrayToken, AccessIndexToken, HashMapToken,  Token
+from lib.core.token import ArrayToken, AccessIndexToken, HashMapToken, StringToken,  Token
 from lib.core.token_type import TokenType
 from lib.core.function_registry import FunctionRegistry
 from lib.core.token_util import TokenUtil
@@ -280,33 +280,61 @@ class CommandParser:
 
     @staticmethod
     def decode_escaped_string(s: str) -> str:
-        """✅ C 스타일 escape 변환 (`"\\n"` → `"\n"`)"""
+        ESCAPE_MAP = {
+            "n": "\n",
+            "t": "\t",
+            "r": "\r",
+            "b": "\b",
+            "f": "\f",
+            "v": "\v",
+            "\\": "\\",
+            '"': '"',
+        }        
         result = []
         i = 0
         while i < len(s):
             if s[i] == "\\":
-                if i + 1 >= len(s):  # 🔥 단독 백슬래시는 오류
+                if i + 1 >= len(s):
                     raise ValueError("잘못된 문자열: 단독 백슬래시(`\\`)가 포함될 수 없습니다.")
 
                 escape_seq = s[i + 1]
-
-                if escape_seq == "n":
-                    result.append("\n")  # ✅ `\\n` → `\n` (개행 문자 변환)
-                elif escape_seq == "t":
-                    result.append("\t")  # ✅ `\\t` → `\t` (탭 문자 변환)
-                elif escape_seq == "\\":
-                    result.append("\\")  # ✅ `\\` → `\`
-                elif escape_seq == '"':
-                    result.append('"')  # ✅ `\"` → `"`
-                else:
-                    result.append("\\" + escape_seq)  # ✅ 알 수 없는 escape 문자 유지
-
-                i += 2  # 🔥 이스케이프 문자 처리했으므로 두 글자 건너뛰기
+                result.append(ESCAPE_MAP.get(escape_seq, "\\" + escape_seq))
+                i += 2
             else:
                 result.append(s[i])
                 i += 1
-
         return "".join(result)
+
+
+    # @staticmethod
+    # def decode_escaped_string(s: str) -> str:
+    #     """✅ C 스타일 escape 변환 (`"\\n"` → `"\n"`)"""
+    #     result = []
+    #     i = 0
+    #     while i < len(s):
+    #         if s[i] == "\\":
+    #             if i + 1 >= len(s):  # 🔥 단독 백슬래시는 오류
+    #                 raise ValueError("잘못된 문자열: 단독 백슬래시(`\\`)가 포함될 수 없습니다.")
+
+    #             escape_seq = s[i + 1]
+
+    #             if escape_seq == "n":
+    #                 result.append("\n")  # ✅ `\\n` → `\n` (개행 문자 변환)
+    #             elif escape_seq == "t":
+    #                 result.append("\t")  # ✅ `\\t` → `\t` (탭 문자 변환)
+    #             elif escape_seq == "\\":
+    #                 result.append("\\")  # ✅ `\\` → `\`
+    #             elif escape_seq == '"':
+    #                 result.append('"')  # ✅ `\"` → `"`
+    #             else:
+    #                 result.append("\\" + escape_seq)  # ✅ 알 수 없는 escape 문자 유지
+
+    #             i += 2  # 🔥 이스케이프 문자 처리했으므로 두 글자 건너뛰기
+    #         else:
+    #             result.append(s[i])
+    #             i += 1
+
+    #     return "".join(result)
 
     # def decode_escaped_string(s: str) -> str:
     #     """✅ 1바이트씩 읽어가면서 이스케이프 문자 변환"""
@@ -334,12 +362,147 @@ class CommandParser:
 
     #     return "".join(result)
     
+    # @staticmethod
+    # def tokenize(ppLine: PreprocessedLine) -> list:
+    #     """한 줄을 `Token` 객체 리스트로 변환"""
+
+    #     line = ppLine.text.strip()
+    #     tokens = []
+
+    #     token_patterns = [
+
+    #         # ✅ 논리 값
+    #         (r'\bTrue\b', TokenType.BOOLEAN),
+    #         (r'\bFalse\b', TokenType.BOOLEAN),
+    #         (r'\bNone\b', TokenType.NONE),
+    #         # ✅ 데이터 타입 키워드
+    #         (r'(?i)\bPOINT\b', TokenType.POINT),
+    #         (r'(?i)\bREGION\b', TokenType.REGION),
+    #         (r'(?i)\bRECTANGLE\b', TokenType.RECTANGLE),
+    #         (r'(?i)\bIMAGE\b', TokenType.IMAGE),
+    #         (r'(?i)\bWINDOW\b', TokenType.WINDOW),  
+    #         (r'(?i)\bAPPLICATION\b', TokenType.APPLICATION),            
+            
+    #         (r'(?i)\bGLOBAL\b', TokenType.GLOBAL),
+
+    #         # ✅ 제어문 키워드
+    #         (r'(?i)\bEND_FUNCTION\b', TokenType.END_FUNCTION),
+    #         (r'(?i)\bEND_WHILE\b', TokenType.END_WHILE),
+    #         (r'(?i)\bFUNCTION\b', TokenType.FUNCTION),
+    #         # ✅ 스크립트 실행 관련 키워드
+    #         (r'(?i)\bENV_LOAD\b', TokenType.ENV_LOAD),
+    #         (r'(?i)\bEND_MAIN\b', TokenType.END_MAIN),
+    #         (r'(?i)\bINCLUDE\b', TokenType.INCLUDE),
+    #         (r'(?i)\bRETURN\b', TokenType.RETURN),
+    #         (r'(?i)\bMAIN\b', TokenType.MAIN),
+    #         (r'(?i)\bEND_FOR\b', TokenType.END_FOR),
+    #         (r'(?i)\bEND_IF\b', TokenType.END_IF),
+    #         (r'(?i)\bWHILE\b', TokenType.WHILE),
+    #         (r'(?i)\bSTEP\b', TokenType.STEP), 
+    #         (r'(?i)\bELSE\b', TokenType.ELSE),
+    #         (r'(?i)\bELIF\b', TokenType.ELIF),
+    #         (r'(?i)\bIF\b', TokenType.IF),
+    #         (r'(?i)\bFOR\b', TokenType.FOR),
+    #         (r'(?i)\bTO\b', TokenType.TO),  
+    #         (r'(?i)\bIN\b', TokenType.IN), 
+
+    #         # ✅ 함수 관련 키워드
+
+    #         # ✅ 논리 연산자
+    #         (r'(?i)\bAND\b', TokenType.LOGICAL_OPERATOR), 
+    #         (r'(?i)\bOR\b', TokenType.LOGICAL_OPERATOR), 
+    #         (r'(?i)\bNOT\b', TokenType.LOGICAL_OPERATOR),
+
+    #         # ✅ 루프 제어 키워드
+    #         (r'(?i)\bBREAK\b', TokenType.BREAK),
+    #         (r'(?i)\bCONTINUE\b', TokenType.CONTINUE),
+    #         # ✅ YmdTime 패턴 추가 (괄호 필수)
+    #         (r"(?i)\bYmdTime\b", TokenType.IDENTIFIER),
+    #         (r"(?i)\bYmd\b", TokenType.IDENTIFIER),
+
+    #         # ✅ 작은따옴표 사용 감지 (문법 오류 처리)
+    #         (r"'([^']*)'", None),  # ❌ 작은따옴표가 감지되면 예외 발생
+
+    #         # ✅ 연산자
+    #         (r'\(', TokenType.LEFT_PAREN),
+    #         (r'\)', TokenType.RIGHT_PAREN),
+    #         (r'\[', TokenType.LEFT_BRACKET),
+    #         (r'\]', TokenType.RIGHT_BRACKET),
+    #         (r'\{', TokenType.LEFT_BRACE),
+    #         (r'\}', TokenType.RIGHT_BRACE),
+    #         (r',', TokenType.COMMA),
+    #         (r':', TokenType.COLON),
+
+
+    #         (r'==|!=|>=|<=|[+\-*/%<>]', TokenType.OPERATOR),  # ✅ '=' 제거
+    #         (r'=', TokenType.ASSIGN),  # ✅ '='을 별도로 할당 연산자로 분리            
+
+    #         # ✅ 일반 식별자  
+    #         (r'[a-zA-Z_\$][a-zA-Z0-9_]*', TokenType.IDENTIFIER),
+
+    #         # ✅ float, integer
+    #         (r'\b\d+\.\d+|\.\d+|\d+\.\b', TokenType.FLOAT),  # 🔥 소수점만 있는 경우도 포함
+    #         (r'\b\d+\b', TokenType.INTEGER),         # 정수 (예: 10, 42, 1000)
+
+    #         # ✅ 모든 유니코드 문자 포함          
+    #         (r'"((?:\\.|[^"\\])*)"', TokenType.STRING),  # ✅ 문자열 정규식 수정
+
+    #     ]
+    #     column_num = ppLine.original_column
+    #     line_num = ppLine.original_line
+
+    #     while line:
+    #         matched = False
+
+    #         # 🔥 공백을 건너뛰고 column 조정
+    #         while line and line[0] == " ":
+    #             column_num += 1
+    #             line = line[1:]
+
+    #         for pattern, token_type in token_patterns:
+    #             match = re.match(pattern, line)
+    #             if match:
+    #                 raw_value = match.group(1) if token_type == TokenType.STRING else match.group(0)
+
+    #                 # ❌ 작은따옴표(`' '`) 사용 감지 시 `SyntaxError` 발생
+    #                 if token_type is None:
+    #                     raise KavanaSyntaxError(
+    #                         f"잘못된 문자열 형식입니다: 쌍따옴표를 사용해 주십시오 (\") 줄번호 {line_num}, 컬럼번호 {column_num}"
+    #                     )
+    #                 if token_type == TokenType.RAW_STRING:
+    #                     value = raw_value
+    #                     tokens.append(Token(data=value, type=TokenType.STRING, line=line_num, column=column_num))                        
+    #                 elif token_type == TokenType.STRING:
+    #                     value = CommandParser.decode_escaped_string(raw_value)  # ✅ 직접 변환 함수 호출
+    #                     value_datatype_changed = TokenUtil.primitive_to_kavana_by_tokentype(value, token_type)
+    #                     tokens.append(Token(data=value_datatype_changed, type=token_type, line=line_num, column=column_num))
+    #                 else:
+    #                     value = raw_value
+    #                     value_datatype_changed = TokenUtil.primitive_to_kavana_by_tokentype(value, token_type)
+    #                     tokens.append(Token(data=value_datatype_changed, type=token_type, line=line_num, column=column_num))
+
+    #                 column_num += len(match.group(0))
+    #                 line = line[len(match.group(0)):]  # ✅ `line`을 올바르게 줄임
+
+    #                 matched = True
+    #                 break
+
+    #         if not matched and line:  # ✅ 더 이상 처리할 수 없는 문자가 있으면 예외 발생
+    #             line = line[1:]  # ✅ 한 글자 줄여서 진행하여 무한 루프 방지
+    #             column_num += 1
+    #     tokens = CommandParser.post_process_tokens(tokens)
+    #     return tokens
+
     @staticmethod
     def tokenize(ppLine: PreprocessedLine) -> list:
-        """한 줄을 `Token` 객체 리스트로 변환"""
+        """한 줄을 `Token` 또는 `StringToken` 객체 리스트로 변환"""
+
+        import re
 
         line = ppLine.text.strip()
         tokens = []
+
+        string_pattern = r'(?i)(r?f?|fr?)("((?:\\.|[^"\\])*)")'  # 접두어 포함 문자열
 
         token_patterns = [
 
@@ -347,21 +510,20 @@ class CommandParser:
             (r'\bTrue\b', TokenType.BOOLEAN),
             (r'\bFalse\b', TokenType.BOOLEAN),
             (r'\bNone\b', TokenType.NONE),
+
             # ✅ 데이터 타입 키워드
             (r'(?i)\bPOINT\b', TokenType.POINT),
             (r'(?i)\bREGION\b', TokenType.REGION),
             (r'(?i)\bRECTANGLE\b', TokenType.RECTANGLE),
             (r'(?i)\bIMAGE\b', TokenType.IMAGE),
             (r'(?i)\bWINDOW\b', TokenType.WINDOW),  
-            (r'(?i)\bAPPLICATION\b', TokenType.APPLICATION),            
-            
+            (r'(?i)\bAPPLICATION\b', TokenType.APPLICATION),
             (r'(?i)\bGLOBAL\b', TokenType.GLOBAL),
 
             # ✅ 제어문 키워드
             (r'(?i)\bEND_FUNCTION\b', TokenType.END_FUNCTION),
             (r'(?i)\bEND_WHILE\b', TokenType.END_WHILE),
             (r'(?i)\bFUNCTION\b', TokenType.FUNCTION),
-            # ✅ 스크립트 실행 관련 키워드
             (r'(?i)\bENV_LOAD\b', TokenType.ENV_LOAD),
             (r'(?i)\bEND_MAIN\b', TokenType.END_MAIN),
             (r'(?i)\bINCLUDE\b', TokenType.INCLUDE),
@@ -370,32 +532,31 @@ class CommandParser:
             (r'(?i)\bEND_FOR\b', TokenType.END_FOR),
             (r'(?i)\bEND_IF\b', TokenType.END_IF),
             (r'(?i)\bWHILE\b', TokenType.WHILE),
-            (r'(?i)\bSTEP\b', TokenType.STEP), 
+            (r'(?i)\bSTEP\b', TokenType.STEP),
             (r'(?i)\bELSE\b', TokenType.ELSE),
             (r'(?i)\bELIF\b', TokenType.ELIF),
             (r'(?i)\bIF\b', TokenType.IF),
             (r'(?i)\bFOR\b', TokenType.FOR),
-            (r'(?i)\bTO\b', TokenType.TO),  
-            (r'(?i)\bIN\b', TokenType.IN), 
-
-            # ✅ 함수 관련 키워드
+            (r'(?i)\bTO\b', TokenType.TO),
+            (r'(?i)\bIN\b', TokenType.IN),
 
             # ✅ 논리 연산자
-            (r'(?i)\bAND\b', TokenType.LOGICAL_OPERATOR), 
-            (r'(?i)\bOR\b', TokenType.LOGICAL_OPERATOR), 
+            (r'(?i)\bAND\b', TokenType.LOGICAL_OPERATOR),
+            (r'(?i)\bOR\b', TokenType.LOGICAL_OPERATOR),
             (r'(?i)\bNOT\b', TokenType.LOGICAL_OPERATOR),
 
-            # ✅ 루프 제어 키워드
+            # ✅ 루프 제어
             (r'(?i)\bBREAK\b', TokenType.BREAK),
             (r'(?i)\bCONTINUE\b', TokenType.CONTINUE),
-            # ✅ YmdTime 패턴 추가 (괄호 필수)
+
+            # ✅ YmdTime 키워드
             (r"(?i)\bYmdTime\b", TokenType.IDENTIFIER),
             (r"(?i)\bYmd\b", TokenType.IDENTIFIER),
 
-            # ✅ 작은따옴표 사용 감지 (문법 오류 처리)
-            (r"'([^']*)'", None),  # ❌ 작은따옴표가 감지되면 예외 발생
+            # ✅ 작은따옴표 오류 감지
+            (r"'([^']*)'", None),
 
-            # ✅ 연산자
+            # ✅ 연산자 및 구문
             (r'\(', TokenType.LEFT_PAREN),
             (r'\)', TokenType.RIGHT_PAREN),
             (r'\[', TokenType.LEFT_BRACKET),
@@ -404,29 +565,26 @@ class CommandParser:
             (r'\}', TokenType.RIGHT_BRACE),
             (r',', TokenType.COMMA),
             (r':', TokenType.COLON),
+            (r'==|!=|>=|<=|[+\-*/%<>]', TokenType.OPERATOR),
+            (r'=', TokenType.ASSIGN),
 
-
-            (r'==|!=|>=|<=|[+\-*/%<>]', TokenType.OPERATOR),  # ✅ '=' 제거
-            (r'=', TokenType.ASSIGN),  # ✅ '='을 별도로 할당 연산자로 분리            
-
-            # ✅ 일반 식별자  
+            # ✅ 문자열 (접두어 포함 문자열은 따로 처리)
+            (string_pattern, TokenType.STRING),
+            # ✅ 식별자
             (r'[a-zA-Z_\$][a-zA-Z0-9_]*', TokenType.IDENTIFIER),
 
-            # ✅ float, integer
-            (r'\b\d+\.\d+|\.\d+|\d+\.\b', TokenType.FLOAT),  # 🔥 소수점만 있는 경우도 포함
-            (r'\b\d+\b', TokenType.INTEGER),         # 정수 (예: 10, 42, 1000)
-
-            # ✅ 모든 유니코드 문자 포함          
-            (r'"((?:\\.|[^"\\])*)"', TokenType.STRING),  # ✅ 문자열 정규식 수정
+            # ✅ 숫자
+            (r'\b\d+\.\d+|\.\d+|\d+\.\b', TokenType.FLOAT),
+            (r'\b\d+\b', TokenType.INTEGER),
 
         ]
+
         column_num = ppLine.original_column
         line_num = ppLine.original_line
 
         while line:
             matched = False
 
-            # 🔥 공백을 건너뛰고 column 조정
             while line and line[0] == " ":
                 column_num += 1
                 line = line[1:]
@@ -434,36 +592,112 @@ class CommandParser:
             for pattern, token_type in token_patterns:
                 match = re.match(pattern, line)
                 if match:
-                    raw_value = match.group(1) if token_type == TokenType.STRING else match.group(0)
-
-                    # ❌ 작은따옴표(`' '`) 사용 감지 시 `SyntaxError` 발생
                     if token_type is None:
                         raise KavanaSyntaxError(
                             f"잘못된 문자열 형식입니다: 쌍따옴표를 사용해 주십시오 (\") 줄번호 {line_num}, 컬럼번호 {column_num}"
                         )
-                    if token_type == TokenType.RAW_STRING:
-                        value = raw_value
-                        tokens.append(Token(data=value, type=TokenType.STRING, line=line_num, column=column_num))                        
-                    elif token_type == TokenType.STRING:
-                        value = CommandParser.decode_escaped_string(raw_value)  # ✅ 직접 변환 함수 호출
-                        value_datatype_changed = TokenUtil.primitive_to_kavana_by_tokentype(value, token_type)
-                        tokens.append(Token(data=value_datatype_changed, type=token_type, line=line_num, column=column_num))
+
+                    if token_type == TokenType.STRING:
+                        string_token = CommandParser.parse_string_token(match.group(0), line_num, column_num)
+                        tokens.append(string_token)
                     else:
+                        raw_value = match.group(0)
                         value = raw_value
                         value_datatype_changed = TokenUtil.primitive_to_kavana_by_tokentype(value, token_type)
                         tokens.append(Token(data=value_datatype_changed, type=token_type, line=line_num, column=column_num))
 
                     column_num += len(match.group(0))
-                    line = line[len(match.group(0)):]  # ✅ `line`을 올바르게 줄임
-
+                    line = line[len(match.group(0)):]
                     matched = True
                     break
 
-            if not matched and line:  # ✅ 더 이상 처리할 수 없는 문자가 있으면 예외 발생
-                line = line[1:]  # ✅ 한 글자 줄여서 진행하여 무한 루프 방지
+            if not matched and line:
+                line = line[1:]
                 column_num += 1
+
         tokens = CommandParser.post_process_tokens(tokens)
         return tokens
+
+
+    @staticmethod
+    def parse_string_token(raw_string: str, line_num: int, column_num: int) -> StringToken:
+        match = re.match(r'(?i)(rf|fr|r|f)?("((?:\\.|[^"\\])*)")', raw_string)
+
+        if not match:
+            raise KavanaSyntaxError(f"잘못된 문자열 형식입니다: {raw_string}")
+
+        prefix = (match.group(1) or "").lower()
+        quoted = match.group(2)
+        inner = match.group(3)
+
+        is_raw = 'r' in prefix
+        is_formatted = 'f' in prefix
+
+        if is_raw:
+            decoded = inner
+        else:
+            decoded = CommandParser.decode_escaped_string(inner)
+
+        expressions = []
+        if is_formatted:
+            parts = re.split(r'(\{.*?\})', decoded)
+            for part in parts:
+                if part.startswith('{') and part.endswith('}'):
+                    inner_expr = part[1:-1].strip()
+                    expr_tokens = CommandParser.tokenize(PreprocessedLine(inner_expr, line_num, column_num))
+                    expressions.append(expr_tokens)
+
+        return StringToken(
+            data=String(decoded),
+            type=TokenType.STRING,
+            line=line_num,
+            column=column_num,
+            is_raw=is_raw,
+            is_formatted=is_formatted,
+            expressions=expressions if expressions else None
+        )
+
+
+    # @staticmethod
+    # def parse_string_token(raw_string: str, line_num: int, column_num: int) -> StringToken:
+    #     import re
+
+    #     # match = re.match(r'(?i)(r?f?|fr?)("((?:\\.|[^"\\])*)")', raw_string)
+    #     match = re.match(r'(?i)(rf|fr|r|f)?("((?:\\.|[^"\\])*)")', raw_string)
+    #     if not match:
+    #         raise KavanaSyntaxError(f"잘못된 문자열 형식입니다: {raw_string}")
+
+    #     prefix = match.group(1).lower()
+    #     quoted = match.group(2)
+    #     inner = match.group(3)
+
+    #     is_raw = 'r' in prefix
+    #     is_formatted = 'f' in prefix
+
+    #     if is_raw:
+    #         decoded = inner
+    #     else:
+    #         decoded = CommandParser.decode_escaped_string(inner)
+
+    #     expressions = []
+    #     if is_formatted:
+    #         parts = re.split(r'(\{.*?\})', decoded)
+    #         for part in parts:
+    #             if part.startswith('{') and part.endswith('}'):
+    #                 inner_expr = part[1:-1].strip()
+    #                 expr_tokens = CommandParser.tokenize(PreprocessedLine(inner_expr, line_num, column_num))
+    #                 expressions.append(expr_tokens)
+
+    #     return StringToken(
+    #         data=decoded,
+    #         type=TokenType.STRING,
+    #         line=line_num,
+    #         column=column_num,
+    #         is_raw=is_raw,
+    #         is_formatted=is_formatted,
+    #         expressions=expressions if expressions else None
+    #     )
+
 
     @staticmethod
     def post_process_tokens(tokens: List[Token]) -> List[Token]:
