@@ -1,16 +1,20 @@
 site_name: Kavana Script Manual
+
 theme:
   name: material
   language: ko
   palette:
     primary: teal
     accent: lime
+  custom_dir: overrides # ← 🆕 overrides 경로 설정!
+
 nav:
   - 소개: index.md
   - 시작 가이드: getting-started.md
   - 문법: grammar.md
   - 명령어: commands.md
   - 예제: examples.md
+
 markdown_extensions:
   - toc:
       permalink: true
@@ -18,3 +22,9 @@ markdown_extensions:
   - codehilite
   - pymdownx.highlight
   - pymdownx.superfences
+
+extra_javascript:
+  - js/kvs_highlight.js # ← 🆕 highlight.js용 Kavana 언어 정의
+
+extra_css:
+  - css/kvs.css # ← 🆕 Kavana 스타일 (원하면 highlight 테마)

@@ -1,0 +1,13 @@
+{% extends "base.html" %}
+
+{% block extrahead %}
+  {{ super() }}
+  <!-- highlight.js 기본 스타일 -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.8.0/styles/github.min.css">
+  <!-- 커스텀 kvs 문법 강조용 CSS -->
+  <link rel="stylesheet" href="{{ base_url }}/css/kvs.css">
+  <!-- highlight.js 본체 -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.8.0/highlight.min.js"></script>
+  <!-- kvs 언어 정의 -->
+  <script src="{{ base_url }}/js/kvs_highlight.js"></script>
+{% endblock %}

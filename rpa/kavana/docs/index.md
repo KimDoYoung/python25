@@ -15,3 +15,13 @@ For full documentation visit [mkdocs.org](https://www.mkdocs.org).
     docs/
         index.md  # The documentation homepage.
         ...       # Other markdown pages, images and other files.
+
+## Example 코드
+
+```kvs
+// kavana hello.kvs
+MAIN
+    SET greeting = "Hello, Kavana!"
+    PRINT "{greeting}"
+END_MAIN
+```
