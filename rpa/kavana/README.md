@@ -34,3 +34,7 @@ mkdocs serve           # 브라우저로 확인
 mkdocs build           # site/ 폴더 생성
 mkdocs gh-deploy       # GitHub Pages로 배포 가능
 ```
+
+## TODO
+- DatabaseRepository
+- DB 명령어작성

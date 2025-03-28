@@ -1,0 +1,17 @@
+{
+"kvs-command":{
+ 	"prefix":"kvs-command",
+	"body":[
+	"### $1",
+	"- $2",
+	"- **문법**",
+	"> $3",
+	"- **사용예**",
+	"```kvs",
+	"$4",
+	"```"
+	],
+	"description":"kvs-command"
+} 
+}
+

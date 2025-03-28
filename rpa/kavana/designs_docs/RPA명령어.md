@@ -53,3 +53,5 @@ exists_x == true CLICK x=200, y=300, type="drag"  // 드래그 시작
 CLICK x=250, y=350, type="drop"  // 드래그 끝 (드롭)
 CLICK x=150, y=250, type="hold", duration=2  // 2초간 길게 누름
 CLICK x=150, y=250, type="release"  // 길게 누름 해제
+
+
