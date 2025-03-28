@@ -13,6 +13,7 @@ nav:
   - 시작 가이드: getting-started.md
   - 문법: grammar.md
   - 명령어: commands.md
+  - 내장함수: builtin.md
   - 예제: examples.md
 
 markdown_extensions:
