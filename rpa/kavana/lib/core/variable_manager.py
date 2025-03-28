@@ -1,7 +1,10 @@
 from lib.core.builtins.builtin_consts import DirectionName, PointName, RegionName
+from lib.core.commands.database.db_commander import DbCommander
 from lib.core.const_registry import ConstantRegistry
+from lib.core.database_registry import DatabaseRegistry
 from lib.core.datatypes.kavana_datatype import Integer, String
 from lib.core.datatypes.array import Array
+from lib.core.exceptions.kavana_exception import KavanaValueError
 from lib.core.token import Token
 from lib.core.token_type import TokenType
 class VariableManager:
@@ -77,3 +80,15 @@ class VariableManager:
                 const_name,
                 Token(data=String(direction_enum.value), type=TokenType.STRING)
             )
+    
+    def get_db_commander(self, db_name: str) -> DbCommander:
+        """✅ DB Commander 가져오기"""
+        return DatabaseRegistry.get_commander(db_name)
+    
+    def set_db_commander(self, db_name: str, commander: DbCommander):
+        """✅ DB Commander 설정"""
+        db = DatabaseRegistry.get_commander(db_name)
+        if db:
+            raise KavanaValueError(f"데이터베이스 `{db_name}` 가 이미 존재합니다.")
+        DatabaseRegistry.set_commander(db_name, commander)
+    

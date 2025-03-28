@@ -1,5 +1,6 @@
 import sys
 from lib.core.commands.const_command import ConstCommand
+from lib.core.commands.database.database_command import DatabaseCommand
 from lib.core.commands.endfunction_command import EndFunctionCommand
 from lib.core.commands.exit_command import ExitCommand
 from lib.core.commands.function_command import FunctionCommand
@@ -63,8 +64,10 @@ class CommandExecutor:
             "KEY_IN" :KeyInCommand(),
             "PUT_TEXT" : PutTextCommand(),
             "GET_TEXT" : GetTextCommand(),
-            "CAPTURE_SCREEN" : CaptureScreenCommand()
+            "CAPTURE_SCREEN" : CaptureScreenCommand(),
+            "DB": DatabaseCommand(),
         }
+        
     def execute(self, command):
         cmd = command["cmd"]
     
@@ -276,4 +279,7 @@ class CommandExecutor:
     def set_variable(self, var_name, token):
         """변수 설정"""
         self.variable_manager.set_variable(var_name, token)
-        
+    
+    def get_db_commander(self, db_name):
+        """DB Commander 가져오기"""
+        return self.variable_manager.get_db_commander(db_name)
