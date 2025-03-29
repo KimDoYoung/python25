@@ -1,6 +1,7 @@
 import sys
 from lib.core.commands.const_command import ConstCommand
 from lib.core.commands.database.database_command import DatabaseCommand
+from lib.core.commands.database.db_commander import DbCommander
 from lib.core.commands.endfunction_command import EndFunctionCommand
 from lib.core.commands.exit_command import ExitCommand
 from lib.core.commands.function_command import FunctionCommand
@@ -283,3 +284,6 @@ class CommandExecutor:
     def get_db_commander(self, db_name):
         """DB Commander 가져오기"""
         return self.variable_manager.get_db_commander(db_name)
+    def set_db_commander(self, db_name, db_commander: DbCommander):
+        """DB Commander 설정"""
+        return self.variable_manager.set_db_commander(db_name, db_commander)
