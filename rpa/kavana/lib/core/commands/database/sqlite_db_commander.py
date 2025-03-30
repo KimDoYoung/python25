@@ -11,11 +11,14 @@ class SqliteDbCommander(DbCommander):
     def connect(self, **kwargs):
         self.path = kwargs.get("path")
         self.conn = sqlite3.connect(self.path)
+        self.conn.row_factory = sqlite3.Row
 
     def query(self, sql):
         cur = self.conn.cursor()
         cur.execute(sql)
-        return cur.fetchall()
+        rows = cur.fetchall()
+        return [dict(row) for row in rows]  
+
 
     def execute(self, sql):
         cur = self.conn.cursor()

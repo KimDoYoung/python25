@@ -16,3 +16,4 @@ my_logs/
 *.log
 dist/
 build/
+*.db

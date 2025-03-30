@@ -3,10 +3,12 @@ from lib.core.commands.database.db_commander import DbCommander
 from lib.core.commands.database.maria_db_commander import MariaDbCommander
 from lib.core.commands.database.postgresql_db_commander import PostgreDbCommander
 from lib.core.commands.database.sqlite_db_commander import SqliteDbCommander
+from lib.core.datatypes.hash_map import HashMap
 from lib.core.exceptions.kavana_exception import KavanaValueError
 from lib.core.expr_evaluator import ExprEvaluator
 from lib.core.token_type import TokenType
-
+from lib.core.datatypes.array import Array
+from lib.core.token_util import TokenUtil
 
 class DatabaseCommand(BaseCommand):
     ''' 데이터베이스 명령어 해석'''
@@ -46,6 +48,20 @@ class DatabaseCommand(BaseCommand):
             if db_commander is None:
                 raise KavanaValueError(f"연결된 데이터베이스가 없습니다. {db_name}")
             result = db_commander.query(**option_values)
+        
+            if "to_var" in option_values:
+                to_var = option_values["to_var"]
+                result_array = Array()  # 빈 배열 생성
+
+                for row in result:  # row: Dict[str, Any]
+                    # Python dict → Kavana HashMap
+                    converted = {
+                        k: TokenUtil.primitive_to_kavana(v) for k, v in row.items()
+                    }
+                    row_map = HashMap(value=converted)
+                    result_array.data.append(row_map)
+
+                executor.set_variable(to_var, result_array)
         else:
             raise KavanaValueError(f"지원하지 않는 데이터베이스 명령어입니다: {sub_command}")
         return
@@ -63,8 +79,8 @@ class DatabaseCommand(BaseCommand):
             raise KavanaValueError(f"지원하지 않는 데이터베이스입니다.(지원:`sqlite`,`postgresql`,`mariadb`): {db_type}")
         
     OPTION_DEFINITIONS = {
-        "type": {"default": "sqlite", "allowed_types": [TokenType.STRING]},
-        "name": {"default": "default", "allowed_types": [TokenType.STRING]},
+        # "type": {"default": "sqlite", "allowed_types": [TokenType.STRING]},
+        # "name": {"default": "default", "allowed_types": [TokenType.STRING]},
         "path": {"required": True, "allowed_types": [TokenType.STRING]},
         "url": {"required": True, "allowed_types": [TokenType.STRING]},
         "sql": {"required": True, "allowed_types": [TokenType.STRING]},
@@ -73,8 +89,8 @@ class DatabaseCommand(BaseCommand):
     # 필요한 키만 추려서 option_map 구성
     def option_map_define(self, *keys):
         option_map = {}
-        option_map["type"] = self.OPTION_DEFINITIONS["type"]
-        option_map["name"] = self.OPTION_DEFINITIONS["name"]
+        # option_map["type"] = self.OPTION_DEFINITIONS["type"]
+        # option_map["name"] = self.OPTION_DEFINITIONS["name"]
         for key in keys:
             option_map[key] = self.OPTION_DEFINITIONS[key]
         return option_map    
@@ -84,25 +100,14 @@ class DatabaseCommand(BaseCommand):
         match (db_type, sub_command):
             case ("sqlite", "CONNECT"):
                 return self.option_map_define("path")
-            case ("postgres", "CONNECT"):
-                return self.option_map_define("url")
-            case ("mariadb", "CONNECT"):
+            case ("postgres", "CONNECT") | ("mariadb", "CONNECT"):
                 return self.option_map_define("url")
             
-            case ("sqlite", "EXECUTE"):
-                return self.option_map_define("sql")
-            case ("postgres", "EXECUTE"):
-                return self.option_map_define("sql")
-            case ("mariadb", "EXECUTE"):
+            case ("sqlite", "EXECUTE") | ("postgres", "EXECUTE") | ("mariadb", "EXECUTE"):
                 return self.option_map_define("sql")
 
-            case ("sqlite", "QUERY"):
+            case ("sqlite", "QUERY") | ("postgres", "QUERY") | ("mariadb", "QUERY"):
                 return self.option_map_define("sql", "to_var")
-            case ("postgres", "QUERY"):
-                return self.option_map_define("sql", "to_var")
-            case ("mariadb", "QUERY"):
-                return self.option_map_define("sql", "to_var")
-            
 
             case _:
                 raise KavanaValueError(f"지원하지 않는 db_type 또는 sub_command: {db_type}, {sub_command}")
