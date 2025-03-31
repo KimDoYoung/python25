@@ -1,64 +1,65 @@
-import re
-from lib.core.command_parser import CommandParser
-from lib.core.command_preprocessor import CommandPreprocessor
 from lib.core.commands.base_command import BaseCommand
 from lib.core.exceptions.kavana_exception import KavanaSyntaxError
 from lib.core.expr_evaluator import ExprEvaluator
 from lib.core.token import Token
-from lib.core.token_type import TokenType
+from lib.core.token_type import TokenType  # 필요 시
 
 class PrintCommand(BaseCommand):
-    """PRINT 명령어 확장: 여러 인자 지원, `{}` 표현식 평가"""
-
     def execute(self, args: list[Token], executor):
         if not args:
-            raise KavanaSyntaxError("PRINT 명령어는 최소 하나의 문자열 인자가 필요합니다.")
+            raise KavanaSyntaxError("PRINT 명령어는 최소 하나 이상의 인자가 필요합니다.")
 
-        filtered_tokens = []
-        for token in args:
-            if token.type == TokenType.COMMA:
+        # 1. 콤마로 분할하여 각 expression 단위로 분리
+        expressions = self._split_expressions(args)
+
+        # 2. 각 expression을 평가
+        evaluator = ExprEvaluator(executor)
+        evaluated_values = []
+        for expr_tokens in expressions:
+            result_token = evaluator.evaluate(expr_tokens)
+            evaluated_values.append(result_token.data.string)
+
+        # 3. 공백으로 join해서 출력
+        print(" ".join(evaluated_values))
+
+    def _split_expressions(self, tokens: list[Token]) -> list[list[Token]]:
+        expressions = []
+        current_expr = []
+
+        # 괄호 깊이 추적
+        paren_count = 0     # ()
+        bracket_count = 0   # []
+        brace_count = 0     # {}
+
+        for token in tokens:
+            tok_type = token.type
+            tok_val = token.data.value
+
+            # 괄호 카운트
+            if tok_val == '(':
+                paren_count += 1
+            elif tok_val == ')':
+                paren_count -= 1
+            elif tok_val == '[':
+                bracket_count += 1
+            elif tok_val == ']':
+                bracket_count -= 1
+            elif tok_val == '{':
+                brace_count += 1
+            elif tok_val == '}':
+                brace_count -= 1
+
+            # 괄호 바깥에서 나오는 콤마만 expression 분리 기준
+            if tok_type == TokenType.COMMA and paren_count == 0 and bracket_count == 0 and brace_count == 0:
+                if current_expr:
+                    expressions.append(current_expr)
+                    current_expr = []
                 continue
-            if token.type != TokenType.STRING:
-                raise KavanaSyntaxError(f"PRINT 인자는 문자열만 허용됩니다. (잘못된 토큰: {token})")
-            filtered_tokens.append(token)
 
-        # ✅ 여러 문자열을 공백으로 연결
-        raw_message = " ".join(token.data.string for token in filtered_tokens)
+            current_expr.append(token)
 
-        # ✅ 문자열 안의 `{}` 표현식 평가
-        message = self._evaluate_message(raw_message, executor)
+        if current_expr:
+            expressions.append(current_expr)
 
-        # ✅ `{{` / `}}` 복원
-        # message = message.replace("__LBRACE__", "{{").replace("__RBRACE__", "}}")
+        return expressions
 
-        print(message)
-
-    def _evaluate_message(self, message: str, executor, allow_recurse=True):
-        """문자열 내 `{}` 표현식을 평가하여 실제 값으로 변환"""
-        def replace_expr(match):
-            expression = match.group(1)  # `{}` 내부 표현식
-            
-            try:
-                # ✅ 문자열을 토큰화하여 ExprEvaluator에 전달
-                ppLines = CommandPreprocessor().preprocess([expression])
-                tokens = CommandParser.tokenize(ppLines[0])
-                evaluator = ExprEvaluator(executor)
-                
-                # ✅ 변수 존재 여부 확인
-                result_token = evaluator.evaluate(tokens)
-                return result_token.data.string
-            except Exception as e:
-                # ✅ 변수 미정의 또는 오류 발생 시 `{}`를 사용하지 않고 `[ERROR]`로 처리
-                return f"[ERROR: {str(e)}]"
-
-        # ✅ `{}` 패턴을 찾아 `ExprEvaluator`를 사용하여 해석
-        message = re.sub(r"\{(.*?)\}", replace_expr, message)
-
-        # ✅ `__LBRACE__`, `__RBRACE__` 복원 (변수 해석 후 다시 `{{`와 `}}`로 원복)
-        # message = message.replace("__LBRACE__", "{{").replace("__RBRACE__", "}}")
-
-        # ✅ 무한 루프 방지를 위해 추가 재평가 제한
-        # if allow_recurse and "{" in message and "}" in message:
-        #     return self._evaluate_message(message, executor, allow_recurse=False)
-
-        return message

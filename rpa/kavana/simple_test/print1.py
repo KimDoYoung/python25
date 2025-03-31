@@ -5,9 +5,10 @@ from lib.core.command_preprocessor import CommandPreprocessor
 # 대입
 script = """
 MAIN
-    SET i = 3
-    SET message = " 번호:{i}"
-    PRINT "{{i}}={i} {message} {{var1}}={var1}" //변수가 없으면 그대로 출력
+    SET i = 1
+    PRINT i
+    PRINT i + 10
+    PRINT "hello", i, f"{i+1}"
 END_MAIN
 """
 #---------------------------
@@ -15,10 +16,15 @@ END_MAIN
 #---------------------------
 script_lines = script.split("\n")
 command_preprocssed_lines = CommandPreprocessor().preprocess(script_lines)
+for line in command_preprocssed_lines:
+    print(line)
 parser = CommandParser()
 parsed_commands = parser.parse(command_preprocssed_lines)
 
 commandExecutor = CommandExecutor()
 
 for command in parsed_commands:
+    print("----------------------")
+    print(command)
     commandExecutor.execute(command)
+    print("----------------------")
