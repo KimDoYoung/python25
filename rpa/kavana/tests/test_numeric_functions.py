@@ -57,10 +57,10 @@ def test_range():
     """RANGE() 함수 테스트"""
     result = NumericFunctions.RANGE(5)
     assert isinstance(result, ArrayToken)
-    assert result.data == Array(0, 1, 2, 3, 4)
+    assert result.data == Array([0, 1, 2, 3, 4])
 
     result = NumericFunctions.RANGE(2, 6)
-    assert result.data == Array(2, 3, 4, 5)
+    assert result.data == Array([2, 3, 4, 5])
 
     result = NumericFunctions.RANGE(1, 10, 2)
-    assert result.data == Array(1, 3, 5, 7, 9)
+    assert result.data == Array([1, 3, 5, 7, 9])

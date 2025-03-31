@@ -215,13 +215,13 @@ class ExprEvaluator:
                     for express in token.element_expresses:
                         element_token = exprEval.evaluate(express)
                         if element_token.type == TokenType.ARRAY: # 2중배열
-                            result_values.append(element_token.data.to_list())
+                            result_values.append(element_token.data.value.copy())
                             token.element_type = element_token.element_type
                         else:
                             result_values.append(element_token)
                             token.element_type = element_token.type
                     token.status = 'Evaluated'
-                    token.data = Array(*result_values)
+                    token.data = Array(result_values)
                 output.append(token)
                 i += 1
                 continue
@@ -317,7 +317,7 @@ class ExprEvaluator:
                         # list + list
                         if a.element_type != b.element_type:
                             raise ExprEvaluationError("배열에는 다른 데이터 타입을 추가할 수 없습니다.", token.line, token.column)
-                        new_list = Array(*(a.data.to_list() + b.data.to_list()))
+                        new_list = Array(a.data.value.copy() + b.data.value.copy())                        
                         result = new_list
                         result_type = TokenType.ARRAY
                     # YmdTime 연산 : Ymd + Integer, Ymd - Integer, Ymd - Ymd
