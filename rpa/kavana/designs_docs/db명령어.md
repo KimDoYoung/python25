@@ -14,7 +14,7 @@ class DbCommander:
         self.in_transaction = False
 
     def begin_transaction(self):
-        self.in_transaction = True
+        self.in_transaction = True  dddd
         self.conn.execute("BEGIN")
 
     def end_transaction(self, commit=True):

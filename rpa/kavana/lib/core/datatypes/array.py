@@ -75,7 +75,7 @@ class Array(KavanaDataType):
             if 0 <= row < len(self.data) and 0 <= col < len(self.data[row]):
                 self.data[row][col] = token
             else:
-                raise IndexError("리스트의 인덱스가 범위를 벗어났습니다")
+                raise KavanaIndexError("리스트의 인덱스가 범위를 벗어났습니다")
 
 
     def length(self):

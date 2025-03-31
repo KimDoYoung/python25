@@ -1,6 +1,7 @@
 import cv2
 import numpy as np
 from lib.core.datatypes.kavana_datatype import KavanaDataType
+from lib.core.exceptions.kavana_exception import KavanaValueError
 
 class Image(KavanaDataType):
     def __init__(self, path: str):
@@ -13,12 +14,12 @@ class Image(KavanaDataType):
         if self.data is None:
             self.data = cv2.imread(self.path, cv2.IMREAD_UNCHANGED)
             if self.data is None:
-                raise ValueError(f"이미지를 불러올 수 없습니다: {self.path}")
+                raise KavanaValueError(f"이미지를 불러올 수 없습니다: {self.path}")
 
     def save(self, save_path: str):
         """이미지 저장"""
         if self.data is None:
-            raise ValueError("저장할 이미지 데이터가 없습니다.")
+            raise KavanaValueError("저장할 이미지 데이터가 없습니다.")
         cv2.imwrite(save_path, self.data)
 
     def compare(self, other: "Image", threshold: float = 0.9) -> bool:

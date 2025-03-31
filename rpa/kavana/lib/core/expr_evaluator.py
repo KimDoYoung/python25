@@ -184,8 +184,6 @@ class ExprEvaluator:
             if token.type == TokenType.IDENTIFIER :
                 func_info = FunctionRegistry.get_function(token.data.value)
                 if func_info is not None:
-                    arg_count = func_info["arg_count"]
-                    # combined_token, i = FunctionParser._func_tokens_to_string(tokens, start_index=i, func=None, arg_count=arg_count)
                     combined_token, i = FunctionParser.make_function_token(tokens, start_index=i)
                     output.append(combined_token)
                     continue
@@ -236,7 +234,6 @@ class ExprEvaluator:
                         evaluated_value_token = exprEval.evaluate(express)
                         if not isinstance(evaluated_value_token.data, KavanaDataType):
                             raise KavanaTypeError(f"HashMap의 값은 KavanaDataType이어야 합니다: {evaluated_value_token.data}")
-                        # evaluated_map[key] = evaluated_value_token.data
                         evaluated_map[key] = evaluated_value_token
 
                     token.status = 'Evaluated'
