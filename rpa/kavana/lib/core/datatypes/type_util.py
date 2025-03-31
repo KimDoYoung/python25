@@ -1,10 +1,4 @@
 from lib.core.datatypes.kavana_datatype import KavanaDataType
-# from lib.core.token import Token
-
-# from typing import TYPE_CHECKING
-# if TYPE_CHECKING:
-#     from lib.core.token import Token
-
 
 def deep_primitive(value):
     if isinstance(value, KavanaDataType):

@@ -6,6 +6,7 @@ from lib.core.commands.database.sqlite_db_commander import SqliteDbCommander
 from lib.core.datatypes.hash_map import HashMap
 from lib.core.exceptions.kavana_exception import KavanaValueError
 from lib.core.expr_evaluator import ExprEvaluator
+from lib.core.token import ArrayToken
 from lib.core.token_type import TokenType
 from lib.core.datatypes.array import Array
 from lib.core.token_util import TokenUtil
@@ -47,7 +48,8 @@ class DatabaseCommand(BaseCommand):
             db_commander = executor.get_db_commander(db_name)
             if db_commander is None:
                 raise KavanaValueError(f"연결된 데이터베이스가 없습니다. {db_name}")
-            result = db_commander.query(**option_values)
+            sql = option_values["sql"]
+            result = db_commander.query(sql)
         
             if "to_var" in option_values:
                 to_var = option_values["to_var"]
@@ -59,9 +61,9 @@ class DatabaseCommand(BaseCommand):
                         k: TokenUtil.primitive_to_kavana(v) for k, v in row.items()
                     }
                     row_map = HashMap(value=converted)
-                    result_array.data.append(row_map)
-
-                executor.set_variable(to_var, result_array)
+                    result_array.append(row_map)
+                result_array_token = ArrayToken(result_array)
+                executor.set_variable(to_var, result_array_token)
         else:
             raise KavanaValueError(f"지원하지 않는 데이터베이스 명령어입니다: {sub_command}")
         return
