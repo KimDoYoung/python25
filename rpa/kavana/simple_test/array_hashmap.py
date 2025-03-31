@@ -3,10 +3,10 @@ from lib.core.datatypes.hash_map import HashMap
 from lib.core.datatypes.kavana_datatype import Integer, String
 
 
-arr = Array(Integer(1), Integer(2), Integer(3))
-assert len(arr.data) == 3
+arr = Array([Integer(1), Integer(2), Integer(3)])
+assert arr.length() == 3
 assert arr.primitive == [1, 2, 3]
-assert isinstance(arr.data[0], Integer)
+assert isinstance(arr.value[0], Integer)
 print (arr.primitive)
 print("OK")
 

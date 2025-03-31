@@ -63,6 +63,8 @@ class DatabaseCommand(BaseCommand):
                     row_map = HashMap(value=converted)
                     result_array.append(row_map)
                 result_array_token = ArrayToken(result_array)
+                result_array_token.element_type = TokenType.HASH_MAP
+                result_array_token.type = TokenType.ARRAY
                 executor.set_variable(to_var, result_array_token)
         else:
             raise KavanaValueError(f"지원하지 않는 데이터베이스 명령어입니다: {sub_command}")

@@ -29,7 +29,7 @@ class PrintCommand(BaseCommand):
         message = self._evaluate_message(raw_message, executor)
 
         # ✅ `{{` / `}}` 복원
-        message = message.replace("__LBRACE__", "{{").replace("__RBRACE__", "}}")
+        # message = message.replace("__LBRACE__", "{{").replace("__RBRACE__", "}}")
 
         print(message)
 
@@ -55,10 +55,10 @@ class PrintCommand(BaseCommand):
         message = re.sub(r"\{(.*?)\}", replace_expr, message)
 
         # ✅ `__LBRACE__`, `__RBRACE__` 복원 (변수 해석 후 다시 `{{`와 `}}`로 원복)
-        message = message.replace("__LBRACE__", "{{").replace("__RBRACE__", "}}")
+        # message = message.replace("__LBRACE__", "{{").replace("__RBRACE__", "}}")
 
         # ✅ 무한 루프 방지를 위해 추가 재평가 제한
-        if allow_recurse and "{" in message and "}" in message:
-            return self._evaluate_message(message, executor, allow_recurse=False)
+        # if allow_recurse and "{" in message and "}" in message:
+        #     return self._evaluate_message(message, executor, allow_recurse=False)
 
         return message
