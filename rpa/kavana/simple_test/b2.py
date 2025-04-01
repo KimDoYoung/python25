@@ -17,7 +17,7 @@ MAIN
     DB execute sql="insert into tasks (title) values ('task2')"
     DB execute sql="insert into tasks (title) values ('task3')"
     DB query sql="select * from tasks order by id desc", to_var="tasks"
-    PRINT "{tasks}"
+    PRINT tasks
 END_MAIN
 """
 #---------------------------

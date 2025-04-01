@@ -100,7 +100,7 @@ class BaseCommand(ABC):
         
         return expresses, i
     
-    def extract_all_options(self, tokens: List[Token], start_idx: int):
+    def extract_all_options0(self, tokens: List[Token], start_idx: int):
         """
         주어진 tokens 리스트에서 key=value 옵션을 모두 추출하는 함수.
         - key는 IDENTIFIER
@@ -130,7 +130,131 @@ class BaseCommand(ABC):
         
         return options, i    
     
+    def extract_all_options(self, tokens: List[Token], start_idx: int):
+        """
+        key=value 옵션들을 ',' 없이도 연속적으로 추출
+        - 다음 토큰이 IDENTIFIER, 그 다음이 ASSIGN(=)이면 새로운 옵션으로 간주
+        """
+        options = {}
+        i = start_idx
+
+        while i < len(tokens):
+            key_token, express_tokens, next_index = self.extract_option1(tokens, i)
+            if key_token is None:
+                break
+
+            key = key_token.data.string.strip().lower()
+            options[key] = {"key_token": key_token, "express": express_tokens}
+            i = next_index
+
+            # 기존에는 여기서 무조건 ','를 기대했음
+            # 이제는 다음 토큰이 IDENTIFIER이고, 그 다음이 '='이면 새로운 옵션으로 간주
+            if i + 1 < len(tokens):
+                next_token = tokens[i]
+                next_next_token = tokens[i + 1]
+
+                if next_token.type == TokenType.IDENTIFIER and next_next_token.type == TokenType.ASSIGN:
+                    continue  # ',' 없이도 다음 옵션으로 인식 → 루프 유지
+                elif next_token.type == TokenType.COMMA:
+                    i += 1  # ',' 건너뛰고 다음 옵션으로
+                    continue
+
+            break  # 다음에 IDENTIFIER= 가 없으면 옵션 추출 종료
+
+        return options, i
+
+
     def extract_option1(self, tokens: list[Token], start_index: int) -> tuple[Token, List[Token], int]:
+        """
+        - key=express 파싱
+        - 괄호 안의 =, , 는 무시
+        - key는 = 앞의 토큰
+        - express는 = 뒤부터 괄호 고려해서 ',' 또는 다음 IDENTIFIER= 또는 끝까지
+        """
+        if start_index >= len(tokens):
+            return None, None, start_index
+
+        # 괄호 스택을 사용해 중첩 추적
+        bracket_stack = []
+        assign_index = -1
+        i = start_index
+
+        # 1. ASSIGN(=) 토큰 찾기 (괄호 밖에서)
+        while i < len(tokens):
+            token = tokens[i]
+
+            if token.type in (TokenType.LEFT_PAREN, TokenType.LEFT_BRACKET):
+                bracket_stack.append(token.type)
+            elif token.type == TokenType.RIGHT_PAREN:
+                if bracket_stack and bracket_stack[-1] == TokenType.LEFT_PAREN:
+                    bracket_stack.pop()
+                else:
+                    raise KavanaSyntaxError("괄호 '(' 와 ')'가 맞지 않습니다.")
+            elif token.type == TokenType.RIGHT_BRACKET:
+                if bracket_stack and bracket_stack[-1] == TokenType.LEFT_BRACKET:
+                    bracket_stack.pop()
+                else:
+                    raise KavanaSyntaxError("괄호 '[' 와 ']'가 맞지 않습니다.")
+            elif token.type == TokenType.ASSIGN and not bracket_stack:
+                assign_index = i
+                break
+
+            i += 1
+
+        if assign_index == -1:
+            raise KavanaSyntaxError("옵션에 '=' 연산자가 없습니다.")
+
+        if assign_index == start_index:
+            raise KavanaSyntaxError("'=' 앞에 key 토큰이 없습니다.")
+
+        key_token = tokens[assign_index - 1]
+        if key_token.type != TokenType.IDENTIFIER:
+            raise KavanaSyntaxError("옵션의 key는 IDENTIFIER 타입이어야 합니다.")
+
+        # 2. express 수집 (괄호 안의 , 는 무시)
+        expresses = []
+        i = assign_index + 1
+        bracket_stack.clear()
+
+        while i < len(tokens):
+            token = tokens[i]
+
+            if token.type in (TokenType.LEFT_PAREN, TokenType.LEFT_BRACKET):
+                bracket_stack.append(token.type)
+            elif token.type == TokenType.RIGHT_PAREN:
+                if bracket_stack and bracket_stack[-1] == TokenType.LEFT_PAREN:
+                    bracket_stack.pop()
+                else:
+                    raise KavanaSyntaxError("괄호 '(' 와 ')'가 맞지 않습니다.")
+            elif token.type == TokenType.RIGHT_BRACKET:
+                if bracket_stack and bracket_stack[-1] == TokenType.LEFT_BRACKET:
+                    bracket_stack.pop()
+                else:
+                    raise KavanaSyntaxError("괄호 '[' 와 ']'가 맞지 않습니다.")
+
+            # ✅ 종료 조건 1: 괄호 밖에서 ',' 만나면 express 종료
+            if token.type == TokenType.COMMA and not bracket_stack:
+                i += 1
+                break
+
+            # ✅ 종료 조건 2: 괄호 밖에서 다음 토큰이 IDENTIFIER = 형태이면 express 종료
+            if not bracket_stack and i + 1 < len(tokens):
+                next_token = tokens[i]
+                next_next_token = tokens[i + 1]
+                if next_token.type == TokenType.IDENTIFIER and next_next_token.type == TokenType.ASSIGN:
+                    break
+
+            expresses.append(token)
+            i += 1
+
+        if not expresses:
+            raise KavanaSyntaxError(f"옵션 '{key_token.data.string}'의 값이 없습니다.")
+
+        return key_token, expresses, i
+
+
+
+    def extract_option1_0(self, tokens: list[Token], start_index: int) -> tuple[Token, List[Token], int]:
         """
         - key=express 파싱
         - 괄호 안의 =, , 는 무시
@@ -210,7 +334,6 @@ class BaseCommand(ABC):
             raise KavanaSyntaxError(f"옵션 '{key_token.data.string}'의 값이 없습니다.")
 
         return key_token, expresses, i
-
 
     def parse_and_validate_options(self, options: dict, option_map: dict, executor) -> dict:
         """
