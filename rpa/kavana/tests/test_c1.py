@@ -31,7 +31,7 @@ def test_script_execution(capfd):
             SET count_sum = count_sum + count + 1
             set count = count + 1
         END_WHILE
-        PRINT "{sum} {count_sum} {count}"
+        PRINT f"{sum} {count_sum} {count}"
     end_main
     """
 

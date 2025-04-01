@@ -13,7 +13,7 @@ def test_function_execution(capfd):
             return a + b + c - 10
         END_FUNCTION
         SET d = plus(1, 2) + 12
-        print "{d}"
+        print f"{d}"
     END_MAIN
     """
 

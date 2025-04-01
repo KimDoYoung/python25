@@ -9,11 +9,11 @@ def test_script_exception_handling(capfd):
     MAIN
         for i = 1 to 10
             if i == 3
-                raise "예외 발생: i는 {i}입니다."
+                raise f"예외 발생: i는 {i}입니다."
             end_if
         end_for
         ON_EXCEPTION
-            print ">>> {$exception_message} exit code: {$exit_code}"
+            print f">>> {$exception_message} exit code: {$exit_code}"
         END_EXCEPTION
     END_MAIN
     """

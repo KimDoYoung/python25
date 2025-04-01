@@ -418,6 +418,8 @@ class ExprEvaluator:
                     element_token = list_or_map_var_token.data.get(row,col)
                 elif list_or_map_var_token.type == TokenType.HASH_MAP:
                     element_token = list_or_map_var_token.data.get(row)
+                    if element_token.type == TokenType.ARRAY and col is not None:
+                        element_token = element_token.data.get(col)
                 else:
                     ExprEvaluationError(f"리스트 또는 Map 변수가 없거나 타입이 올바르지 않습니다: {var_name}", token.line, token.column)
                 stack.append(element_token)

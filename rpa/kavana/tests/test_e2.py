@@ -18,7 +18,7 @@ def test_array_and_hashmap_multiline_output(capsys):
             "c": 3
         }
         SET s = map1["a"]
-        PRINT "{list1}  {list2} {s}"
+        PRINT f"{list1}  {list2} {s}"
     END_MAIN
     """
 

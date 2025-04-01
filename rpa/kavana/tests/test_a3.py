@@ -11,7 +11,7 @@ from lib.core.command_preprocessor import CommandPreprocessor
             return a + b + c - 10
         END_FUNCTION
         SET d = plus(1, 2)
-        print "{d}"
+        print f"{d}"
     END_MAIN
     """, "18\n")  # ✅ 예상 출력값
 ])

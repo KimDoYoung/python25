@@ -9,7 +9,7 @@ MAIN
     SET f = 12.34
     SET s = "Hello"
     SET b = not True
-    PRINT "{i} {f} {s} {b}"
+    PRINT f"{i} {f} {s} {b}"
 END_MAIN
 """
 #---------------------------

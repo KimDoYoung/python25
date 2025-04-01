@@ -21,7 +21,7 @@ def test_hashmap_indexing_and_concat_output(capsys):
         SET a = "a"
         SET list = map4[a]
         SET s = map1[1] + "111" + map4["c"]
-        PRINT "{s}"
+        PRINT f"{s}"
     END_MAIN
     """
 

@@ -10,7 +10,7 @@ from lib.core.command_preprocessor import CommandPreprocessor
         SET f = 12.34
         SET s = "Hello"
         SET b = not True
-        PRINT "{i} {f} {s} {b}"
+        PRINT f"{i} {f} {s} {b}"
     END_MAIN
     """, "900 12.34 Hello False\n")  # ✅ 예상 출력값
 ])

@@ -7,8 +7,8 @@ def test_script_execution(capfd):
     script = """
     MAIN
         SET name="홍길동"
-        SET hello = "안녕하세요, {name}님!"
-        PRINT "{hello}", "HI" "ABC"
+        SET hello = f"안녕하세요, {name}님!"
+        PRINT f"{hello}", "HI", "ABC"
     END_MAIN
     """
 

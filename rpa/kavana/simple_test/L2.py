@@ -12,7 +12,7 @@ script = """
         SET win1 = Window("title1")
         SET img1 = Image("alert.png")
         SET app1 = Application("notepad.exe")
-        print "{p}, {rt}, {rg}, {win1}, {img1}"
+        print f"{p}, {rt}, {rg}, {win1}, {img1}"
     end_main
 """
 #---------------------------

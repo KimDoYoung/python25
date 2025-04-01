@@ -12,7 +12,7 @@ def test_script_execution():
         Set d2 = YmdTime(2025, 3, 4, 10, 20, 30)
         Set d3 = d1 + 3
         set diff = d3 - d2
-        print "{d1}, {d2}, {d3}, {diff}"
+        print f"{d1}, {d2}, {d3}, {diff}"
 
     end_main
     """
