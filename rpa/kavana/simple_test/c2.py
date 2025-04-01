@@ -18,7 +18,7 @@ main
         end_if
     end_for
     for s in ["갑돌이", "이몽룡", "홍길동"]
-        print f"{s}"
+        print s
     end_for
 end_main
 """

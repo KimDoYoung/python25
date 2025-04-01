@@ -1,6 +1,7 @@
 from lib.core.commands.base_command import BaseCommand
 from lib.core.datatypes.kavana_datatype import Integer, String
 from lib.core.exceptions.kavana_exception import KavanaException
+from lib.core.expr_evaluator import ExprEvaluator
 from lib.core.token import Token
 from lib.core.token_type import TokenType
 
@@ -25,16 +26,16 @@ class RaiseCommand(BaseCommand):
             if args[0].type == TokenType.INTEGER:
                 exit_code = args[0].data.value  # 메시지 없이 종료 코드만 지정
             else:
-                exception_message = args[0].data.string  # 메시지만 지정
+                exception_message = ExprEvaluator(executor=executor).evaluate([args[0]]).data.string
         elif len(args) == 2:
-            exception_message = args[0].data.string
+            exception_message = ExprEvaluator(executor=executor).evaluate([args[0]]).data.string
             exit_code_token = args[1]
             if exit_code_token.type == TokenType.INTEGER:
                 exit_code = exit_code_token.data.value
             else:
                 raise KavanaException(f"EXIT CODE는 정수형이어야 합니다. (잘못된 값: {exit_code_token.data.string})")
         elif len(args) == 3 and args[1].type == TokenType.COMMA:
-            exception_message = args[0].data.string
+            exception_message = ExprEvaluator(executor=executor).evaluate([args[0]]).data.string
             exit_code_token = args[2]
             if exit_code_token.type == TokenType.INTEGER:
                 exit_code = exit_code_token.data.value
