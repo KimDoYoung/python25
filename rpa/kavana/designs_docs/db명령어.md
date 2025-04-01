@@ -1,6 +1,7 @@
 # DB 명령어
 
 ## 설계
+
 1. VariableManager에 DatabaseRepository객체를 member로
 2. DatabaseRepository는 {name: DbCommander,...} dict를 갖고 있음.
 3. DbCommander는 추상 class
@@ -31,8 +32,10 @@ class DbCommander:
             self.conn.commit()
 
 ```
+
 - sqlite3을 기본으로 제공합니다.
 - DB_CONNECT name="default" type="SQLite3", path=" ",
+
 ```
 DB CONNECT name="main", path="main.db" 
 DB CONNECT name="log", path="log.db"
@@ -48,11 +51,16 @@ db close name="main"
 db close name="log"
 
 ```
+
 ### db connect
+
 - db와 연결한다
 - **문법**
+
 > db connect [name="default", path="sqlite",] type="postgres", host="db.company.com", port=5432, user="admin", password="pass", dbname="corp"
+
 - **사용예**
+
 ```kvs
 db connect path="mydb.sqlite3"
 db connect name="mydb" path="mydb.db"
@@ -62,10 +70,10 @@ db connect type="postgres", host="db.company.com", port=5432, user="admin", pass
 ### db query, execute, insert, update
 
 ### 트랜잭션
+
 ```kvs
 db begin name="main"
 db execute ...
 db execute ...
 db rollback name="main"   # 예외 시 롤백
 ```
-
