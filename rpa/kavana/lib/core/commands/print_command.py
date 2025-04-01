@@ -1,4 +1,5 @@
 from lib.core.commands.base_command import BaseCommand
+from lib.core.datatypes.kavana_datatype import KavanaDataType
 from lib.core.exceptions.kavana_exception import KavanaSyntaxError
 from lib.core.expr_evaluator import ExprEvaluator
 from lib.core.token import Token
@@ -17,7 +18,10 @@ class PrintCommand(BaseCommand):
         evaluated_values = []
         for expr_tokens in expressions:
             result_token = evaluator.evaluate(expr_tokens)
-            evaluated_values.append(result_token.data.string)
+            if isinstance(result_token, Token):
+                evaluated_values.append(result_token.data.string)
+            elif isinstance(result_token, KavanaDataType):
+                evaluated_values.append(result_token.string)
 
         # 3. 공백으로 join해서 출력
         print(" ".join(evaluated_values))

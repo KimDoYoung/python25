@@ -18,7 +18,7 @@ MAIN
     DB execute sql="insert into tasks (title) values ('task3')"
     DB query sql="select * from tasks order by id desc", to_var="tasks"
     PRINT "길이:", Length(tasks)
-    PRINT tasks[0] //TODO : 인쇄가 안됨
+    PRINT tasks[0] 
     DB query sql="select count(*) as count from tasks", to_var="result"
     PRINT  result[0]["count"]
 END_MAIN
