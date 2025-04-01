@@ -6,7 +6,7 @@ from lib.core.commands.database.sqlite_db_commander import SqliteDbCommander
 from lib.core.datatypes.hash_map import HashMap
 from lib.core.exceptions.kavana_exception import KavanaValueError
 from lib.core.expr_evaluator import ExprEvaluator
-from lib.core.token import ArrayToken
+from lib.core.token import ArrayToken, HashMapToken
 from lib.core.token_type import TokenType
 from lib.core.datatypes.array import Array
 from lib.core.token_util import TokenUtil
@@ -61,7 +61,8 @@ class DatabaseCommand(BaseCommand):
                         k: TokenUtil.primitive_to_kavana(v) for k, v in row.items()
                     }
                     row_map = HashMap(value=converted)
-                    result_array.append(row_map)
+                    hashmap_token = HashMapToken(row_map)
+                    result_array.append(hashmap_token)
                 result_array_token = ArrayToken(result_array)
                 result_array_token.element_type = TokenType.HASH_MAP
                 result_array_token.type = TokenType.ARRAY
