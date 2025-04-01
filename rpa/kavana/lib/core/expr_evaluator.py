@@ -1,9 +1,11 @@
+import codecs
 import re
 import operator
 from typing import List, Tuple, Union
 from datetime import datetime, timedelta
 from lib.core.command_parser import CommandParser
 
+from lib.core.command_preprocessor import CommandPreprocessor
 from lib.core.datatypes.application import Application
 from lib.core.datatypes.hash_map import HashMap
 from lib.core.datatypes.image import Image
@@ -20,7 +22,7 @@ from lib.core.token_type import TokenType
 from lib.core.function_executor import FunctionExecutor
 from lib.core.function_parser import FunctionParser
 from lib.core.function_registry import FunctionRegistry
-from lib.core.token import ArrayToken, AccessIndexToken, Token
+from lib.core.token import ArrayToken, AccessIndexToken, StringToken, Token
 from lib.core.token_util import TokenUtil
 from lib.core.variable_manager import VariableManager
 
@@ -134,12 +136,12 @@ class ExprEvaluator:
 
         except Exception as e:
             # ✅ 기타 예외는 ExprEvaluationError로 변환하여 감싸기
-            raise ExprEvaluationError(f"Error evaluate express: {str(e)}")        
+            raise ExprEvaluationError(f"표현식을 해석할 때 오류발생: {str(e)}")        
 
     def get_token_type(self, value) -> TokenType:
         """value 로 해당하는 토큰타입을 반환"""
         if not isinstance(value, KavanaDataType):
-            raise ExprEvaluationError(f"Unsupported KavanaDataType: {value}")
+            raise ExprEvaluationError(f"지원하지 않는 kavana 데이터타입입니다: {value}")
         
         if value is None:
             return TokenType.NONE
@@ -279,16 +281,9 @@ class ExprEvaluator:
         for token in tokens:
 
             if token.type == TokenType.STRING:
-                # ✅ 문자열일 경우, PrintCommand._evaluate_message()를 한 번 더 실행하여 `{}` 해석, ex: "{name}님" -> "홍길동님"
-                if '{' in token.data.string:                        
-                    print_cmd = PrintCommand()
-                    evaluated_string = print_cmd._evaluate_message(token.data.string, self.executor)
-                    
-                    # ✅ 변환된 값을 새로운 STRING 토큰으로 저장
-                    new_token = Token(data=String(evaluated_string), type=TokenType.STRING, line=token.line, column=token.column)
-                    stack.append(new_token)
-                else:
-                    stack.append(token)
+                applied_token = self.apply_prefix_token(token)
+                stack.append(applied_token)  # ✅ 문자열 토큰은 그대로 스택에 추가                  
+
             elif token.type in self.data_token_type:  # ✅ Kavana 데이터 타입이면 그대로 스택에 추가
                 stack.append(token)
             
@@ -432,3 +427,43 @@ class ExprEvaluator:
                 raise ExprEvaluationError(f"지원하지 않는 Token타입입니다.: {token.data.value} {token.type}", token.line, token.column)  
 
         return stack[0]
+
+    def apply_prefix_token(self, token: StringToken) -> StringToken:
+        ''' stringtoken을 평가하여 결과를 반환 '''
+        string_value = token.data.value
+
+        if token.is_raw:
+            evaluated = string_value
+        elif token.is_formatted:
+            evaluated = self._evaluate_fstring(string_value)
+        else:
+            # evaluated = self.safe_decode_unicode_escapes(string_value)
+            evaluated = TokenUtil.decode_escaped_string(string_value)
+
+        return Token(
+            data=String(evaluated),
+            type=TokenType.STRING,
+            line=token.line,
+            column=token.column
+        )
+    
+    def safe_decode_unicode_escapes(self, s: str) -> str:
+        try:
+            return codecs.decode(s, 'unicode_escape')
+        except Exception:
+            return s 
+           
+    def _evaluate_fstring(self, message: str, allow_recurse=True) -> str:
+        """f-string 내의 {} 표현식을 평가하여 실제 값으로 변환"""
+        def replace_expr(match):
+            expression = match.group(1)  # `{}` 내부 표현식
+
+            try:
+                ppLines = CommandPreprocessor().preprocess([expression])
+                tokens = CommandParser.tokenize(ppLines[0])
+                result_token = self.evaluate(tokens)
+                return result_token.data.string
+            except Exception as e:
+                return f"[ERROR: {str(e)}]"
+
+        return re.sub(r"\{(.*?)\}", replace_expr, message)    

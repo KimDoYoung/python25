@@ -6,9 +6,10 @@ from lib.core.command_preprocessor import CommandPreprocessor
 script = """
 MAIN
     SET i = 1
+    PRINT f"i+1는 {i+1}입니다."
     PRINT i
     PRINT i + 10
-    PRINT "hello", i, f"{i+1}"
+    PRINT "홍길동", i, f"{i+1}"
 END_MAIN
 """
 #---------------------------

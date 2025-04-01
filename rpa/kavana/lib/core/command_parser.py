@@ -279,33 +279,6 @@ class CommandParser:
                 })
 
     @staticmethod
-    def decode_escaped_string(s: str) -> str:
-        ESCAPE_MAP = {
-            "n": "\n",
-            "t": "\t",
-            "r": "\r",
-            "b": "\b",
-            "f": "\f",
-            "v": "\v",
-            "\\": "\\",
-            '"': '"',
-        }        
-        result = []
-        i = 0
-        while i < len(s):
-            if s[i] == "\\":
-                if i + 1 >= len(s):
-                    raise ValueError("잘못된 문자열: 단독 백슬래시(`\\`)가 포함될 수 없습니다.")
-
-                escape_seq = s[i + 1]
-                result.append(ESCAPE_MAP.get(escape_seq, "\\" + escape_seq))
-                i += 2
-            else:
-                result.append(s[i])
-                i += 1
-        return "".join(result)
-
-    @staticmethod
     def tokenize(ppLine: PreprocessedLine) -> list:
         """한 줄을 `Token` 또는 `StringToken` 객체 리스트로 변환"""
 
@@ -450,7 +423,7 @@ class CommandParser:
         if is_raw:
             decoded = inner
         else:
-            decoded = CommandParser.decode_escaped_string(inner)
+            decoded = TokenUtil.decode_escaped_string(inner)
 
         expressions = []
         if is_formatted:

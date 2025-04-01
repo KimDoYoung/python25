@@ -141,7 +141,32 @@ class TokenUtil:
             i += 1
         return key_token, expresses, i    
 
+    @staticmethod
+    def decode_escaped_string(s: str) -> str:
+        ESCAPE_MAP = {
+            "n": "\n",
+            "t": "\t",
+            "r": "\r",
+            "b": "\b",
+            "f": "\f",
+            "v": "\v",
+            "\\": "\\",
+            '"': '"',
+        }        
+        result = []
+        i = 0
+        while i < len(s):
+            if s[i] == "\\":
+                if i + 1 >= len(s):
+                    raise ValueError("잘못된 문자열: 단독 백슬래시(`\\`)가 포함될 수 없습니다.")
 
+                escape_seq = s[i + 1]
+                result.append(ESCAPE_MAP.get(escape_seq, "\\" + escape_seq))
+                i += 2
+            else:
+                result.append(s[i])
+                i += 1
+        return "".join(result)
     
     
     
