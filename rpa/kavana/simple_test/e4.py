@@ -9,7 +9,7 @@ MAIN
     set map2 = { "name": "Alice2", "age": 32 }
     set map3 = { "name": "Alice3", "age": 33 }
     set list = [map1, map2, map3]
-    PRINT "{map1}"
+    PRINT list[0]["name"]
 END_MAIN
 """
 #---------------------------

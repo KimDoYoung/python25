@@ -406,25 +406,34 @@ class ExprEvaluator:
 
             elif token.type in { TokenType.ARRAY, TokenType.HASH_MAP }:
                 stack.append(token)
-            elif token.type == TokenType.ACCESS_INDEX: # list[express] 또는 map[express] 형태
+            elif token.type == TokenType.ACCESS_INDEX: 
                 var_name = token.data.value
-                # row,col 값 계산
-                row = ExprEvaluator(self.executor).evaluate(token.row_express).data.value
-                evaluator = ExprEvaluator(self.executor).evaluate(token.column_express)
-                col = None if evaluator is None else evaluator.data.value
-                # list token 가져오기
-                list_or_map_var_token = self.variable_manager.get_variable(var_name)
-                if list_or_map_var_token.type == TokenType.ARRAY:    
-                    element_token = list_or_map_var_token.data.get(row,col)
-                elif list_or_map_var_token.type == TokenType.HASH_MAP:
-                    element_token = list_or_map_var_token.data.get(row)
-                    if element_token.type == TokenType.ARRAY and col is not None:
-                        element_token = element_token.data.get(col)
-                else:
-                    ExprEvaluationError(f"리스트 또는 Map 변수가 없거나 타입이 올바르지 않습니다: {var_name}", token.line, token.column)
-                stack.append(element_token)
 
-            
+                # row, col 평가
+                expr_evaluator = ExprEvaluator(self.executor)
+                row = expr_evaluator.evaluate(token.row_express).data.value
+                col = None
+                if token.column_express:
+                    col_eval = expr_evaluator.evaluate(token.column_express)
+                    col = col_eval.data.value
+
+                # 변수 조회
+                container_token = self.variable_manager.get_variable(var_name)
+                if container_token.type not in (TokenType.ARRAY, TokenType.HASH_MAP):
+                    raise ExprEvaluationError(f"지원하지 않는 타입입니다. 인덱스는 배열 또는 맵에서만 지원합니다.: {var_name}", token.line, token.column)
+
+                # 1차 인덱싱
+                element_token = container_token.data.get(row)
+
+                # 2차 인덱싱이 존재할 경우
+                if col is not None:
+                    if element_token.type == TokenType.ARRAY:
+                        element_token = element_token.data.get(col)
+                    elif element_token.type == TokenType.HASH_MAP:
+                        element_token = element_token.data.get(col)
+                    else:
+                        raise KavanaTypeError("두 번째 인덱싱은 ARRAY 또는 HASH_MAP에서만 가능합니다.")
+                stack.append(element_token)
             else:
                 raise ExprEvaluationError(f"지원하지 않는 Token타입입니다.: {token.data.value} {token.type}", token.line, token.column)  
 

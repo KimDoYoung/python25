@@ -29,4 +29,5 @@ def deep_token_string(value):
     elif isinstance(value, dict):
         return "{" + ", ".join(f"{k}: {deep_token_string(v)}" for k, v in value.items()) + "}"
     else:
-        return str(value)
+        # return str(value)
+        return deep_string(value)
