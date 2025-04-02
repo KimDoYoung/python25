@@ -217,7 +217,8 @@ class ExprEvaluator:
                     for express in token.element_expresses:
                         element_token = exprEval.evaluate(express)
                         if element_token.type == TokenType.ARRAY: # 2중배열
-                            result_values.append(element_token.data.value.copy())
+                            # result_values.append(element_token.data.value.copy())
+                            result_values.append(element_token)
                             token.element_type = element_token.element_type
                         else:
                             result_values.append(element_token)
@@ -427,7 +428,7 @@ class ExprEvaluator:
 
                 # 2차 인덱싱이 존재할 경우
                 if col is not None:
-                    if element_token.type == TokenType.ARRAY:
+                    if  element_token.type == TokenType.ARRAY:
                         element_token = element_token.data.get(col)
                     elif element_token.type == TokenType.HASH_MAP:
                         element_token = element_token.data.get(col)

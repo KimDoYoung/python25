@@ -545,8 +545,6 @@ class CommandParser:
     def make_access_index_token(tokens: List[Token], start_index: int) -> Tuple[AccessIndexToken, int]:
         var_name = tokens[start_index].data.value
         i = start_index + 1  # '[' 시작 위치
-        # end_idx = CommandParser.find_matching_bracket(tokens, i)
-        # row_sub, col_sub, pos = CommandParser.extract_row_column_expresses(tokens, i, end_idx)
         end_idx = CommandParser.find_matching_bracket_for_access_index_token(tokens, i)
         row_sub, col_sub, pos = CommandParser.extract_row_column_expresses2(tokens, i, end_idx)
 
@@ -635,58 +633,6 @@ class CommandParser:
         raise CommandParserError("리스트 인덱싱의 괄호가 올바르게 닫히지 않았습니다.", tokens[start_idx].line, tokens[start_idx].column)
 
 
-    @staticmethod
-    def extract_row_column_expresses(tokens: List[Token], start_idx: int, end_idx: int) -> Tuple[List[Token], List[Token], int]:
-        ''' 
-        리스트 접근 표현식을 파싱하여 row_tokens, column_tokens, 마지막 index를 추출하는 함수.
-        
-        tokens[start_idx]는 반드시 LEFT_BRACKET ('[') 이어야 하며,
-        COMMA (',')가 나오면 row와 column을 구분한다.
-        
-        `end_idx`를 사용하여 탐색 범위를 제한할 수 있도록 수정.
-        '''
-        
-        if tokens[start_idx].type != TokenType.LEFT_BRACKET:
-            raise CommandParserError("리스트 접근 표현식은 반드시 '['로 시작해야 합니다.", tokens[start_idx].line, tokens[start_idx].column)
-
-        row_tokens = []
-        column_tokens = []
-        i = start_idx + 1  # '[' 다음부터 시작
-        count_bracket = 1  # 처음 '['을 만났으므로 1로 시작
-        is_row = True  # 처음에는 row를 채움
-
-        while i <= end_idx:  # 🔥 end_idx까지만 탐색하도록 수정
-            token = tokens[i]
-
-            # 괄호 개수 카운팅
-            if token.type == TokenType.LEFT_BRACKET:
-                count_bracket += 1
-            elif token.type == TokenType.RIGHT_BRACKET:
-                count_bracket -= 1
-
-            # ','를 만나면 column_tokens로 전환
-            if token.type == TokenType.COMMA and count_bracket == 1:
-                is_row = False
-            elif token.type == TokenType.RIGHT_BRACKET and count_bracket == 0:
-                break
-            else:
-                if is_row:
-                    row_tokens.append(token)
-                else:
-                    column_tokens.append(token)
-
-            i += 1
-
-        # 괄호가 제대로 닫히지 않았는지 검사
-        if count_bracket != 0:
-            raise CommandParserError("리스트 인덱싱의 괄호가 올바르게 닫히지 않았습니다.", tokens[i].line, tokens[i].column)
-
-        if len(row_tokens) == 0:
-            raise CommandParserError("리스트 인덱스의 첫 번째 값(row)이 비어 있습니다.", tokens[start_idx].line, tokens[start_idx].column)
-
-        return row_tokens, column_tokens, i
-
-#-----------------------------------------------------------------
     @staticmethod
     def find_matching_bracket_for_access_index_token(tokens: List[Token], start_idx: int) -> int:
         """
