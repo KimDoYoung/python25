@@ -13,7 +13,6 @@ from lib.core.token_type import TokenType
 class RaiseCommand(BaseCommand):
     def execute(self, args: list[Token], executor):
         from lib.core.command_parser import CommandParser
-        from lib.core.command_preprocessor import CommandPreprocessor
         from lib.core.command_executor import CommandExecutor
         from lib.core.exception_registry import ExceptionRegistry
         from lib.core.commands.print_command import PrintCommand

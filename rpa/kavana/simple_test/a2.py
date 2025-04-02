@@ -9,7 +9,7 @@ MAIN
     SET a = 10
     // for문
     FOR i = 1 TO a STEP 2
-        PRINT "{i}"
+        PRINT i
     END_FOR
 
     // if문
@@ -19,7 +19,7 @@ MAIN
     
     // while문
     WHILE a > 0
-        PRINT "{a}"
+        PRINT f"{a}"
         SET a = a - 1
     END_WHILE 
     

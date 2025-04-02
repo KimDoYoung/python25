@@ -7,7 +7,7 @@ script = """
 MAIN
     SET s = "ABC"
     SET b = s == "ABC"
-    PRINT "{b}"
+    PRINT f"{b}"
 END_MAIN
 """
 #---------------------------

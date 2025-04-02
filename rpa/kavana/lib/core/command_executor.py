@@ -141,7 +141,10 @@ class CommandExecutor:
                 for t in iterable:
                     #TODO iterable이 Integer가 아닌경우
                     # loop_var_token = Token(data=Integer(t.data.value), type=TokenType.INTEGER)
-                    loop_var_token = Token(data=t.data, type=t.type)
+                    if isinstance(t, int):
+                        loop_var_token = Token(data=Integer(t), type=TokenType.INTEGER)
+                    elif isinstance(t, str):
+                        loop_var_token = StringToken(data=String(t), type=TokenType.STRING)
                     self.variable_manager.set_variable(loop_var_name, loop_var_token)
                     try:
                         for sub_command in command["body"][1:]:
@@ -209,7 +212,7 @@ class CommandExecutor:
                 return i
         return -1
     def parse_for_in_args(self, args: list[Token]):
-        """FOR 루프에서 초기값, 최대값, STEP을 파싱 (조건식과 수식 지원)"""
+        """FOR IN 루프에서 변수명과 리스트를 파싱"""
         in_index = self.find_index(args, TokenType.IN)
         if in_index == -1:
             raise CommandExecutionError("FOR 문에는 'IN'이 필요합니다.", args[0].line, args[0].column)
@@ -219,6 +222,7 @@ class CommandExecutor:
         if list_token.type != TokenType.ARRAY:
             raise CommandExecutionError("FOR 문의 IN 다음은 리스트여야 합니다.", args[0].line, args[0].column)
         iterable = list_token.data.primitive
+        # iterable = list_token.data
         return loop_var.data.value, iterable
 
 
