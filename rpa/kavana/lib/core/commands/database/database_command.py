@@ -110,6 +110,7 @@ class DatabaseCommand(BaseCommand):
 
         try:
             if sub_command == "CONNECT":
+                executor.log_command("INFO", f"{db_type} {db_name} 데이터베이스 연결")
                 self._connect_db(db_type, db_name, option_values, executor)
 
             elif sub_command in ("EXECUTE", "QUERY", "CLOSE", "BEGIN_TRANSACTION", "COMMIT", "ROLLBACK"):
@@ -117,18 +118,24 @@ class DatabaseCommand(BaseCommand):
 
                 match sub_command:
                     case "EXECUTE":
+                        executor.log_command("INFO", f"{db_name} : Execute 수행 sql : [{option_values["sql"]}]")
                         db_commander.execute(option_values["sql"])
                     case "QUERY":
+                        executor.log_command("INFO", f"{db_name} : Query 수행  sql : [{option_values["sql"]}]")
                         result = db_commander.query(option_values["sql"])
                         if "to_var" in option_values:
                             self._store_query_result(result, option_values["to_var"], executor)
                     case "CLOSE":
+                        executor.log_command("INFO", f"{db_name} 데이터베이스 연결 종료")
                         db_commander.close()
                     case "BEGIN_TRANSACTION":
+                        executor.log_command("INFO", f"{db_name} 데이터베이스 트랜잭션 시작")
                         db_commander.begin_transaction()
                     case "COMMIT":
+                        executor.log_command("INFO", f"{db_name} COMMIT")
                         db_commander.commit()
                     case "ROLLBACK":
+                        executor.log_command("INFO", f"{db_name} ROLLBACK")
                         db_commander.rollback()
 
             else:
