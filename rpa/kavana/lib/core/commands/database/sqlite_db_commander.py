@@ -9,11 +9,14 @@ class SqliteDbCommander(DbCommander):
         self.in_transaction = False
 
     def connect(self, **kwargs):
+        """sqlite3.connect(path)"""
+        if self.conn:
+            self.conn.close()
         self.path = kwargs.get("path")
         self.conn = sqlite3.connect(self.path)
         self.conn.row_factory = sqlite3.Row
 
-    def query(self, sql):
+    def query(self, sql):            
         cur = self.conn.cursor()
         cur.execute(sql)
         rows = cur.fetchall()
@@ -41,4 +44,3 @@ class SqliteDbCommander(DbCommander):
     def close(self):
         if self.conn:
             self.conn.close()
-            print(f"[DB 연결 종료] {self.path}")

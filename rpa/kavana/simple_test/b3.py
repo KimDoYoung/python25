@@ -5,23 +5,17 @@ from lib.core.command_preprocessor import CommandPreprocessor
 # 대입
 script = """
 MAIN
-    DB connect path="test1.db" 
-    db execute sql=\"\"\"
-    CREATE TABLE IF NOT EXISTS tasks (
-        id INTEGER PRIMARY KEY AUTOINCREMENT,
-        title TEXT,
-        done INTEGER DEFAULT 0
-    )
-    \"\"\"    
-    DB execute sql="insert into tasks (title) values ('task1')"
-    DB execute sql="insert into tasks (title) values ('task2')"
-    DB execute sql="insert into tasks (title) values ('task3')"
-    DB query sql="select * from tasks order by id desc", to_var="tasks"
-    PRINT "길이:", Length(tasks)
-    PRINT tasks[0] 
-    DB query sql="select count(*) as count from tasks", to_var="result"
-    PRINT  result[0]["count"]
-    DB close name="default"
+    DB CONNECT path="test1.db" 
+    DB BEGIN_TRANSACTION name="default"
+    DB EXECUTE sql="insert into tasks (title) values ('task1')"
+    DB EXECUTE sql="insert into tasks1 (title) values ('task2')"
+    DB COMMIT name="default"
+
+    ON_EXCEPTION
+        PRINT f"예외 발생: {$exception_message} (exit code: {$exit_code})"
+        DB ROLLBACK name="default"
+        DB CLOSE name="default"
+    END_EXCEPTION
 END_MAIN
 """
 #---------------------------

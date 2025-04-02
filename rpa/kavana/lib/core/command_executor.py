@@ -24,7 +24,7 @@ from lib.core.commands.set_command import SetCommand
 from lib.core.datatypes.kavana_datatype import Integer, String
 from lib.core.exceptions.kavana_exception import BreakException, CommandExecutionError, ContinueException
 from lib.core.expr_evaluator import ExprEvaluator
-from lib.core.token import Token
+from lib.core.token import StringToken, Token
 from lib.core.token_type import TokenType
 from lib.core.token_util import TokenUtil
 from lib.core.variable_manager import VariableManager
@@ -257,7 +257,7 @@ class CommandExecutor:
 
         log_command = self.command_map.get(f"LOG_{level.upper()}")
         if log_command:
-            message_token = Token(data=String(message), type=TokenType.STRING)
+            message_token = StringToken(data=String(message), type=TokenType.STRING)
             log_command.execute([message_token], self)
         else:
             raise RuntimeError(f"로그 명령어 실행 실패: LOG_{level.upper()}")
@@ -266,7 +266,7 @@ class CommandExecutor:
         """예외 발생을 위한 헬퍼 함수"""
         raise_command = self.command_map.get("RAISE")
         if raise_command:
-            tokenMsg = Token(data=String(message), type=TokenType.STRING)
+            tokenMsg = StringToken(data=String(message), type=TokenType.STRING)
             tokenErrorCode = Token(data=Integer(1), type=TokenType.INTEGER)
             raise_command.execute([tokenMsg, tokenErrorCode], self)
         else:
