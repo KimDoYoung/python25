@@ -21,7 +21,7 @@ from lib.core.commands.rpa.mouse_move_command import MouseMoveCommand
 from lib.core.commands.rpa.put_text_command import PutTextCommand
 from lib.core.commands.rpa.wait_command import WaitCommand
 from lib.core.commands.set_command import SetCommand
-from lib.core.datatypes.kavana_datatype import Integer, String
+from lib.core.datatypes.kavana_datatype import Float, Integer, String
 from lib.core.exceptions.kavana_exception import BreakException, CommandExecutionError, ContinueException, KavanaException
 from lib.core.expr_evaluator import ExprEvaluator
 from lib.core.token import StringToken, Token
@@ -145,6 +145,11 @@ class CommandExecutor:
                         loop_var_token = Token(data=Integer(t), type=TokenType.INTEGER)
                     elif isinstance(t, str):
                         loop_var_token = StringToken(data=String(t), type=TokenType.STRING)
+                    elif isinstance(t, float):
+                        loop_var_token = Token(data=Float(t), type=TokenType.FLOAT)
+                    elif isinstance(t, Token):
+                        loop_var_token = Token(data=t.data, type=t.type)
+
                     self.variable_manager.set_variable(loop_var_name, loop_var_token)
                     try:
                         for sub_command in command["body"][1:]:

@@ -9,7 +9,11 @@ MAIN
     for i in range(1,10+1)
         set sum = sum + i
     end_for
-    print sum
+    //print sum 55
+    for i in [1,2,3]
+        set sum = sum + i
+    end_for
+    print sum //61
 END_MAIN
 """
 #---------------------------
