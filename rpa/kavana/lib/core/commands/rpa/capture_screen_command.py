@@ -35,7 +35,7 @@ class CaptureScreenCommand(BaseCommand):
         var_to = option_values["var_to"]
 
         if not save_to_file and not var_to:
-            raise KavanaSyntaxError("CAPTURE_SCREEN 명령어는 'save_to' 또는 'var_to' 옵션 중 하나는 필수입니다.")
+            raise KavanaSyntaxError("CAPTURE_SCREEN 명령어는 'save_to_file' 또는 'var_to' 옵션 중 하나는 필수입니다.")
 
         if (area_token.type == TokenType.IDENTIFIER 
             and area_token.data.string.upper() == "FULL"):

@@ -9,12 +9,12 @@ MAIN
     SET file_path = "test.txt"
     SET result = FILE_WRITE(file_path, content)
     if result == True
-        PRINT "파일 쓰기 성공: {file_path}"
+        PRINT f"파일 쓰기 성공: {file_path}"
     else
         PRINT "파일 쓰기 실패"
     END_IF
     SET s = FILE_READ(file_path)
-    PRINT "{s1}"
+    PRINT s1
     ON_EXCEPTION
         print ">>> {$exception_message} exit code: {$exit_code}"
     END_EXCEPTION

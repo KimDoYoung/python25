@@ -75,3 +75,7 @@ class KavanaIndexError(KavanaException):
 class KavanaKeyError(KavanaException):
     """키 오류"""
     pass
+
+class KavanaDatabaseError(KavanaException):
+    """데이터베이스 오류"""
+    pass

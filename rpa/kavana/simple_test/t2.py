@@ -5,13 +5,9 @@ from lib.core.command_preprocessor import CommandPreprocessor
 # 대입
 script = """
 MAIN
-    TRY
-        PRINT "try"
-    CATCH
-        PRINT "catch"
-    FINALLY
-        PRINT "finally"
-    END_TRY
+    SET path = "docs/ymd.md"
+    SET text = File_Read(path)
+    PRINT f"{text}"
 END_MAIN
 """
 #---------------------------

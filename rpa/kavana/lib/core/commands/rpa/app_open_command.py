@@ -13,16 +13,21 @@ class AppOpenCommand(BaseCommand):
         APP_OPEN <app_variable> [maximize=<express>, focus=<express>]
         """
         if len(args) < 1 or args[0].type != TokenType.IDENTIFIER:
-            raise KavanaSyntaxError("APP_OPEN 명령어는 최소 하나의 인자(application 변수)가 필요합니다.")
-
+            executor.log_command("ERROR", f"APP_OPEN 명령어는 최소 하나의 인자(application 변수)가 필요합니다.")
+            executor.raise_command(f"APP_OPEN 명령어는 최소 하나의 인자(application 변수)가 필요합니다.")
+            return
+        
         app_name = args[0].data.string
         app_token = executor.variable_manager.get_variable(app_name)
 
         if not app_token:
-            raise KavanaNameError(f"변수 '{app_name}'가 정의되지 않았습니다.")
+            # raise KavanaNameError(f"변수 '{app_name}'가 정의되지 않았습니다.")
+            executor.log_command("ERROR", f"변수 '{app_name}'가 정의되지 않았습니다.")
+            executor.raise_command(f"변수 '{app_name}'가 정의되지 않았습니다.")
 
         if app_token.type != TokenType.APPLICATION:
-            raise KavanaTypeError(f"변수 '{app_name}'는 Application 타입이 아닙니다.")
+            executor.log_command("ERROR", f"변수 '{app_name}'는 Application 타입이 아닙니다.")
+            executor.raise_command(f"변수 '{app_name}'는 Application 타입이 아닙니다.")
 
         # ✅ 기본 옵션 맵 정의 (기본값 설정)
         option_map = {

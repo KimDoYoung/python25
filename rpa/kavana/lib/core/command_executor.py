@@ -22,7 +22,7 @@ from lib.core.commands.rpa.put_text_command import PutTextCommand
 from lib.core.commands.rpa.wait_command import WaitCommand
 from lib.core.commands.set_command import SetCommand
 from lib.core.datatypes.kavana_datatype import Integer, String
-from lib.core.exceptions.kavana_exception import BreakException, CommandExecutionError, ContinueException
+from lib.core.exceptions.kavana_exception import BreakException, CommandExecutionError, ContinueException, KavanaException
 from lib.core.expr_evaluator import ExprEvaluator
 from lib.core.token import StringToken, Token
 from lib.core.token_type import TokenType
@@ -159,14 +159,16 @@ class CommandExecutor:
         # ✅ CONTINUE 처리
         if cmd == "CONTINUE":
             raise ContinueException("continue 명령어 실행")
+        try:
+            # ✅ RPA 명령어인지 확인 후 실행
+            if cmd in self.rpa_command_map:
+                self.execute_rpa_command(command)
+            else:
+                self.execute_standard_command(command)
+        except Exception as e:
+            self.log_command("ERROR", f"오류 발생: {e}")
+            self.raise_command(f"오류 발생: {e}")
 
-        # ✅ RPA 명령어인지 확인 후 실행
-        if cmd in self.rpa_command_map:
-            self.execute_rpa_command(command)
-            return
-
-        # ✅ 일반 명령어 실행
-        self.execute_standard_command(command)
     
     def execute_rpa_command(self, command):
         """RPA 명령어 실행"""
