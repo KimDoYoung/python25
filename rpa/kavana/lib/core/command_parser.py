@@ -56,6 +56,12 @@ class CommandParser:
                 i = new_index + 1
                 continue
 
+            if cmd == "TRY":
+                try_block, new_index = self.parse_try_block(processed_lines, i)
+                parsed_commands.append(try_block)
+                i = new_index + 1
+                continue            
+
             # ✅ FUNCTION 처리
             if cmd == "FUNCTION":
                 i = self.parse_function(processed_lines, i)
@@ -112,6 +118,55 @@ class CommandParser:
             raise CommandParserError("'END_MAIN'문이 빠졌습니다.", line = i+1)
 
         return parsed_commands
+
+    def parse_try_block(self, ppLines: List[PreprocessedLine], start_line: int):
+        """
+        TRY ... CATCH ... FINALLY ... END_TRY 블록 파싱
+        """
+        i = start_line
+        try_body = []
+        catch_body = []
+        finally_body = []
+
+        mode = "TRY"
+        while i < len(ppLines):
+            line = ppLines[i].text.strip().upper()
+
+            if line == "CATCH":
+                mode = "CATCH"
+                i += 1
+                continue
+            elif line == "FINALLY":
+                mode = "FINALLY"
+                i += 1
+                continue
+            elif line == "END_TRY":
+                break
+
+            tokens = self.tokenize(ppLines[i])
+            if not tokens:
+                i += 1
+                continue
+
+            cmd = tokens[0].data.value.upper()
+            args = tokens[1:]
+
+            command = {"cmd": cmd, "args": args}
+
+            if cmd in ["IF", "WHILE", "FOR", "TRY"]:
+                nested_block, new_index = self.parse_block(ppLines, i + 1, f"END_{cmd}")
+                command = {"cmd": f"{cmd}_BLOCK", "body": [{"cmd": cmd, "args": args}] + nested_block}
+                i = new_index
+            if mode == "TRY":
+                try_body.append(command)
+            elif mode == "CATCH":
+                catch_body.append(command)
+            elif mode == "FINALLY":
+                finally_body.append(command)
+
+            i += 1
+
+        return {"cmd": "TRY_BLOCK", "try": try_body, "catch": catch_body, "finally": finally_body}, i
 
     def parse_block(self, ppLines: List[PreprocessedLine], start_line, end_keyword):
         """재귀적으로 블록을 파싱하는 함수"""

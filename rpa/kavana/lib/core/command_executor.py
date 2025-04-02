@@ -72,6 +72,25 @@ class CommandExecutor:
     def execute(self, command):
         cmd = command["cmd"]
     
+        if cmd == "TRY_BLOCK":
+            try:
+                for sub_command in command["try"]:
+                    if sub_command["cmd"] == "RAISE":
+                        # 명시적으로 RAISE 명령어를 수동 처리
+                        args = sub_command["args"]
+                        message_token = args[0]
+                        message = message_token.data.value
+                        raise RuntimeError(message)  # 또는 custom 예외
+                    self.execute(sub_command)  # 일반 명령어는 그대로 실행
+            except Exception as e:
+                self.set_last_error(str(e))
+                for sub_command in command["catch"]:
+                    self.execute(sub_command)
+            finally:
+                for sub_command in command["finally"]:
+                    self.execute(sub_command)
+            return
+
         # ✅ IF 문 처리
         if cmd == "IF_BLOCK":
             condition = command["body"][0]["args"]
