@@ -12,8 +12,18 @@ python언어로 작성되었으며 실제로 동작하기 위해서는 exe로 �
 
 ## 2. 설치
 
+- 개발환경 : python 3.12.1
+- 터미널 : git bash
+
 ```bash
+python --version
 git clone https://github.com/username/mycoolproject.git
 cd mycoolproject
+python -m venv venv
+which python
 pip install -r requirements.txt
+which pyinstaller
+./make.sh
 ```
+
+- make.sh 은 pyinstaller를 실행합니다
