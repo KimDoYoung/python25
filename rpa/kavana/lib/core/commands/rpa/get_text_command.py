@@ -6,6 +6,7 @@ import pyperclip
 from lib.core.commands.base_command import BaseCommand
 from lib.core.expr_evaluator import ExprEvaluator
 from lib.core.managers.rpa_manager import RPAManager
+from lib.core.token import StringToken
 from lib.core.token_type import TokenType
 
 
@@ -24,7 +25,7 @@ class GetTextCommand(BaseCommand):
             and args[2].type == TokenType.IDENTIFIER):
             var_name = args[2].data.string
             text = pyperclip.paste()
-            result_token = Token(data=String(text), type=TokenType.STRING)
+            result_token = StringToken(data=String(text), type=TokenType.STRING)
             executor.set_variable(var_name, result_token)
             return
         else:

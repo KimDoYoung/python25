@@ -9,7 +9,7 @@ from lib.core.datatypes.kavana_datatype import Boolean, Integer, String
 from lib.core.datatypes.array import Array
 from lib.core.datatypes.ymd_time import YmdTime
 from lib.core.exceptions.kavana_exception import KavanaException, KavanaFileNotFoundError
-from lib.core.token import Token
+from lib.core.token import StringToken, Token
 from lib.core.token_type import TokenType
 
 
@@ -27,7 +27,7 @@ class FileFunctions:
         with open(file_path, "r", encoding="utf-8") as f:
             content = f.read()
         
-        return Token(data=String(content), type=TokenType.STRING)
+        return StringToken(data=String(content), type=TokenType.STRING)
 
     @staticmethod
     def FILE_WRITE(file_path: str, content: str) -> Token:
@@ -93,10 +93,10 @@ class FileFunctions:
     def FILE_TYPE(file_path: str) -> Token:
         """파일 유형 반환 (file / directory / none)"""
         if os.path.isfile(file_path):
-            return Token(data=String("file"), type=TokenType.STRING)
+            return StringToken(data=String("file"), type=TokenType.STRING)
         elif os.path.isdir(file_path):
-            return Token(data=String("directory"), type=TokenType.STRING)
-        return Token(data=String("none"), type=TokenType.STRING)  # 존재하지 않으면 "none"
+            return StringToken(data=String("directory"), type=TokenType.STRING)
+        return StringToken(data=String("none"), type=TokenType.STRING)  # 존재하지 않으면 "none"
 
 
     @staticmethod
@@ -126,16 +126,16 @@ class FileFunctions:
         }.get(algorithm.lower())
 
         if hash_func is None:
-            return Token(data=String(""), type=TokenType.STRING)  # 지원되지 않는 알고리즘
+            return StringToken(data=String(""), type=TokenType.STRING)  # 지원되지 않는 알고리즘
 
         try:
             with open(file_path, "rb") as f:
                 hasher = hash_func()
                 while chunk := f.read(8192):
                     hasher.update(chunk)
-            return Token(data=String(hasher.hexdigest()), type=TokenType.STRING)
+            return StringToken(data=String(hasher.hexdigest()), type=TokenType.STRING)
         except Exception:
-            return Token(data=String(""), type=TokenType.STRING)
+            return StringToken(data=String(""), type=TokenType.STRING)
 
     @staticmethod
     def FILE_LINES(file_path: str) -> Token:

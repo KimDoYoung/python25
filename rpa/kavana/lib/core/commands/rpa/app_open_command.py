@@ -1,7 +1,7 @@
 from typing import List
 from lib.core.commands.base_command import BaseCommand
 from lib.core.datatypes.application import Application
-from lib.core.exceptions.kavana_exception import KavanaNameError, KavanaSyntaxError, KavanaTypeError
+from lib.core.exceptions.kavana_exception import KavanaNameError, KavanaRpaError, KavanaSyntaxError, KavanaTypeError
 from lib.core.expr_evaluator import ExprEvaluator
 from lib.core.token import Token
 from lib.core.token_type import TokenType
@@ -14,7 +14,7 @@ class AppOpenCommand(BaseCommand):
         """
         if len(args) < 1 or args[0].type != TokenType.IDENTIFIER:
             executor.log_command("ERROR", f"APP_OPEN 명령어는 최소 하나의 인자(application 변수)가 필요합니다.")
-            executor.raise_command(f"APP_OPEN 명령어는 최소 하나의 인자(application 변수)가 필요합니다.")
+            raise KavanaRpaError(f"APP_OPEN 명령어는 최소 하나의 인자(application 변수)가 필요합니다.")
             return
         
         app_name = args[0].data.string
@@ -23,11 +23,11 @@ class AppOpenCommand(BaseCommand):
         if not app_token:
             # raise KavanaNameError(f"변수 '{app_name}'가 정의되지 않았습니다.")
             executor.log_command("ERROR", f"변수 '{app_name}'가 정의되지 않았습니다.")
-            executor.raise_command(f"변수 '{app_name}'가 정의되지 않았습니다.")
+            raise KavanaRpaError(f"변수 '{app_name}'가 정의되지 않았습니다.")
 
         if app_token.type != TokenType.APPLICATION:
             executor.log_command("ERROR", f"변수 '{app_name}'는 Application 타입이 아닙니다.")
-            executor.raise_command(f"변수 '{app_name}'는 Application 타입이 아닙니다.")
+            raise KavanaRpaError(f"변수 '{app_name}'는 Application 타입이 아닙니다.")
 
         # ✅ 기본 옵션 맵 정의 (기본값 설정)
         option_map = {

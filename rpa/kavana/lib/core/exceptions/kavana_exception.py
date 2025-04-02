@@ -79,3 +79,7 @@ class KavanaKeyError(KavanaException):
 class KavanaDatabaseError(KavanaException):
     """데이터베이스 오류"""
     pass
+
+class KavanaRpaError(KavanaException):
+    """RPA 관련 오류"""
+    pass

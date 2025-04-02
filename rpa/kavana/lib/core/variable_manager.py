@@ -5,7 +5,7 @@ from lib.core.database_registry import DatabaseRegistry
 from lib.core.datatypes.kavana_datatype import Integer, String
 from lib.core.datatypes.array import Array
 from lib.core.exceptions.kavana_exception import KavanaValueError
-from lib.core.token import Token
+from lib.core.token import StringToken, Token
 from lib.core.token_type import TokenType
 class VariableManager:
     """✅ 변수 및 `CONST` 관리"""
@@ -13,7 +13,7 @@ class VariableManager:
     def __init__(self):
         self.global_vars = {}  
         self.local_vars_stack = []
-        self.global_vars["_LastError_"] = Token(data=String(""), type=TokenType.STRING)
+        self.global_vars["_LastError_"] = StringToken(data=String(""), type=TokenType.STRING)
         self.load_built_in_constants()
 
     def set_variable(self, var_name: str, token: Token, local=False):
@@ -66,19 +66,19 @@ class VariableManager:
             const_name = f"_POINT_{point_enum.name}_"
             self.set_const(
                 const_name,
-                Token(data=String(point_enum.value), type=TokenType.STRING)
+                StringToken(data=String(point_enum.value), type=TokenType.STRING)
             )
         for region_enum in RegionName:
             const_name = f"_REGION_{region_enum.name}_"
             self.set_const(
                 const_name,
-                Token(data=String(region_enum.name), type=TokenType.STRING)
+                StringToken(data=String(region_enum.name), type=TokenType.STRING)
             )
         for direction_enum in DirectionName:
             const_name = f"_DIRECTION_{direction_enum.name}_"
             self.set_const(
                 const_name,
-                Token(data=String(direction_enum.value), type=TokenType.STRING)
+                StringToken(data=String(direction_enum.value), type=TokenType.STRING)
             )
     
     def get_db_commander(self, db_name: str) -> DbCommander:

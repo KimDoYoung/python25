@@ -7,7 +7,7 @@ from lib.core.datatypes.kavana_datatype import String
 from lib.core.exceptions.kavana_exception import KavanaException
 from lib.core.function_registry import FunctionRegistry
 from lib.core.reserved_words import ReservedWords
-from lib.core.token import Token
+from lib.core.token import StringToken, Token
 from lib.core.token_type import TokenType
 from lib.utils.check import syntax_check
 from lib.utils.pretty import format_pretty
@@ -65,7 +65,7 @@ def main():
     except KavanaException as e:
         raise_command = RaiseCommand()
         raise_command.execute(
-            [Token(data=String(str(e)), type=TokenType.STRING)], executor
+            [StringToken(data=String(str(e)), type=TokenType.STRING)], executor
         )        
         sys.exit(1)
     except Exception as e:

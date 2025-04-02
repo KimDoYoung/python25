@@ -42,7 +42,7 @@ class RaiseCommand(BaseCommand):
                 raise KavanaException(f"EXIT CODE는 정수형이어야 합니다. (잘못된 값: {exit_code_token.data.string})")
 
         # ✅ 예외 메시지 및 종료 코드 저장
-        executor.variable_manager.set_variable("$exception_message", Token(data=String(exception_message), type=TokenType.STRING))
+        executor.variable_manager.set_variable("$exception_message", StringToken(data=String(exception_message), type=TokenType.STRING))
         executor.variable_manager.set_variable("$exit_code", Token(data=Integer(exit_code), type=TokenType.INTEGER))
 
         # ✅ ON_EXCEPTION 블록이 등록되어 있다면 실행

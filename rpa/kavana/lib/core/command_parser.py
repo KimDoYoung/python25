@@ -319,14 +319,14 @@ class CommandParser:
                     value_token = Token(data=Float(float(value), type=TokenType.FLOAT))
                 elif  (value.startswith('"') and value.endswith('"')) or (value.startswith("'") and value.endswith("'")):
                     value =value[1:-1]  # 앞뒤 따옴표 제거
-                    value_token = Token(data=String(value), type=TokenType.STRING)
+                    value_token = StringToken(data=String(value), type=TokenType.STRING)
                 else:
-                    value_token = Token(data=String(value), type=TokenType.STRING)
+                    value_token = StringToken(data=String(value), type=TokenType.STRING)
 
                 # ✅ "=" 연산자 토큰 추가
-                equals_token = Token(data=String("="), type=TokenType.ASSIGN)
+                equals_token = StringToken(data=String("="), type=TokenType.ASSIGN)
 
-                key_token = Token(data=String(f"${key}"), type=TokenType.IDENTIFIER)
+                key_token = StringToken(data=String(f"${key}"), type=TokenType.IDENTIFIER)
                 # ✅ `parsed_commands`에 추가하여 추적 가능
                 parsed_commands.append({
                     "cmd": "CONST",
