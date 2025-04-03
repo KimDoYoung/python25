@@ -13,12 +13,12 @@ const kvsKeywords = {
   literal: ["True", "False", "None"].join(" ")
 };
 const basicCommands = [
-  "DB CONNECT","DB EXECUTE", "DB QUERY", "DB BEGIN_TRANSACTION", "DB COMMIT", "DB ROLLBACK",
+  "DB CONNECT","DB EXECUTE", "DB QUERY", "DB BEGIN_TRANSACTION", "DB COMMIT", "DB ROLLBACK", "DB CLOSE",
   "INCLUDE", "ENV_LOAD", "SET", "PRINT",
   "JUST", "CONST"
 ];
 
-const basicCommandRegex = new RegExp(`\\b(${basicCommands.join("|")})\\b`);
+const basicCommandRegex = new RegExp(`\\b(${basicCommands.join("|")})\\b`, "i");
 
 hljs.registerLanguage("kvs", function(hljs) {
     return {

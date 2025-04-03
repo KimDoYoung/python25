@@ -215,3 +215,49 @@ MAIN
     DB CLOSE name="default"
 END_MAIN
 ```
+
+### 🔶DB BEGIN_TRANSACTION
+- transaction을 시작합니다.
+- **문법**
+> DB TRANSACTION  [name=<문자열>, type=문자열]
+- **사용예**
+```kvs
+DB BEGIN_TRANSACTION name="default"
+```
+
+
+### 🔶DB COMMIT
+- transaction commit 합니다.
+- **문법**
+> DB COMMIT [name=<문자열>, type=문자열]
+- **사용예**
+```kvs
+ DB COMMIT 
+```
+
+### 🔶DB ROLLBACK
+- transaction을 rollback 합니다
+- **문법**
+> DB ROLLBACK [name=<문자열>, type=문자열]
+- **사용예**
+```kvs
+DB ROLLBACK
+```
+
+### 전체적인 사용예
+
+```kvs
+MAIN
+    DB CONNECT path="test1.db" 
+    DB BEGIN_TRANSACTION name="default"
+    DB EXECUTE sql="insert into tasks (title) values ('task1')"
+    DB EXECUTE sql="insert into tasks1 (title) values ('task2')"
+    DB COMMIT name="default"
+
+    ON_EXCEPTION
+        PRINT f"예외 발생: {$exception_message} (exit code: {$exit_code})"
+        DB ROLLBACK name="default"
+        DB CLOSE name="default"
+    END_EXCEPTION
+END_MAIN
+```
