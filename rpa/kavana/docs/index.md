@@ -1,27 +1,28 @@
-# Welcome to MkDocs
+# Welcome to Kavana script
 
-For full documentation visit [mkdocs.org](https://www.mkdocs.org).
+- kavana script는 처음 RPA 동작을 수행하는 명령어 기반 스크립트언어 입니다.
 
-## Commands
+## 특징
 
-* `mkdocs new [dir-name]` - Create a new project.
-* `mkdocs serve` - Start the live-reloading docs server.
-* `mkdocs build` - Build the documentation site.
-* `mkdocs -h` - Print help message and exit.
+- RPA 동작이 필요한 업무를 쉽게 개발하기 위해서 개발됨
 
-## Project layout
+## 활용
 
-    mkdocs.yml    # The configuration file.
-    docs/
-        index.md  # The documentation homepage.
-        ...       # Other markdown pages, images and other files.
+- make.sh 를 이용하여 host에 설치 후 사용가능
+- make.sh은 pyinstaller를 사용합니다. 
+
+```bash
+kavana upload.kvs
+```
 
 ## Example 코드
 
 ```kvs
+
 // kavana hello.kvs
 MAIN
     SET greeting = "Hello, Kavana!"
-    PRINT "{greeting}"
+    PRINT greeting
 END_MAIN
+
 ```
