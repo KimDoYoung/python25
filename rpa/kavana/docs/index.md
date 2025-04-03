@@ -12,7 +12,7 @@
 ## ✅활용
 
 - make.sh 를 이용하여 host에 설치 후 사용가능
-- make.sh은 pyinstaller를 사용합니다. 
+- make.sh은 pyinstaller를 사용합니다.
 
 ```bash
 kavana upload.kvs
