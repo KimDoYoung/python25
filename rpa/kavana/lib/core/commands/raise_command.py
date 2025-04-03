@@ -45,6 +45,8 @@ class RaiseCommand(BaseCommand):
         executor.variable_manager.set_variable("$exception_message", StringToken(data=String(exception_message), type=TokenType.STRING))
         executor.variable_manager.set_variable("$exit_code", Token(data=Integer(exit_code), type=TokenType.INTEGER))
 
+        if ExceptionRegistry._in_try_block:
+            raise KavanaException(exception_message)
         # ✅ ON_EXCEPTION 블록이 등록되어 있다면 실행
         exception_commands = ExceptionRegistry.get_exception_commands()
         if exception_commands:

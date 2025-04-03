@@ -129,6 +129,7 @@ class CommandParser:
         finally_body = []
 
         mode = "TRY"
+        i = i+1  # ✅ TRY 블록 시작
         while i < len(ppLines):
             line = ppLines[i].text.strip().upper()
 
@@ -150,10 +151,13 @@ class CommandParser:
 
             cmd = tokens[0].data.value.upper()
             args = tokens[1:]
+            
+            if cmd == "TRY":
+                raise CommandParserError("TRY 블록 안에 또 TRY 블록이 있습니다.(내포된 TRY문을 지원하지 않습니다.)", ppLines[i].original_line, ppLines[i].original_column)
 
             command = {"cmd": cmd, "args": args}
 
-            if cmd in ["IF", "WHILE", "FOR", "TRY"]:
+            if cmd in ["IF", "WHILE", "FOR"]:
                 nested_block, new_index = self.parse_block(ppLines, i + 1, f"END_{cmd}")
                 command = {"cmd": f"{cmd}_BLOCK", "body": [{"cmd": cmd, "args": args}] + nested_block}
                 i = new_index

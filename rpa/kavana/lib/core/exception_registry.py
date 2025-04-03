@@ -5,6 +5,13 @@ from lib.core.exceptions.kavana_exception import KavanaException, KavanaSyntaxEr
 class ExceptionRegistry:
     _exception_handler = None  # 현재 등록된 예외 핸들러
 
+    _in_try_block = False  # 현재 TRY 블록 안에 있는지 여부
+
+    @classmethod
+    def set_in_try_block(cls, in_try_block: bool):
+        """TRY 블록 안에 있는지 여부 설정"""
+        cls._in_try_block = in_try_block
+
     @classmethod
     def register_exception(cls, exception_commands: list[dict]):
         """ON_EXCEPTION 블록을 등록"""

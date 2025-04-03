@@ -22,6 +22,7 @@ from lib.core.commands.rpa.put_text_command import PutTextCommand
 from lib.core.commands.rpa.wait_command import WaitCommand
 from lib.core.commands.set_command import SetCommand
 from lib.core.datatypes.kavana_datatype import Float, Integer, String
+from lib.core.exception_registry import ExceptionRegistry
 from lib.core.exceptions.kavana_exception import BreakException, CommandExecutionError, ContinueException, KavanaException
 from lib.core.expr_evaluator import ExprEvaluator
 from lib.core.token import StringToken, Token
@@ -74,6 +75,7 @@ class CommandExecutor:
     
         if cmd == "TRY_BLOCK":
             try:
+                ExceptionRegistry.set_in_try_block(True)  # TRY 블록 시작 
                 for sub_command in command["try"]:
                     if sub_command["cmd"] == "RAISE":
                         # 명시적으로 RAISE 명령어를 수동 처리
@@ -89,6 +91,7 @@ class CommandExecutor:
             finally:
                 for sub_command in command["finally"]:
                     self.execute(sub_command)
+                ExceptionRegistry.set_in_try_block(False)  # TRY 블록 종료 후 상태 초기화    
             return
 
         # ✅ IF 문 처리
