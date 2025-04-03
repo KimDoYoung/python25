@@ -12,6 +12,14 @@ const kvsKeywords = {
   ].join(" "),
   literal: ["True", "False", "None"].join(" ")
 };
+const basicCommands = [
+  "DB CONNECT","DB EXECUTE", "DB QUERY", "DB BEGIN_TRANSACTION", "DB COMMIT", "DB ROLLBACK",
+  "INCLUDE", "ENV_LOAD", "SET", "PRINT",
+  "JUST", "CONST"
+];
+
+const basicCommandRegex = new RegExp(`\\b(${basicCommands.join("|")})\\b`);
+
 hljs.registerLanguage("kvs", function(hljs) {
     return {
       name: "Kavana Script",
@@ -25,8 +33,8 @@ hljs.registerLanguage("kvs", function(hljs) {
         hljs.C_LINE_COMMENT_MODE,   // // 주석
         {
           className: "basic-command",
-          begin:/\b(INCLUDE|ENV_LOAD|SET|PRINT|JUST|CONST)\b/, // bSET, bPRINT, bJUST
-        }
+          begin:basicCommandRegex
+        },
       ]
     };
   });
