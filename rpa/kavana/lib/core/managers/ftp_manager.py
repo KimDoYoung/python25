@@ -1,3 +1,5 @@
+import datetime
+import fnmatch
 import glob
 import os
 from ftplib import FTP, error_perm
@@ -25,27 +27,49 @@ class FtpManager(BaseManager):
             self.ftp.connect(self.host, self.port, timeout=self.timeout)
             self.ftp.login(self.user, self.password)
             self.ftp.set_pasv(self.passive_mode)
-            self.ftp.cwd(self.remote_dir)
+
+            # ✅ 모든 통신에 타임아웃 적용
+            self.ftp.sock.settimeout(self.timeout)
+
+            self._ensure_remote_dir(self.remote_dir)
+
             self.log("INFO", f"Connected to FTP: {self.host}:{self.port}")
         except Exception as e:
-            self.raise_error(f"FTP 연결 실패: {e}")
+            self.raise_error(f"{self.host} FTP 연결 실패: {e}")
 
     def close(self):
         if self.ftp:
             self.ftp.quit()
-            self.log("INFO", "FTP 연결 종료")
+            self.log("INFO", f"{self.host} FTP 연결 종료")
+
+    def _ensure_remote_dir(self, path):
+        dirs = path.strip("/").split("/")
+        current = ""
+        for d in dirs:
+            current += f"/{d}"
+            try:
+                self.ftp.cwd(current)
+            except error_perm:
+                self.ftp.mkd(current)
+                self.ftp.cwd(current)
 
     def upload(self):
         if not self.files:
             self.raise_error("업로드할 파일 목록이 없습니다.")
         try:
             self.connect()
+
             for filepath in self.files:
                 if not os.path.isfile(filepath):
                     self.log("WARNING", f"파일 없음: {filepath}")
                     continue
+
+                filename = os.path.basename(filepath)
+                if filename in self.ftp.nlst() and not self.overwrite:
+                    self.log("INFO", f"파일 존재 - 건너뜀: {filename}")
+                    continue
+
                 with open(filepath, "rb") as f:
-                    filename = os.path.basename(filepath)
                     self.ftp.storbinary(f"STOR {filename}", f)
                     self.log("INFO", f"업로드 완료: {filename}")
         finally:
@@ -82,14 +106,42 @@ class FtpManager(BaseManager):
         finally:
             self.close()
 
-    def list(self):
+
+    def list(self, pattern=None):
         try:
             self.connect()
             files = self.ftp.nlst()
-            self.log("INFO", "디렉토리 목록:\n" + "\n".join(files))
-            return files
+
+            if pattern:
+                files = fnmatch.filter(files, pattern)
+
+            file_infos = []
+
+            for filename in files:
+                try:
+                    size = self.ftp.size(filename)
+                    mdtm_raw = self.ftp.sendcmd(f"MDTM {filename}")
+                    mdtm_str = mdtm_raw[4:]  # "213YYYYMMDDhhmmss" → "YYYYMMDDhhmmss"
+                    mod_time = datetime.strptime(mdtm_str, "%Y%m%d%H%M%S")
+                    file_infos.append({
+                        "name": filename,
+                        "size": size,
+                        "modified": mod_time.strftime("%Y-%m-%d %H:%M:%S")
+                    })
+                except Exception as e:
+                    self.log("WARNING", f"{filename} 메타데이터 조회 실패: {e}")
+                    file_infos.append({
+                        "name": filename,
+                        "size": None,
+                        "modified": None
+                    })
+
+            self.log("INFO", f"{len(file_infos)}개 파일 정보 조회 완료")
+            return file_infos
+
         finally:
             self.close()
+
 
     def mkdir(self):
         try:
