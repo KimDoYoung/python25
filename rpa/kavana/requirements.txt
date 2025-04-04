@@ -19,3 +19,6 @@ mkdocs-material
 pymysql
 psycopg2
 paramiko
+easyocr
+selenium
+webdriver-manager

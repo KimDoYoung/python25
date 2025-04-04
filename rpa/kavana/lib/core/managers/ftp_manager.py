@@ -10,7 +10,7 @@ class FtpManager(BaseManager):
         self.host = kwargs.get("host", "127.0.0.1")
         self.port = kwargs.get("port", 21)
         self.user = kwargs.get("user", "myid")
-        self.password = kwargs.get("password", "mypassword")
+        self.password = kwargs.get("password", "mypassword") 
         self.remote_dir = kwargs.get("remote_dir", "/home/files")
         self.files = kwargs.get("files", [])  # ✅ 배열로 변경
         self.passive_mode = kwargs.get("passive_mode", True)
