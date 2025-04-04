@@ -6,17 +6,17 @@ from lib.core.command_preprocessor import CommandPreprocessor
 script = """
 ENV_LOAD ".env"
 MAIN
-    // ftp info
-    set ftp_info = {
+    // sftp info
+    set sftp_info = {
         "host": "jskn.ipdisk.co.kr",
         "port": 21,
         "user": $FTP_USER,
         "password": $FTP_PASSWORD,
     }
-    print ftp_info
-    FTP upload with=ftp_info  remote_dir="/HDD1/test1" local_dir=r"c:\tmp" files=["1.txt", "2.txt"]
-    FTP download with=ftp_info  remote_dir="/HDD1/test1"  local_dir=r"c:\tmp" files=["*.txt"]
-    FTP list with=ftp_info  remote_dir="/HDD1/test1" pattern="*.log" to_var="ftp_list"
+    print sftp_info
+    FTP upload with=sftp_info  remote_dir="/HDD1/test1" local_dir=r"c:\tmp" files=["1.txt", "2.txt"]
+    FTP download with=sftp_info  remote_dir="/HDD1/test1"  local_dir=r"c:\tmp" files=["*.txt"]
+    FTP list with=sftp_info  remote_dir="/HDD1/test1" pattern="*.log" to_var="ftp_list"
 END_MAIN
 """
 #---------------------------

@@ -10,6 +10,8 @@ class SftpManager(BaseManager):
         self.port = kwargs.get("port", 22)
         self.user = kwargs.get("user", "myid")
         self.password = kwargs.get("password", "mypassword")
+        self.key_file = kwargs.get("key_file")  # 선택적 키 파일 경로
+        
         self.remote_dir = kwargs.get("remote_dir", "/home/files")
         self.timeout = kwargs.get("timeout", 10)
         self.overwrite = kwargs.get("overwrite", False)
@@ -37,16 +39,56 @@ class SftpManager(BaseManager):
                 expanded.append(item)
         self._files = expanded
 
+    def _ensure_remote_dir(self, path):
+        """remote_dir이 없으면 생성하고 순차적으로 이동"""
+        if not path or path == "/":
+            return
+
+        parts = path.strip("/").split("/")
+        for part in parts:
+            try:
+                self.sftp.chdir(part)
+            except IOError:
+                self.sftp.mkdir(part)
+                self.sftp.chdir(part)
+                self.log("INFO", f"디렉토리 생성: {part}")
+
     def connect(self):
         try:
             self.ssh = paramiko.SSHClient()
             self.ssh.set_missing_host_key_policy(paramiko.AutoAddPolicy())
-            self.ssh.connect(self.host, port=self.port, username=self.user, password=self.password, timeout=self.timeout)
+
+            # 인증 방식 결정: password 또는 key_file
+            if self.password:
+                self.ssh.connect(
+                    hostname=self.host,
+                    port=self.port,
+                    username=self.user,
+                    password=self.password,
+                    timeout=self.timeout
+                )
+            elif hasattr(self, "key_file") and self.key_file:
+                pkey = paramiko.RSAKey.from_private_key_file(self.key_file)
+                self.ssh.connect(
+                    hostname=self.host,
+                    port=self.port,
+                    username=self.user,
+                    pkey=pkey,
+                    timeout=self.timeout
+                )
+            else:
+                self.raise_error("password 또는 key_file 중 하나는 반드시 있어야 합니다.")
+
             self.sftp = self.ssh.open_sftp()
-            self.sftp.chdir(self.remote_dir)
+            self.sftp.get_channel().settimeout(self.timeout)  # ✅ socket 수준 timeout 적용
+
+            # remote_dir이 없으면 생성하고 이동
+            self._ensure_remote_dir(self.remote_dir)
+
             self.log("INFO", f"SFTP 연결 성공: {self.host}:{self.port}")
         except Exception as e:
             self.raise_error(f"SFTP 연결 실패: {e}")
+
 
     def close(self):
         if self.sftp:
