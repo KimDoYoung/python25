@@ -83,3 +83,21 @@ class KavanaDatabaseError(KavanaException):
 class KavanaRpaError(KavanaException):
     """RPA 관련 오류"""
     pass
+class KavanaFtpError(KavanaException):
+    """FTP 관련 오류"""
+    pass
+class KavanaSftpError(KavanaException):
+    """SFTP 관련 오류"""
+    pass
+class KavanaHttpError(KavanaException):
+    """HTTP 관련 오류"""
+    pass
+class KavanaImageError(KavanaException):
+    """Image 관련 오류"""
+    pass
+class KavanaOcrError(KavanaException):
+    """Ocr 관련 오류"""
+    pass
+class KavanaBrowserError(KavanaException):
+    """Browser 관련 오류"""
+    pass

@@ -16,8 +16,8 @@ class DatabaseCommand(BaseCommand):
 
     def execute(self, args, executor):
         self.executor = executor
-        if len(args) < 1:
-            return
+        if not args:
+            raise KavanaDatabaseError("DB 명령어는 최소 하나 이상의 인자가 필요합니다.")
 
         sub_command = args[0].data.value.upper()
         options, _ = self.extract_all_options(args, 1)

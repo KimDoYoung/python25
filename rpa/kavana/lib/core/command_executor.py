@@ -7,6 +7,9 @@ from lib.core.commands.exit_command import ExitCommand
 from lib.core.commands.function_command import FunctionCommand
 from lib.core.commands.just_command import JustCommand
 from lib.core.commands.log_command import LogConfigCommand, LogDebugCommand, LogErrorCommand, LogInfoCommand, LogWarnCommand
+from lib.core.commands.network.ftp_command import FtpCommand
+from lib.core.commands.network.http_command import HttpCommand
+from lib.core.commands.network.sftp_command import SftpCommand
 from lib.core.commands.print_command import PrintCommand
 from lib.core.commands.raise_command import RaiseCommand
 from lib.core.commands.return_command import ReturnCommand
@@ -68,6 +71,13 @@ class CommandExecutor:
             "GET_TEXT" : GetTextCommand(),
             "CAPTURE_SCREEN" : CaptureScreenCommand(),
             "DB": DatabaseCommand(),
+            "FTP": FtpCommand(),
+            "SFTP": SftpCommand(),
+            "HTTP": HttpCommand(),
+            "OCR" : OcrCommand(),
+            "BROWSER" : BrowserCommand(),
+            "IMAGE" : ImageCommand(),
+            
         }
         
     def execute(self, command):
