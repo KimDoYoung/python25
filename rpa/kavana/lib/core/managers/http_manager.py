@@ -5,46 +5,39 @@ class HttpManager(BaseManager):
     def __init__(self, **kwargs):
         super().__init__(kwargs.get("executor", None))
 
-        self.method = kwargs.get("method", "GET").upper()
-        self.url = kwargs.get("url")
-        self.headers = kwargs.get("headers", {})
-        self.params = kwargs.get("params", {})
-        self.body = kwargs.get("body", None)
-        self.content_type = kwargs.get("content_type", "application/json")
-        self.timeout = kwargs.get("timeout", 10)
-        self.verify_ssl = kwargs.get("verify_ssl", True)
-
-        if not self.url:
-            self.raise_error("url은 필수입니다.")
-        if not self.method:
-            self.raise_error("method는 필수입니다.")
-
-    def execute(self):
+    def execute(self, **kwargs):
         try:
             session = requests.Session()
 
-            # Content-Type 처리
-            if self.content_type:
-                self.headers["Content-Type"] = self.content_type
-
+            # 기본 요청 매개변수 설정
             request_args = {
-                "method": self.method,
-                "url": self.url,
-                "headers": self.headers,
-                "params": self.params,
-                "timeout": self.timeout,
-                "verify": self.verify_ssl,
+                "method": kwargs.get("method", "GET").upper(),
+                "url": kwargs.get("url"),
+                "headers": kwargs.get("headers", {}),
+                "params": kwargs.get("params", {}),
+                "body": kwargs.get("body", None),
+                "timeout": kwargs.get("timeout", 10),
+                "verify_ssl": kwargs.get("verify_ssl", True),
             }
 
-            if self.method in ["POST", "PUT", "PATCH"]:
-                if self.content_type == "application/json":
-                    request_args["json"] = self.body
-                else:
-                    request_args["data"] = self.body
+            # Content-Type 처리
+            content_type = kwargs.get("content_type", "application/json")
+            if content_type:
+                request_args["headers"]["Content-Type"] = content_type
 
-            self.log("INFO", f"요청 시작: {self.method} {self.url}")
+            # Body 처리
+            if request_args["method"] in ["POST", "PUT", "PATCH"]:
+                body = kwargs.get("body", None)
+                if content_type == "application/json":
+                    request_args["json"] = body
+                else:
+                    request_args["data"] = body
+
+            # 로그 출력
+            self.log("INFO", f"요청 시작: {request_args['method']} {request_args['url']}")
             response = session.request(**request_args)
 
+            # 응답 로그 출력
             self.log("INFO", f"응답 수신 완료: {response.status_code}")
             self.log("INFO", f"응답 본문: {response.text[:500]}")  # 최대 500자만 출력
             return response

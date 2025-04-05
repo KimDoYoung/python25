@@ -17,14 +17,12 @@ class SftpCommand(BaseCommand):
         option_map = self.get_option_map(sub_command)
         option_values = self.parse_and_validate_options(options, option_map, executor)
         try:
+            sftp_manager = SftpManager(**option_values, executor=executor)
             if sub_command == "UPLOAD":
-                sftp_manager = SftpManager(**option_values, executor=executor)
                 sftp_manager.upload()
             elif sub_command == "DOWNLOAD":
-                sftp_manager = SftpManager(**option_values, executor=executor)
                 sftp_manager.download()
             elif sub_command == "LIST":
-                sftp_manager = SftpManager(**option_values, executor=executor)
                 files = sftp_manager.list()
                 if "to_var" in option_values:
                     executor.set_variable(option_values["to_var"], files)

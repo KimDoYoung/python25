@@ -1,15 +1,18 @@
 import sys
+from lib.core.commands.browser.browser_command import BrowserCommand
 from lib.core.commands.const_command import ConstCommand
 from lib.core.commands.database.database_command import DatabaseCommand
 from lib.core.commands.database.db_commander import DbCommander
 from lib.core.commands.endfunction_command import EndFunctionCommand
 from lib.core.commands.exit_command import ExitCommand
 from lib.core.commands.function_command import FunctionCommand
+from lib.core.commands.image.image_command import ImageCommand
 from lib.core.commands.just_command import JustCommand
 from lib.core.commands.log_command import LogConfigCommand, LogDebugCommand, LogErrorCommand, LogInfoCommand, LogWarnCommand
 from lib.core.commands.network.ftp_command import FtpCommand
 from lib.core.commands.network.http_command import HttpCommand
 from lib.core.commands.network.sftp_command import SftpCommand
+from lib.core.commands.ocr.ocr_command import OcrCommand
 from lib.core.commands.print_command import PrintCommand
 from lib.core.commands.raise_command import RaiseCommand
 from lib.core.commands.return_command import ReturnCommand
@@ -71,9 +74,11 @@ class CommandExecutor:
             "GET_TEXT" : GetTextCommand(),
             "CAPTURE_SCREEN" : CaptureScreenCommand(),
             "DB": DatabaseCommand(),
+            # network
             "FTP": FtpCommand(),
             "SFTP": SftpCommand(),
             "HTTP": HttpCommand(),
+            # ocr, browser(selenium), image
             "OCR" : OcrCommand(),
             "BROWSER" : BrowserCommand(),
             "IMAGE" : ImageCommand(),
