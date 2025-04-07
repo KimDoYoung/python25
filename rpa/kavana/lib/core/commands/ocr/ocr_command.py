@@ -40,7 +40,7 @@ class OcrCommand(BaseCommand):
         "region": {"required": False, "allowed_types": [TokenType.STRING]},
         "rectangle": {"required": False, "allowed_types": [TokenType.STRING]},
         "image_path": {"required": False, "allowed_types": [TokenType.STRING]},
-        "image": {"required": False, "allowed_types": [TokenType.OBJECT]},
+        "image": {"required": False, "allowed_types": [TokenType.IMAGE]},
         "text": {"required": False, "allowed_types": [TokenType.STRING]},  # FIND용
         "to_var": {"required": False, "allowed_types": [TokenType.STRING]},
     }

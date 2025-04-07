@@ -1,31 +1,49 @@
-from lib.core.command_executor import CommandExecutor
-from lib.core.command_parser import CommandParser
-from lib.core.command_preprocessor import CommandPreprocessor
+from lib.core.managers.browser_manager import BrowserManager
 
-# 대입
-script = """
-MAIN
-    SET i = (10 + 20) * 30
-    SET f = 12.34
-    SET s = "Hello"
-    SET b = not True
-    PRINT f"{i} {f} {s} {b}"
-END_MAIN
-"""
-#---------------------------
-# 기본적인 사용
-#---------------------------
-script_lines = script.split("\n")
-command_preprocssed_lines = CommandPreprocessor().preprocess(script_lines)
-for line in command_preprocssed_lines:
-    print(line)
-parser = CommandParser()
-parsed_commands = parser.parse(command_preprocssed_lines)
+def run_browser_command(command, **kwargs):
+    print(f"\n 실행: {command}")
+    manager = BrowserManager(command=command, **kwargs)
+    manager.execute()
 
-commandExecutor = CommandExecutor()
+def main():
+    # 1. OPEN
+    run_browser_command(
+        command="OPEN",
+        url="https://www.naver.com",
+        headless=False,  # True로 하면 창이 뜨지 않음
+        window_size="1200x800"
+    )
 
-for command in parsed_commands:
-    print("----------------------")
-    print(command)
-    commandExecutor.execute(command)
-    print("----------------------")
+    # 2. TYPE (검색어 입력)
+    run_browser_command(
+        command="TYPE",
+        selector="#query",
+        text="카바나",
+        clear_before=True
+    )
+
+    # 3. CLICK (검색 버튼)
+    run_browser_command(
+        command="CLICK",
+        selector=".btn_search"
+    )
+
+    # 4. WAIT (결과 영역이 보일 때까지)
+    # run_browser_command(
+    #     command="WAIT",
+    #     selector=".list_news",  # 결과 목록이 나타날 때까지 대기
+    #     until="visible",
+    #     timeout=5
+    # )
+
+    # 5. SCREENSHOT 저장
+    run_browser_command(
+        command="CAPTURE",
+        path="naver_search_result.png"
+    )
+
+    # 6. CLOSE
+    run_browser_command(command="CLOSE")
+
+if __name__ == "__main__":
+    main()

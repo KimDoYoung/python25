@@ -5,6 +5,7 @@ from lib.core.exceptions.kavana_exception import KavanaSyntaxError
 from lib.core.expr_evaluator import ExprEvaluator
 from lib.core.token import Token
 from lib.core.token_type import TokenType
+from lib.core.token_util import TokenUtil
 
 class BaseCommand(ABC):
     """
@@ -335,6 +336,28 @@ class BaseCommand(ABC):
 
         return key_token, expresses, i
 
+    def hashmap_token_to_dict(self, token: Token, executor) -> dict:
+        """HashMapToken을 dict로 변환"""
+        if not isinstance(token, Token) or token.type != TokenType.HASH_MAP:
+            raise KavanaSyntaxError("HashMapToken이 아닙니다.")
+        
+        result = {}
+        for key, express in token.key_express_map.items():
+            if not isinstance(key, str):
+                raise KavanaSyntaxError(f"잘못된 키 타입: {key} ({type(key)})")
+            result[key] = ExprEvaluator(executor=executor).evaluate(express).data.value
+        return result
+    
+    def array_token_to_list(self, token: Token, executor) -> list:
+        """ArrayToken을 list로 변환"""
+        if not isinstance(token, Token) or token.type != TokenType.ARRAY:
+            raise KavanaSyntaxError("ArrayToken이 아닙니다.")
+        
+        result = []
+        for express in token.element_expresses:
+            result.append(ExprEvaluator(executor=executor).evaluate(express).data.value)
+        return result
+    
     def parse_and_validate_options(self, options: dict, option_map: dict, executor) -> dict:
         """
         주어진 options를 option_map 기준으로 검증하고 최종 값 딕셔너리를 리턴한다.
@@ -353,6 +376,17 @@ class BaseCommand(ABC):
         option_values = {}
 
         # 1. 주어진 옵션 해석 및 타입 체크
+        # with 옵션은 별도로 처리
+        with_values = {}
+        if 'with' in options:
+            var_name_express = options['with']["express"]
+            hashmap_token = ExprEvaluator(executor=executor).evaluate(var_name_express)
+            with_values = self.hashmap_token_to_dict(hashmap_token,executor)
+            del options['with']
+
+        option_values={}
+        option_values.update(with_values)
+
         for key, value_dict in options.items():
             if key not in option_map:
                 raise KavanaSyntaxError(f"알 수 없는 옵션: '{key}'")
@@ -367,8 +401,12 @@ class BaseCommand(ABC):
                     f"허용된 타입: {', '.join(t.name for t in allowed_types)}, "
                     f"실제 타입: {evaluated.type.name}"
                 )
-
-            option_values[key] = evaluated.data.value
+            if evaluated.type == TokenType.HASH_MAP:
+                option_values[key] = self.hashmap_token_to_dict(evaluated, executor)
+            elif evaluated.type == TokenType.ARRAY:
+                option_values[key] = self.array_token_to_list(evaluated, executor)
+            else:
+                option_values[key] = evaluated.data.value
 
         # 2. 필수 옵션 누락 체크
         for key, opt in option_map.items():

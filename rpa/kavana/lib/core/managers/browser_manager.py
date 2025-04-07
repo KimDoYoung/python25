@@ -5,7 +5,7 @@ from selenium.webdriver.chrome.service import Service
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
 from webdriver_manager.chrome import ChromeDriverManager
-from base_manager import BaseManager
+from lib.core.managers.base_manager import BaseManager
 
 class BrowserManager(BaseManager):
     _driver = None
@@ -62,7 +62,7 @@ class BrowserManager(BaseManager):
             self.raise_error(f"지원하지 않는 명령어: {self.command}")
         return func()
 
-    def open(self):
+    def open_browser(self):
         url = self.options.get("url")
         if not url:
             self.raise_error("url 옵션이 필요합니다.")

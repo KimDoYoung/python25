@@ -328,6 +328,9 @@ class CommandExecutor:
     def set_variable(self, var_name, token):
         """변수 설정"""
         self.variable_manager.set_variable(var_name, token)
+    def get_variable(self, var_name):
+        """변수 설정"""
+        return self.variable_manager.get_variable(var_name)
     
     def get_db_commander(self, db_name):
         """DB Commander 가져오기"""

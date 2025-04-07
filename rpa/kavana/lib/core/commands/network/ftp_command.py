@@ -27,7 +27,9 @@ class FtpCommand(BaseCommand):
                 ftp_manager = FtpManager(**option_values, executor=executor)
                 files = ftp_manager.list()
                 if "to_var" in option_values:
-                    executor.set_variable(option_values["to_var"], files)
+                    var_name = option_values["to_var"]
+                    
+                    executor.set_variable(var_name, files)
         except KavanaFtpError as e:
             raise KavanaFtpError(f"`{sub_command}` 명령어 처리 중 오류 발생: {str(e)}") from e
         

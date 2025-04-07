@@ -1,7 +1,7 @@
 import os
 import glob
 import paramiko
-from base_manager import BaseManager
+from lib.core.managers.base_manager import BaseManager
 
 class SftpManager(BaseManager):
     def __init__(self, **kwargs):

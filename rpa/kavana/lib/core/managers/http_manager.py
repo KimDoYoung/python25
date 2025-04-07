@@ -1,5 +1,5 @@
 import requests
-from base_manager import BaseManager
+from lib.core.managers.base_manager import BaseManager
 
 class HttpManager(BaseManager):
     def __init__(self, **kwargs):

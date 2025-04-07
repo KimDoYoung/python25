@@ -2,11 +2,12 @@
 from datetime import date, datetime
 import re
 from typing import Any, List
+from lib.core.datatypes.hash_map import HashMap
 from lib.core.datatypes.kavana_datatype import Boolean, Float, Integer, KavanaDataType, NoneType, String
 from lib.core.datatypes.array import Array
 from lib.core.datatypes.ymd_time import Ymd, YmdTime
 from lib.core.exceptions.kavana_exception import DataTypeError, KavanaSyntaxError
-from lib.core.token import Token
+from lib.core.token import ArrayToken, HashMapToken, Token
 from lib.core.token_type import TokenType
 
 
@@ -37,29 +38,36 @@ class TokenUtil:
     @staticmethod
     def primitive_to_kavana(primitive: Any) -> KavanaDataType | None:
         """
-        주어진 value 값으로 해당하는 KavanaDataType을 반환한다.
+        파이썬 기본값을 KavanaDataType으로 변환
         """
-        if isinstance(primitive, list):  # 리스트 타입이면 내부 요소 확인
-            return Array(*[TokenUtil.primitive_to_kavana(p) for p in primitive])
+        if isinstance(primitive, list):
+            return Array([TokenUtil.primitive_to_kavana(p) for p in primitive])
 
-        # 개별 값에 대한 타입 결정
-        if isinstance(primitive, int):
+        elif isinstance(primitive, dict):
+            return HashMap({
+                k: TokenUtil.primitive_to_kavana(v)
+                for k, v in primitive.items()
+            })
+
+        elif isinstance(primitive, int):
             return Integer(primitive)
         elif isinstance(primitive, float):
             return Float(primitive)
         elif isinstance(primitive, bool):
             return Boolean(primitive)
-        elif primitive is None:
-            return NoneType
         elif isinstance(primitive, str):
             return String(primitive)
+        elif primitive is None:
+            return NoneType()
         elif isinstance(primitive, datetime):
             return YmdTime(primitive)
         elif isinstance(primitive, date):
             return Ymd(primitive)
         elif isinstance(primitive, KavanaDataType):
-            return type(primitive)
-        return None  # 알 수 없는 타입
+            return primitive  # ✅ 그대로 반환
+
+        return None
+
     
     @staticmethod        
     def primitive_to_kavana_by_tokentype(value: Any, token_type: TokenType) -> KavanaDataType:
@@ -168,5 +176,39 @@ class TokenUtil:
                 i += 1
         return "".join(result)
     
+    @staticmethod
+    def dict_to_hashmap_token(data: dict) -> HashMapToken:
+        """dict → HashMapToken 변환"""
+        hash_map = HashMap({
+            k: TokenUtil.primitive_to_kavana(v)
+            for k, v in data.items()
+        })
+        result_token = HashMapToken(data=hash_map)
+        result_token.status = "Evaled"
+        return result_token    
     
-    
+    @staticmethod
+    def list_to_array_token(data: list) -> ArrayToken:
+        """list → ArrayToken 변환"""
+        from lib.core.datatypes.kavana_datatype import KavanaDataType
+        from lib.core.exceptions.kavana_exception import KavanaTypeError
+
+        if not isinstance(data, list):
+            raise KavanaTypeError("list_to_array_token은 리스트만 허용됩니다.")
+
+        kavana_items = [TokenUtil.primitive_to_kavana(item) for item in data]
+
+        array_obj = Array(kavana_items)
+
+        # 토큰 타입 추정 (전부 동일하다는 전제)
+        if kavana_items:
+            element_token_type = TokenUtil.get_element_token_type(kavana_items[0])
+        else:
+            element_token_type = TokenType.UNKNOWN
+
+        return ArrayToken(
+            data=array_obj,
+            element_type=element_token_type,
+            element_expresses=[],
+            status="Evaled"
+        )    
