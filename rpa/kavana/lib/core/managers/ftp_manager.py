@@ -115,7 +115,6 @@ class FtpManager(BaseManager):
         try:
             self.connect()
             self.ftp.cwd(self.remote_dir)
-            self.ftp.sendcmd("TYPE I")  # ✅ Binary 모드 재확인
             files = self.ftp.nlst()
             if pattern:
                 files = fnmatch.filter(files, pattern)

@@ -33,7 +33,7 @@ class SftpCommand(BaseCommand):
     
     OPTION_DEFINITIONS = {
         "host": {"required": True, "allowed_types": [TokenType.STRING]},
-        "port": {"default": 21, "allowed_types": [TokenType.INTEGER]},
+        "port": {"default": 22, "allowed_types": [TokenType.INTEGER]},
         "user": {"required": True, "allowed_types": [TokenType.STRING]},
         "password": {"required": False, "allowed_types": [TokenType.BOOLEAN]},
         "key_file": {"required": False, "allowed_types": [TokenType.BOOLEAN]},
@@ -42,7 +42,7 @@ class SftpCommand(BaseCommand):
         "files": {"required": False, "allowed_types": [TokenType.ARRAY]},
         "timeout": {"default": 10, "allowed_types": [TokenType.INTEGER]},
         "overwrite": {"default": True, "allowed_types": [TokenType.BOOLEAN]},
-        "pattern": {"default": "*", "allowed_types": [TokenType.STRING]},
+        "pattern": {"default": "*", "allowed_types": [TokenType.STRING]}, 
         "to_var": {"required": False, "allowed_types": [TokenType.STRING]},
     }
 
@@ -50,7 +50,7 @@ class SftpCommand(BaseCommand):
     def option_map_define(self, *keys):
         '''필요한 키만 추려서 option_map 구성'''
         # "host","port", "user", "password", 이 keys에 없으면 추가
-        required_keys = {"host", "port", "user", "timeout", "overwrite"}
+        required_keys = {"host", "port", "user", "password", "timeout", "overwrite"}
         keys = set(keys) | required_keys # keys에 없는 required_keys(필수키) 추가
 
         # password, key_file 중 1개는 반드시 있어야함.

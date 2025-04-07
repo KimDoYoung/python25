@@ -8,15 +8,18 @@ ENV_LOAD ".env"
 MAIN
     // sftp info
     set sftp_info = {
-        "host": "jskn.ipdisk.co.kr",
-        "port": 21,
-        "user": $FTP_USER,
-        "password": $FTP_PASSWORD,
+        "host": $SFTP_HOST,
+        "port": $SFTP_PORT,
+        "user": $SFTP_USER,
+        "password": $SFTP_PASSWORD,
     }
+    set remote_dir  = "/home/kdy987/data"
+    set local_dir   = r"c:\\tmp"
     print sftp_info
-    FTP upload with=sftp_info  remote_dir="/HDD1/test1" local_dir=r"c:\tmp" files=["1.txt", "2.txt"]
-    FTP download with=sftp_info  remote_dir="/HDD1/test1"  local_dir=r"c:\tmp" files=["*.txt"]
-    FTP list with=sftp_info  remote_dir="/HDD1/test1" pattern="*.log" to_var="ftp_list"
+    SFTP upload with=sftp_info  remote_dir=remote_dir local_dir=local_dir files=["T3600*.jpg"]
+    SFTP download with=sftp_info  remote_dir=remote_dir local_dir=local_dir+"/logs" files=["T3600*.jpg"]
+    //SFTP list with=sftp_info  remote_dir=remote_dir pattern="*.jpg" to_var="sftp_list"
+    //print sftp_list
 END_MAIN
 """
 #---------------------------

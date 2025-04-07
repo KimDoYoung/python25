@@ -1,3 +1,4 @@
+import fnmatch
 import os
 import glob
 import paramiko
@@ -13,6 +14,7 @@ class SftpManager(BaseManager):
         self.key_file = kwargs.get("key_file")  # 선택적 키 파일 경로
         
         self.remote_dir = kwargs.get("remote_dir", "/home/files")
+        self.local_dir = kwargs.get("local_dir", "")
         self.timeout = kwargs.get("timeout", 10)
         self.overwrite = kwargs.get("overwrite", False)
 
@@ -53,6 +55,64 @@ class SftpManager(BaseManager):
                 self.sftp.chdir(part)
                 self.log("INFO", f"디렉토리 생성: {part}")
 
+    def _ensure_local_dir(self, path):
+        """필요 시 로컬 디렉토리를 생성하고 이동"""
+        if not os.path.exists(path):
+            os.makedirs(path)
+            self.log("INFO", f"로컬 디렉토리 생성: {path}")
+        os.chdir(path)
+        self.log("INFO", f"로컬 디렉토리 이동: {path}")
+
+    def _expand_local_file_patterns(self, file_patterns):
+        """
+        파일 패턴 목록에서 와일드카드를 확장하여 실제 파일 목록을 반환합니다.
+        
+        Args:
+            file_patterns (list): 파일 경로 또는 와일드카드 패턴 목록
+            
+        Returns:
+            list: 확장된 파일 경로 목록
+        """
+        expanded_files = []
+        
+        for file_pattern in file_patterns:
+            if '*' in file_pattern or '?' in file_pattern:
+                # 와일드카드 패턴이 포함된 경우 glob을 사용하여 확장
+                matching_files = glob.glob(file_pattern)
+                if not matching_files:
+                    self.log("WARN", f"매칭되는 파일 없음: {file_pattern}")
+                expanded_files.extend(matching_files)
+            else:
+                # 와일드카드가 없는 일반 파일
+                expanded_files.append(file_pattern)
+                
+        return expanded_files
+
+    def _expand_remote_file_patterns(self, file_patterns):
+        """
+        원격 디렉토리 내에서 주어진 패턴에 해당하는 파일 목록을 반환합니다.
+        
+        Args:
+            file_patterns (list): 와일드카드 파일 이름 패턴 리스트 (예: ["*.txt", "data_??.csv"])
+        
+        Returns:
+            list: 원격 디렉토리 내에서 패턴과 일치하는 파일 이름 목록
+        """
+        matched_files = []
+
+        try:
+            remote_files = self.sftp.listdir(self.remote_dir)
+        except Exception as e:
+            self.raise_error(f"원격 디렉토리 목록 가져오기 실패: {e}")
+
+        for pattern in file_patterns:
+            matches = fnmatch.filter(remote_files, pattern)
+            if not matches:
+                self.log("WARN", f"매칭되는 원격 파일 없음: {pattern}")
+            matched_files.extend(matches)
+
+        return matched_files
+
     def connect(self):
         try:
             self.ssh = paramiko.SSHClient()
@@ -82,9 +142,6 @@ class SftpManager(BaseManager):
             self.sftp = self.ssh.open_sftp()
             self.sftp.get_channel().settimeout(self.timeout)  # ✅ socket 수준 timeout 적용
 
-            # remote_dir이 없으면 생성하고 이동
-            self._ensure_remote_dir(self.remote_dir)
-
             self.log("INFO", f"SFTP 연결 성공: {self.host}:{self.port}")
         except Exception as e:
             self.raise_error(f"SFTP 연결 실패: {e}")
@@ -100,14 +157,28 @@ class SftpManager(BaseManager):
     def upload(self):
         if not self.files:
             self.raise_error("업로드할 파일이 없습니다.")
+        
+            
         try:
             self.connect()
-            for filepath in self.files:
+            # remote_dir이 없으면 생성하고 이동
+            self._ensure_remote_dir(self.remote_dir)
+            self._ensure_local_dir(self.local_dir)
+            # 와일드카드 패턴 확장
+            expanded_files = self._expand_local_file_patterns(self.files)
+            
+            if not expanded_files:
+                self.close()
+                self.raise_error("업로드할 파일이 없습니다.")
+
+
+            for filepath in expanded_files:
                 if not os.path.isfile(filepath):
-                    self.log("WARNING", f"파일 없음: {filepath}")
+                    self.log("WARN", f"파일 없음: {self.local_dir}/{filepath}")
                     continue
                 filename = os.path.basename(filepath)
-                self.sftp.put(filepath, f"{self.remote_dir}/{filename}")
+                # 현재 디렉토리(remote_dir)에 바로 업로드
+                self.sftp.put(f"{self.remote_dir}/{filepath}", filename)
                 self.log("INFO", f"업로드 완료: {filename}")
         finally:
             self.close()
@@ -115,15 +186,28 @@ class SftpManager(BaseManager):
     def download(self):
         if not self.files:
             self.raise_error("다운로드할 파일이 없습니다.")
+        
         try:
             self.connect()
-            for filepath in self.files:
-                filename = os.path.basename(filepath)
-                if os.path.exists(filepath) and not self.overwrite:
-                    self.log("WARNING", f"파일 존재(무시됨): {filepath}")
+            self._ensure_local_dir(self.local_dir)
+
+            # 와일드카드 패턴 확장 (서버 파일 목록에 대해)
+            expanded_files = self._expand_remote_file_patterns(self.files)
+
+            if not expanded_files:
+                self.close()
+                self.raise_error("다운로드할 파일이 없습니다.")
+
+            for remote_filename in expanded_files: 
+                local_filename = os.path.basename(remote_filename)
+
+                if os.path.exists(local_filename) and not self.overwrite:
+                    self.log("WARN", f"파일 존재(무시됨): {local_filename}")
                     continue
-                self.sftp.get(f"{self.remote_dir}/{filename}", filepath)
-                self.log("INFO", f"다운로드 완료: {filename}")
+
+                self.sftp.get(f"{self.remote_dir}/{remote_filename}", local_filename)
+                self.log("INFO", f"다운로드 완료: {remote_filename}")
+
         finally:
             self.close()
 
@@ -180,3 +264,5 @@ class SftpManager(BaseManager):
         if not func:
             self.raise_error(f"지원하지 않는 명령어입니다: {command}")
         func()
+
+

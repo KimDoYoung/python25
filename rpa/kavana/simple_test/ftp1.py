@@ -17,7 +17,9 @@ MAIN
     FTP upload with=ftp_info  remote_dir="/HDD1/test1" local_dir=r"c:\\tmp" files=["1.txt", "2.txt"]
     FTP download with=ftp_info  remote_dir="/HDD1/test1"  local_dir=r"c:\\tmp" files=["*.txt"]
     FTP list with=ftp_info  remote_dir="/HDD1/test1" pattern="*.txt" to_var="ftp_list"
-    print ftp_list
+    for item in ftp_list
+        print item
+    end_for
 END_MAIN
 """
 #---------------------------
