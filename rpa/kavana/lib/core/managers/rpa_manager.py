@@ -133,3 +133,31 @@ class RPAManager(BaseManager):
         """ 전체 화면 캡쳐 """
         super().log("INFO", "[RPA] 전체 화면 캡쳐")
         return pyautogui.screenshot(imageFilename=image_path, region=region)
+    
+    def execute(self):
+        method_map = {
+            "OPEN": self.open,
+            "CLICK": self.click,
+            "TYPE": self.type_text,
+            "WAIT": self.wait,
+            "GET_TEXT": self.get_text,
+            "CAPTURE": self.capture,
+            "EXECUTE_JS": self.execute_js,
+            "FIND_ELEMENTS": self.find_elements,
+            "CLOSE": self.close_browser,
+            "SCROLL_TO": self.scroll_to,
+            "SWITCH_IFRAME": self.switch_iframe,
+        }
+
+        func = method_map.get(self.command.upper())
+        if not func:
+            self.raise_error(f"브라우저 명령어에서 지원하지 않는 sub명령어: {self.command}")
+
+        result = func()  # 실제 실행
+
+        # to_var이 있을 경우, executor에 저장
+        to_var = self.options.get("to_var")
+        if to_var and result is not None and self.executor:
+            self.executor.set_var(to_var, result)
+
+        return result

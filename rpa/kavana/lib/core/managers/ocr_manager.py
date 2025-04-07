@@ -1,9 +1,9 @@
 import cv2
 import numpy as np
 import easyocr
-from base_manager import BaseManager
+from lib.core.managers.base_manager import BaseManager
 
-class OCRManager(BaseManager):
+class OcrManager(BaseManager):
     def __init__(self, **kwargs):
         super().__init__(kwargs.get("executor", None))
         self.command = kwargs.get("command")  # READ, FIND, GET_ALL
@@ -17,7 +17,7 @@ class OCRManager(BaseManager):
         self.reader = easyocr.Reader(['ko', 'en'])  # 한글 + 영어 지원
 
         if not self.command:
-            self.raise_error("command는 필수입니다.")
+            self.raise_error("OcR 명령어에 command는 필수입니다.")
 
     def execute(self):
         command_map = {

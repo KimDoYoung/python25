@@ -62,7 +62,7 @@ class BrowserManager(BaseManager):
             self.raise_error(f"지원하지 않는 명령어: {self.command}")
         return func()
 
-    def open_browser(self):
+    def open(self):
         url = self.options.get("url")
         if not url:
             self.raise_error("url 옵션이 필요합니다.")
