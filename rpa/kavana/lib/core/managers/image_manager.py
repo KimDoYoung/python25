@@ -1,5 +1,5 @@
 from PIL import Image, ImageFilter, ImageOps
-from base_manager import BaseManager
+from lib.core.managers.base_manager import BaseManager
 
 class ImageManager(BaseManager):
     def __init__(self, **kwargs):
@@ -75,7 +75,12 @@ class ImageManager(BaseManager):
         img = self.open_image()
         if not self.format:
             self.raise_error("convert_to에는 format이 필요합니다.")
-        self.save_image(img, default_format=self.format.upper())
+
+        fmt = self.format.upper()
+        if (fmt == "JPEG" or fmt=="JPG") and img.mode == "RGBA":
+            img = img.convert("RGB")
+
+        self.save_image(img, default_format=fmt)        
 
     def rotate(self):
         img = self.open_image()

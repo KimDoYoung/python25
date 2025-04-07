@@ -6,7 +6,8 @@ def run_image_command(command, **kwargs):
     manager.execute()
 
 def main():
-    source_file = "input.png"
+    base_path = "C:/Users/PC/Pictures/"
+    source_file = base_path + "efriend1.png"
 
     # 1. resize
     run_image_command(
@@ -14,7 +15,7 @@ def main():
         file=source_file,
         width=300,
         height=200,
-        save_as="output_resized.png"
+        save_as=base_path+"efriend1_300x200.png"
     )
 
     # 2. clip
@@ -22,14 +23,14 @@ def main():
         "clip",
         file=source_file,
         region=(50, 50, 200, 200),
-        save_as="output_clipped.png"
+        save_as=base_path+"efriend1_clipped.png"
     )
 
     # 3. to_gray
     run_image_command(
         "to_gray",
         file=source_file,
-        save_as="output_gray.png"
+        save_as=base_path+"efriend1_gray.png"
     )
 
     # 4. convert_to
@@ -37,7 +38,7 @@ def main():
         "convert_to",
         file=source_file,
         format="jpeg",
-        save_as="output_converted.jpg"
+        save_as=base_path+"efriend1_converted.jpg"
     )
 
     # 5. rotate
@@ -45,7 +46,7 @@ def main():
         "rotate",
         file=source_file,
         angle=90,
-        save_as="output_rotated.png"
+        save_as=base_path+"efriend1__rotated.png"
     )
 
     # 6. blur
@@ -53,7 +54,7 @@ def main():
         "blur",
         file=source_file,
         radius=4,
-        save_as="output_blurred.png"
+        save_as=base_path+"efriend1_blurred.png"
     )
 
     # 7. threshold (이진화)
@@ -61,7 +62,7 @@ def main():
         "threshold",
         file=source_file,
         level=128,
-        save_as="output_thresholded.png"
+        save_as=base_path+"efriend1_thresholded.png"
     )
 
 if __name__ == "__main__":
