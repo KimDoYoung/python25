@@ -24,19 +24,18 @@ class ImageCommand(BaseCommand):
             raise KavanaImageError(f"`{sub_command}` 명령어 처리 중 오류: {str(e)}") from e
 
     OPTION_DEFINITIONS = {
-        "file": {"required": True, "allowed_types": [TokenType.STRING]},
-        "save_as": {"required": True, "allowed_types": [TokenType.STRING]},
-        "width": {"required": False, "allowed_types": [TokenType.INTEGER]},
-        "height": {"required": False, "allowed_types": [TokenType.INTEGER]},
-        "region": {"required": False, "allowed_types": [TokenType.ARRAY]},  # [x, y, w, h]
-        "angle": {"required": False, "allowed_types": [TokenType.INTEGER]},
-        "radius": {"required": False, "allowed_types": [TokenType.INTEGER]},
-        "level": {"required": False, "allowed_types": [TokenType.INTEGER]},
-        "format": {"required": False, "allowed_types": [TokenType.STRING]},
+        "from_var": {"required": False, "allowed_types": [TokenType.STRING]},
+        "to_var": {"required": False, "allowed_types": [TokenType.STRING]},
+        "from_file": {"required": False, "allowed_types": [TokenType.STRING]},
+        "to_file": {"required": False, "allowed_types": [TokenType.STRING]},
     }
 
     def get_option_map(self, sub_command: str) -> dict:
         match sub_command:
+            case "save":
+                self.OPTION_DEFINITIONS["from_var"]["required"] = True
+                self.OPTION_DEFINITIONS["to_file"]["required"] = True
+                return self.option_map_define("from_var", "to_file")
             case "resize":
                 return self.option_map_define("file", "save_as", "width", "height")
             case "clip":

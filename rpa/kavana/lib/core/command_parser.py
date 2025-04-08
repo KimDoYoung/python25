@@ -362,6 +362,7 @@ class CommandParser:
             (r'(?i)\bIMAGE\b', TokenType.IMAGE),
             (r'(?i)\bWINDOW\b', TokenType.WINDOW),  
             (r'(?i)\bAPPLICATION\b', TokenType.APPLICATION),
+            
             (r'(?i)\bGLOBAL\b', TokenType.GLOBAL),
 
             # ✅ 제어문 키워드

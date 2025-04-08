@@ -5,9 +5,10 @@ class ImageManager(BaseManager):
     def __init__(self, **kwargs):
         super().__init__(kwargs.get("executor", None))
         self.command = kwargs.get("command")  # resize, clip, ...
-        self.file = kwargs.get("file")        # 원본 파일
-        self.save_as = kwargs.get("save_as")  # 저장 파일명
-
+        self.from_var = kwargs.get("from_var")
+        self.to_var = kwargs.get("to_var")
+        self.from_file = kwargs.get("from_file")
+        self.to_file = kwargs.get("to_file")
         # 옵션들
         self.width = kwargs.get("width")
         self.height = kwargs.get("height")
@@ -24,6 +25,7 @@ class ImageManager(BaseManager):
 
     def execute(self):
         commands = {
+            "save": self.save,
             "resize": self.resize,
             "clip": self.clip,
             "to_gray": self.to_gray,
@@ -38,6 +40,9 @@ class ImageManager(BaseManager):
             self.raise_error(f"지원하지 않는 명령어입니다: {self.command}")
         func()
 
+    def save(self):
+        pass
+    
     def open_image(self):
         try:
             return Image.open(self.file)

@@ -45,7 +45,7 @@ class FunctionToken(Token):
 class CustomToken(Token):
     """✅ 'Point', 'Rectangle', 'Region', 'Image' 등의 객체를 표현하는 커스텀 토큰"""
     data: KavanaDataType = field(init=False)
-    type: TokenType = field(default=TokenType.CUSTOM_TYPE, init=False)  # ✅ `type`을 FUNCTION으로 고정
+    type: TokenType = field(default=TokenType.CUSTOM_TYPE, init=False)  
     object_type: TokenType = TokenType.UNKNOWN  # ✅ 'POINT', 'RECTANGLE', 'REGION', 'IMAGE' 등의 타입
     arguments: List[List[Token]] = field(default_factory=list)  # ✅ 인자 리스트
     
