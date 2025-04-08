@@ -22,3 +22,4 @@ paramiko
 easyocr
 selenium
 webdriver-manager
+xmltodict

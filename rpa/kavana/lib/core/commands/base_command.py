@@ -3,7 +3,7 @@ from typing import List
 
 from lib.core.exceptions.kavana_exception import KavanaSyntaxError
 from lib.core.expr_evaluator import ExprEvaluator
-from lib.core.token import Token
+from lib.core.token import ArrayToken, HashMapToken, Token
 from lib.core.token_type import TokenType
 from lib.core.token_util import TokenUtil
 
@@ -345,7 +345,18 @@ class BaseCommand(ABC):
         for key, express in token.key_express_map.items():
             if not isinstance(key, str):
                 raise KavanaSyntaxError(f"잘못된 키 타입: {key} ({type(key)})")
-            result[key] = ExprEvaluator(executor=executor).evaluate(express).data.value
+            token = ExprEvaluator(executor=executor).evaluate(express)
+            if token.type == TokenType.HASH_MAP:
+                result[key] = self.hashmap_token_to_dict(token, executor)
+            elif token.type == TokenType.ARRAY:
+                result[key] = self.array_token_to_list(token, executor)
+            else:
+                result[key] = token.data.value
+            # if isinstance(result[key], HashMapToken):
+            #     result[key] = self.hashmap_token_to_dict(result[key], executor)
+            # elif isinstance(result[key], ArrayToken):
+            #     result[key] = self.array_token_to_list(result[key], executor)
+                
         return result
     
     def array_token_to_list(self, token: Token, executor) -> list:
