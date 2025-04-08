@@ -7,7 +7,7 @@ __pycache__/
 venv/
 env/
 *.png
-
+.env
 # macOS 관련
 .DS_Store
 logs/
