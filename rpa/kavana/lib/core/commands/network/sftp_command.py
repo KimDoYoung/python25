@@ -3,6 +3,7 @@ from lib.core.exceptions.kavana_exception import KavanaSftpError
 from lib.core.managers.sftp_manager import SftpManager
 from lib.core.token import Token
 from lib.core.token_type import TokenType
+from lib.core.token_util import TokenUtil
 
 
 class SftpCommand(BaseCommand):
@@ -24,8 +25,10 @@ class SftpCommand(BaseCommand):
                 sftp_manager.download()
             elif sub_command == "LIST":
                 files = sftp_manager.list()
-                if "to_var" in option_values:
-                    executor.set_variable(option_values["to_var"], files)
+                result_array_token = TokenUtil.list_to_array_token(files)  # HashMapToken으로 변환
+                var_name = option_values.get("to_var")    
+                executor.set_variable(var_name, result_array_token)
+
         except KavanaSftpError as e:
             raise KavanaSftpError(f"`{sub_command}` 명령어 처리 중 오류 발생: {str(e)}") from e
         

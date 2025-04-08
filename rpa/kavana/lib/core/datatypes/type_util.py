@@ -1,4 +1,4 @@
-from lib.core.datatypes.kavana_datatype import KavanaDataType
+from lib.core.datatypes.kavana_datatype import KavanaDataType, String
 
 def deep_primitive(value):
     if isinstance(value, KavanaDataType):
@@ -12,7 +12,10 @@ def deep_primitive(value):
 
 def deep_string(value):
     if isinstance(value, KavanaDataType):
-        return value.string
+        if isinstance(value, String):
+            return f"'{value.string}'"
+        else:
+            return value.string
     elif isinstance(value, list):
         return "[" + ", ".join(deep_string(v) for v in value) + "]"
     elif isinstance(value, dict):

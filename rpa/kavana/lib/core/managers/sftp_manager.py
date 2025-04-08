@@ -1,3 +1,4 @@
+from datetime import datetime
 import fnmatch
 import os
 import glob
@@ -9,37 +10,37 @@ class SftpManager(BaseManager):
         super().__init__(kwargs.get("executor", None))
         self.host = kwargs.get("host", "127.0.0.1")
         self.port = kwargs.get("port", 22)
-        self.user = kwargs.get("user", "myid")
-        self.password = kwargs.get("password", "mypassword")
+        self.user = kwargs.get("user")
+        self.password = kwargs.get("password")
         self.key_file = kwargs.get("key_file")  # 선택적 키 파일 경로
         
-        self.remote_dir = kwargs.get("remote_dir", "/home/files")
-        self.local_dir = kwargs.get("local_dir", "")
+        self.remote_dir = kwargs.get("remote_dir")
+        self.local_dir = kwargs.get("local_dir")
         self.timeout = kwargs.get("timeout", 10)
-        self.overwrite = kwargs.get("overwrite", False)
+        self.overwrite = kwargs.get("overwrite", True)
 
-        self._files = []
         self.files = kwargs.get("files", [])
+        self.pattern = kwargs.get("pattern", "*")
 
         self.ssh = None
         self.sftp = None
 
-    @property
-    def files(self):
-        return self._files
+    # @property
+    # def files(self):
+    #     return self._files
 
-    @files.setter
-    def files(self, value):
-        if not isinstance(value, list):
-            raise ValueError("files는 리스트여야 합니다.")
-        expanded = []
-        for item in value:
-            matched = glob.glob(item)
-            if matched:
-                expanded.extend(matched)
-            else:
-                expanded.append(item)
-        self._files = expanded
+    # @files.setter
+    # def files(self, value):
+    #     if not isinstance(value, list):
+    #         raise ValueError("files는 리스트여야 합니다.")
+    #     expanded = []
+    #     for item in value:
+    #         matched = glob.glob(item)
+    #         if matched:
+    #             expanded.extend(matched)
+    #         else:
+    #             expanded.append(item)
+    #     self._files = expanded
 
     def _ensure_remote_dir(self, path):
         """remote_dir이 없으면 생성하고 순차적으로 이동"""
@@ -156,7 +157,7 @@ class SftpManager(BaseManager):
 
     def upload(self):
         if not self.files:
-            self.raise_error("업로드할 파일이 없습니다.")
+            self.raise_error("SFTP 업로드할 파일이 없습니다.")
         
             
         try:
@@ -169,23 +170,23 @@ class SftpManager(BaseManager):
             
             if not expanded_files:
                 self.close()
-                self.raise_error("업로드할 파일이 없습니다.")
+                self.raise_error("SFTP 업로드할 파일이 없습니다.")
 
 
             for filepath in expanded_files:
                 if not os.path.isfile(filepath):
-                    self.log("WARN", f"파일 없음: {self.local_dir}/{filepath}")
+                    self.log("WARN", f"SFTP 파일 없음: {self.local_dir}/{filepath}")
                     continue
                 filename = os.path.basename(filepath)
                 # 현재 디렉토리(remote_dir)에 바로 업로드
-                self.sftp.put(f"{self.remote_dir}/{filepath}", filename)
-                self.log("INFO", f"업로드 완료: {filename}")
+                self.sftp.put(f"{self.local_dir}/{filepath}", f"{self.remote_dir}/{filename}")
+                self.log("INFO", f"SFTP 업로드 완료: {filename}")
         finally:
             self.close()
 
     def download(self):
         if not self.files:
-            self.raise_error("다운로드할 파일이 없습니다.")
+            self.raise_error("SFTP 다운로드할 파일이 없습니다.")
         
         try:
             self.connect()
@@ -196,17 +197,17 @@ class SftpManager(BaseManager):
 
             if not expanded_files:
                 self.close()
-                self.raise_error("다운로드할 파일이 없습니다.")
+                self.raise_error("SFTP 다운로드할 파일이 없습니다.")
 
             for remote_filename in expanded_files: 
                 local_filename = os.path.basename(remote_filename)
 
                 if os.path.exists(local_filename) and not self.overwrite:
-                    self.log("WARN", f"파일 존재(무시됨): {local_filename}")
+                    self.log("WARN", f"SFTP 파일 존재(무시됨): {local_filename}")
                     continue
 
-                self.sftp.get(f"{self.remote_dir}/{remote_filename}", local_filename)
-                self.log("INFO", f"다운로드 완료: {remote_filename}")
+                self.sftp.get(f"{self.remote_dir}/{remote_filename}", f"{self.local_dir}/{local_filename}")
+                self.log("INFO", f"SFTP 다운로드 완료: {self.remote_dir}/{remote_filename} -> {self.local_dir}/{local_filename}")
 
         finally:
             self.close()
@@ -230,10 +231,36 @@ class SftpManager(BaseManager):
         try:
             self.connect()
             files = self.sftp.listdir(self.remote_dir)
-            self.log("INFO", "디렉토리 목록:\n" + "\n".join(files))
-            return files
+            pattern = self.pattern
+            if pattern:
+                files = fnmatch.filter(files, pattern)
+
+            file_infos = []
+            for filename in files:
+                try:
+                    filepath = self.remote_dir.rstrip('/') + '/' + filename
+                    stat = self.sftp.stat(filepath)
+                    size = stat.st_size
+                    mod_time = datetime.fromtimestamp(stat.st_mtime)
+
+                    file_infos.append({
+                        "name": filename,
+                        "size": size,
+                        "modified": mod_time.strftime("%Y-%m-%d %H:%M:%S")
+                    })
+                except Exception as e:
+                    self.log("WARN", f"SFTP {filename} 메타데이터 조회 실패: {e}")
+                    file_infos.append({
+                        "name": filename,
+                        "size": None,
+                        "modified": None
+                    })
+
+            self.log("INFO", f"SFTP {len(file_infos)}개 파일 정보 조회 완료")
+            return file_infos
         finally:
             self.close()
+
 
     def mkdir(self):
         try:

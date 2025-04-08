@@ -7,6 +7,9 @@ script = """
 ENV_LOAD ".env"
 MAIN
     // ftp info
+    set text = "hello world 홍길동 산다는 것의 깊고 깊은 의미를 아직은"
+    just FILE_WRITE(r"c:\\tmp\\1.txt", text)
+    just file_write(r"c:\\tmp\\2.txt", text)
     set ftp_info = {
         "host": "jskn.ipdisk.co.kr",
         "port": 21,

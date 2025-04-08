@@ -31,7 +31,7 @@ from lib.core.datatypes.kavana_datatype import Float, Integer, String
 from lib.core.exception_registry import ExceptionRegistry
 from lib.core.exceptions.kavana_exception import BreakException, CommandExecutionError, ContinueException, KavanaException
 from lib.core.expr_evaluator import ExprEvaluator
-from lib.core.token import StringToken, Token
+from lib.core.token import ArrayToken, StringToken, Token
 from lib.core.token_type import TokenType
 from lib.core.token_util import TokenUtil
 from lib.core.variable_manager import VariableManager
@@ -184,8 +184,14 @@ class CommandExecutor:
                         loop_var_token = StringToken(data=String(t), type=TokenType.STRING)
                     elif isinstance(t, float):
                         loop_var_token = Token(data=Float(t), type=TokenType.FLOAT)
+                    elif isinstance(t, list):
+                        loop_var_token = ArrayToken(data=t, type=TokenType.ARRAY)
+                    elif isinstance(t, dict):
+                        loop_var_token = TokenUtil.dict_to_hashmap_token(t)
                     elif isinstance(t, Token):
                         loop_var_token = Token(data=t.data, type=t.type)
+                    else:
+                        raise CommandExecutionError(f"FOR IN 문에서 지원하지 않는 타입입니다: {type(t)}")
 
                     self.variable_manager.set_variable(loop_var_name, loop_var_token)
                     try:

@@ -89,6 +89,16 @@ class FtpManager(BaseManager):
                     self.log("INFO", f"업로드 완료: {filename}")
         finally:
             self.close()
+    def _expand_remote_file_patterns(self, files):
+        """와일드카드 패턴을 확장하여 파일 목록을 반환"""
+        expanded_files = []
+        for pattern in files:
+            matched = self.ftp.nlst(pattern)
+            if matched:
+                expanded_files.extend(matched)
+            else:
+                expanded_files.append(pattern)
+        return expanded_files
 
     def download(self):
         if not self.files:
@@ -100,7 +110,13 @@ class FtpManager(BaseManager):
             self.ftp.cwd(self.remote_dir)
             self._ensure_local_dir(self.local_dir)
 
-            for filepath in self.files:
+            expanded_files = self._expand_remote_file_patterns(self.files)
+
+            if not expanded_files:
+                self.close()
+                self.raise_error(f"SFTP 다운로드할 파일이 없습니다. {self.files}")
+
+            for filepath in expanded_files:
                 filename = os.path.basename(filepath)
                 if os.path.exists(filepath) and not self.overwrite:
                     self.log("WARN", f"파일 존재 (무시됨): {filepath}")
@@ -111,11 +127,12 @@ class FtpManager(BaseManager):
         finally:
             self.close()
 
-    def list(self, pattern="*"):
+    def list(self):
         try:
             self.connect()
             self.ftp.cwd(self.remote_dir)
             files = self.ftp.nlst()
+            pattern = self.pattern
             if pattern:
                 files = fnmatch.filter(files, pattern)
 
@@ -194,21 +211,21 @@ class FtpManager(BaseManager):
             self.raise_error(f"지원하지 않는 명령어입니다: {command}")
         func()
 
-    @property
-    def files(self):
-        return self._files
+    # @property
+    # def files(self):
+    #     return self._files
 
-    @files.setter
-    def files(self, value):
-        if not isinstance(value, list):
-            self.raise_error("files는 리스트여야 합니다.")
+    # @files.setter
+    # def files(self, value):
+    #     if not isinstance(value, list):
+    #         self.raise_error("files는 리스트여야 합니다.")
 
-        expanded = []
-        for item in value:
-            matched = glob.glob(item)  # ✅ 패턴 확장
-            if matched:
-                expanded.extend(matched)
-            else:
-                expanded.append(item)  # 매칭 없으면 그대로 추가 (예: 서버 파일명)
+    #     expanded = []
+    #     for item in value:
+    #         matched = glob.glob(item)  # ✅ 패턴 확장
+    #         if matched:
+    #             expanded.extend(matched)
+    #         else:
+    #             expanded.append(item)  # 매칭 없으면 그대로 추가 (예: 서버 파일명)
 
-        self._files = expanded
+    #     self._files = expanded
