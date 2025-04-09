@@ -11,6 +11,15 @@ from lib.core.token import Token, TokenStatus
 from lib.core.token_type import TokenType
 from lib.core.datatypes.image import Image
 
+CUSTOM_TYPES = {
+    TokenType.POINT,
+    TokenType.REGION,
+    TokenType.RECTANGLE,
+    TokenType.IMAGE,
+    TokenType.WINDOW,
+    TokenType.APPLICATION,
+}
+
 @dataclass
 class CustomToken(Token):
     expressions: List[List[Token]] = field(default_factory=list)

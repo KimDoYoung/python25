@@ -11,7 +11,7 @@ def script():
         SET rt = Rectangle(0,0,10,20)
         SET rg = Region(1,1,100,200)
         SET win1 = Window("title1")
-        SET img1 = Image("alert.png")
+        SET img1 = Image("C:/Users/PC/Pictures/1.png")
         SET app1 = Application("notepad.exe")
         print f"{p}, {rt}, {rg}, {win1}, {img1}"
     end_main
@@ -35,6 +35,6 @@ def test_script_execution(script, capsys):
 
     # ✅ `print` 결과 확인
     captured = capsys.readouterr()
-    expected_output = "(10, 20), [0, 0, 10, 20], [1, 1, 100, 200], title1, alert.png\n"
+    expected_output = "(10, 20), [0, 0, 10, 20], [1, 1, 100, 200], title1, C:/Users/PC/Pictures/1.png\n"
     
     assert expected_output in captured.out, f"출력값이 예상과 다릅니다: {captured.out}"

@@ -8,6 +8,16 @@ script = """
     main
         SET p = Point(10,20)
         print p
+        SET r = Rectangle(10,20,100,200)
+        print r
+        SET rg = Region(5,10,150,80)
+        print rg
+        SET i = Image("C:/Users/PC/Pictures/1.png")
+        print i
+        SET a = Application("notepad.exe")
+        print a
+        SET w = Window("Untitled - Notepad")
+        print w
     end_main
 """
 #---------------------------
@@ -21,5 +31,5 @@ parsed_commands = parser.parse(command_preprocssed_lines)
 commandExecutor = CommandExecutor()
 
 for command in parsed_commands:
-    print(command)
+    # print(command)
     commandExecutor.execute(command)

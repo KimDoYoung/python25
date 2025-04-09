@@ -18,6 +18,7 @@ from lib.core.datatypes.window import Window
 from lib.core.datatypes.ymd_time import Ymd, YmdTime
 from lib.core.exceptions.kavana_exception import ExprEvaluationError, KavanaException, KavanaTypeError
 from lib.core.custom_token_maker import CustomTokenMaker
+from lib.core.token_custom import CUSTOM_TYPES, CustomToken
 from lib.core.token_type import TokenType
 from lib.core.function_executor import FunctionExecutor
 from lib.core.function_parser import FunctionParser
@@ -57,12 +58,6 @@ class ExprEvaluator:
             TokenType.BOOLEAN,
             TokenType.YMDTIME,
             TokenType.YMD,
-            TokenType.POINT,
-            TokenType.REGION,
-            TokenType.RECTANGLE,
-            TokenType.IMAGE,
-            TokenType.WINDOW,
-            TokenType.APPLICATION
         }            
 
     def split_function_token(self, function_token:str) -> List[str]:
@@ -204,9 +199,10 @@ class ExprEvaluator:
                 i += 1
                 continue
 
-            if token.type in {TokenType.POINT, TokenType.RECTANGLE, TokenType.REGION, TokenType.IMAGE, TokenType.WINDOW, TokenType.APPLICATION}:
+            if token.type in CUSTOM_TYPES:
                 custom_token, i = CustomTokenMaker.custom_object_token(tokens, i, token.type)
                 stack.append(custom_token)
+                i += 1
                 continue
 
             if token.type == TokenType.ARRAY:
@@ -285,9 +281,14 @@ class ExprEvaluator:
                 applied_token = self.apply_prefix_token(token)
                 stack.append(applied_token)  # ✅ 문자열 토큰은 그대로 스택에 추가                  
 
+            elif token.type in CUSTOM_TYPES:
+                arg_values = []
+                result_token=token.evaluate(self)  # ✅ 사용자 정의 타입 평가
+                stack.append(result_token)
+
             elif token.type in self.data_token_type:  # ✅ Kavana 데이터 타입이면 그대로 스택에 추가
                 stack.append(token)
-            
+
             elif token.type == TokenType.IDENTIFIER:
                 valueToken = self.variable_manager.get_variable(token.data.value)
                 if valueToken is None:
@@ -382,27 +383,6 @@ class ExprEvaluator:
                 function_executor = FunctionExecutor(func_info, global_var_manager=self.variable_manager, arg_values=arg_values)
                 result_token = function_executor.execute()
                 # 결과 토큰 저장
-                stack.append(result_token)
-            elif token.type == TokenType.CUSTOM_TYPE:
-                arg_values = []
-                for arg_tokens in token.arguments:  # ✅ 각 인자는 List[Token] 형태
-                    evaluator = ExprEvaluator(self.executor)
-                    result_token = evaluator.evaluate(arg_tokens)  # ✅ 표현식을 평가
-                    arg_values.append(result_token.data.value)  # ✅ 평가 결과 저장
-                if token.object_type == TokenType.POINT:
-                    result_token = Token(data=Point(*arg_values), type=TokenType.POINT)
-                elif token.object_type == TokenType.RECTANGLE:
-                    result_token = Token(data=Rectangle(*arg_values), type=TokenType.RECTANGLE)
-                elif token.object_type == TokenType.REGION:
-                    result_token = Token(data=Region(*arg_values), type=TokenType.REGION)
-                elif token.object_type == TokenType.IMAGE:
-                    result_token = Token(data=Image(*arg_values), type=TokenType.IMAGE)
-                elif token.object_type == TokenType.WINDOW:
-                    result_token = Token(data=Window(*arg_values), type=TokenType.WINDOW)
-                elif token.object_type == TokenType.APPLICATION:
-                    result_token = Token(data=Application(*arg_values), type=TokenType.APPLICATION)
-                else:
-                    raise ExprEvaluationError(f"지원하지 않는 객체 타입입니다: {token.object_type}")
                 stack.append(result_token)
 
             elif token.type in { TokenType.ARRAY, TokenType.HASH_MAP }:

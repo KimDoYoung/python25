@@ -1,6 +1,6 @@
 # custom_token_maker.py: 사용자 정의 객체 토큰 생성기
 from lib.core.exceptions.kavana_exception import CustomTokenMakerError
-from lib.core.token_custom import CustomToken
+from lib.core.token_custom import ApplicationToken, CustomToken, ImageToken, PointToken, RectangleToken, RegionToken, WindowToken
 from lib.core.token_type import TokenType
 
 
@@ -74,7 +74,12 @@ class CustomTokenMaker:
                 )
             i += 1  # `)` 스킵
 
-        return CustomToken(object_type=TokenType.POINT, arguments=arguments, line=tokens[start_idx].line, column=tokens[start_idx].column), i
+        point_token = PointToken(data=None)
+        point_token.type = TokenType.POINT  # ✅ 타입 설정
+        point_token.expressions = arguments  # ✅ List[List[Token]] 구조 유지
+        point_token.line = tokens[start_idx].line
+        point_token.column = tokens[start_idx].column
+        return point_token, i
 
 
     @staticmethod
@@ -112,14 +117,13 @@ class CustomTokenMaker:
                     tokens[start_idx].column
                 )
             i += 1  # `)` 스킵
+        rectangle_token = RectangleToken(data=None)
+        rectangle_token.type = TokenType.RECTANGLE
+        rectangle_token.expressions = arguments
+        rectangle_token.line = tokens[start_idx].line
+        rectangle_token.column = tokens[start_idx].column
+        return rectangle_token, i
 
-        return CustomToken(
-            object_type=TokenType.RECTANGLE,
-            arguments=arguments,  # ✅ List[List[Token]] 구조 유지
-            line=tokens[start_idx].line,
-            column=tokens[start_idx].column
-        ), i
-    
     @staticmethod
     def image_token(tokens, start_idx):
         """✅ `Image("path")` 또는 `Image "path"` 형식을 처리"""
@@ -147,13 +151,13 @@ class CustomTokenMaker:
                 )
             i += 1  # `)` 스킵
 
-        return CustomToken(
-            object_type=TokenType.IMAGE,
-            arguments=arguments,  # ✅ List[List[Token]] 구조 유지
-            line=tokens[start_idx].line,
-            column=tokens[start_idx].column
-        ), i
-
+        image_token = ImageToken(data=None)
+        image_token.type = TokenType.IMAGE  # ✅ 타입 설정
+        image_token.expressions = arguments  # ✅ List[List[Token]] 구조 유지
+        image_token.line = tokens[start_idx].line
+        image_token.column = tokens[start_idx].column
+        return image_token, i
+    
 
     @staticmethod
     def window_token(tokens, start_idx):
@@ -175,12 +179,6 @@ class CustomTokenMaker:
             has_parentheses = True
             i += 1  # `(` 스킵
 
-        # if i >= len(tokens) or tokens[i].type != TokenType.STRING:
-        #     raise CustomTokenMakerError(
-        #         f"Invalid {object_type.name} syntax: Expected string at position {i}",
-        #         tokens[start_idx].line, tokens[start_idx].column
-        #     )
-
         arguments = [[tokens[i]]]  # ✅ List[List[Token]] 구조로 변경
         i += 1
 
@@ -191,36 +189,18 @@ class CustomTokenMaker:
                     tokens[start_idx].line, tokens[start_idx].column
                 )
             i += 1  # `)` 스킵
-
-        return CustomToken(
-            object_type=object_type,
-            arguments=arguments,  # ✅ List[List[Token]] 구조 유지
-            line=tokens[start_idx].line,
-            column=tokens[start_idx].column
-        ), i
-
-    # @staticmethod
-    # def _parse_single_string(tokens, start_idx, object_type):
-    #     """✅ 공통 문자열 처리"""
-    #     i = start_idx + 1
-    #     has_parentheses = False
-
-    #     if i < len(tokens) and tokens[i].type == TokenType.LEFT_PAREN:
-    #         has_parentheses = True
-    #         i += 1  # `(` 스킵
-
-    #     if i >= len(tokens) or tokens[i].type != TokenType.STRING:
-    #         raise CustomTokenMakerError(f"Invalid {object_type.name} syntax: Expected string at position {i}",  tokens[start_idx].line, tokens[start_idx].column)
-
-    #     arguments = [tokens[i]]
-    #     i += 1
-
-    #     if has_parentheses:
-    #         if i >= len(tokens) or tokens[i].type != TokenType.RIGHT_PAREN:
-    #             raise CustomTokenMakerError(f"Invalid {object_type.name} syntax: Expected ')' at position {i}", tokens[start_idx].line, tokens[start_idx].column)
-    #         i += 1  # `)` 스킵
-
-    #     return CustomToken(object_type=object_type, arguments=arguments, line=tokens[start_idx].line, column=tokens[start_idx].column), i
+        if object_type == TokenType.WINDOW:
+            result_token = WindowToken(data=None)
+            result_token.type = TokenType.WINDOW  # ✅ 타입 설정
+        elif object_type == TokenType.APPLICATION:
+            result_token = ApplicationToken(data=None)
+            result_token.type = TokenType.APPLICATION
+        else:
+            raise CustomTokenMakerError(f"Unknown object type: {object_type}", tokens[start_idx].line, tokens[start_idx].column)
+        result_token.expressions = arguments 
+        result_token.line = tokens[start_idx].line
+        result_token.column = tokens[start_idx].column
+        return result_token, i
 
     @staticmethod
     def region_token(tokens, start_idx):
@@ -257,10 +237,9 @@ class CustomTokenMaker:
                     tokens[start_idx].column
                 )
             i += 1  # `)` 스킵
-
-        return CustomToken(
-            object_type=TokenType.REGION,
-            arguments=arguments,  # ✅ List[List[Token]] 구조 유지
-            line=tokens[start_idx].line,
-            column=tokens[start_idx].column
-        ), i
+        region_token = RegionToken(data=None)
+        region_token.type = TokenType.REGION
+        region_token.expressions = arguments
+        region_token.line = tokens[start_idx].line
+        region_token.column = tokens[start_idx].column
+        return region_token, i
