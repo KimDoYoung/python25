@@ -1,7 +1,7 @@
 from abc import ABC, abstractmethod
 from typing import List
 
-from lib.core.exceptions.kavana_exception import KavanaSyntaxError
+from lib.core.exceptions.kavana_exception import KavanaSyntaxError, KavanaValueError
 from lib.core.expr_evaluator import ExprEvaluator
 from lib.core.token import ArrayToken, HashMapToken, Token
 from lib.core.token_type import TokenType
@@ -430,3 +430,20 @@ class BaseCommand(ABC):
                 option_values[key] = opt["default"]
 
         return option_values
+
+
+    def check_command_rules(rule_table: dict, subcommand: str, params: dict):
+        rules = rule_table.get(subcommand, {})
+
+        # 1. 상호 배타 (mutually exclusive)
+        for group in rules.get("mutually_exclusive", []):
+            present = [key for key in group if key in params]
+            if len(present) > 1:
+                raise KavanaValueError(f"옵션 충돌: {', '.join(present)} 는 동시에 사용할 수 없습니다.")
+
+        # 2. 함께 있어야 함 (required together)
+        for group in rules.get("required_together", []):
+            present = [key for key in group if key in params]
+            if 0 < len(present) < len(group):
+                missing = [key for key in group if key not in params]
+                raise KavanaValueError(f"옵션 부족: {', '.join(group)} 는 함께 지정해야 합니다. 누락: {', '.join(missing)}")

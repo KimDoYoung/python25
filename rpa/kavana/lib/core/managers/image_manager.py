@@ -1,5 +1,8 @@
 from PIL import Image, ImageFilter, ImageOps
+import cv2
+import numpy as np
 from lib.core.managers.base_manager import BaseManager
+from lib.core.token import TokenStatus
 
 class ImageManager(BaseManager):
     def __init__(self, **kwargs):
@@ -17,11 +20,6 @@ class ImageManager(BaseManager):
         self.radius = kwargs.get("radius", 2)
         self.level = kwargs.get("level", 128)
         self.format = kwargs.get("format")      # jpg, png 등
-
-        if not self.file:
-            self.raise_error("file 파라미터는 필수입니다.")
-        if not self.command:
-            self.raise_error("command 파라미터는 필수입니다.")
 
     def execute(self):
         commands = {
@@ -41,7 +39,25 @@ class ImageManager(BaseManager):
         func()
 
     def save(self):
-        pass
+        from_img_token = self.executor.get_variable(self.from_var)
+        if not from_img_token:
+            self.raise_error(f"변수 {self.from_var}에 이미지가 없습니다.")
+
+        img_obj = from_img_token.data  # Image 인스턴스
+
+        if hasattr(img_obj, "load") and from_img_token.status == TokenStatus.PARSED:
+            img_obj.load()  # ✅ 이미지 로딩
+
+        img = img_obj.data
+
+        if not isinstance(img, np.ndarray):
+            self.raise_error("이미지 데이터가 numpy 배열이 아닙니다.")
+
+        if not self.to_file:
+            self.raise_error("to_file 파라미터가 필요합니다.")
+
+        cv2.imwrite(self.to_file, img)
+        self.log("INFO", f"저장 완료: {self.to_file}")
     
     def open_image(self):
         try:

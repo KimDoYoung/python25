@@ -8,6 +8,8 @@ class Image(KavanaDataType):
         self.path = path  # 이미지 파일 경로
         self.data = None  # OpenCV 이미지 데이터 (lazy loading)
         self.value = path  # ✅ value를 path로 설정
+        self.height = 0  # 이미지 높이
+        self.width = 0
 
     def load(self):
         """이미지 파일 로드 (lazy loading)"""
@@ -15,6 +17,7 @@ class Image(KavanaDataType):
             self.data = cv2.imread(self.path, cv2.IMREAD_UNCHANGED)
             if self.data is None:
                 raise KavanaValueError(f"이미지를 불러올 수 없습니다: {self.path}")
+        self.height, self.width = self.data.shape[:2]
 
     def save(self, save_path: str):
         """이미지 저장"""
