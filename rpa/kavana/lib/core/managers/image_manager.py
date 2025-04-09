@@ -1,25 +1,31 @@
-from PIL import Image, ImageFilter, ImageOps
+import tempfile
+from PIL import  ImageFilter, ImageOps
 import cv2
 import numpy as np
+from lib.core.datatypes.image import Image
+from lib.core.exceptions.kavana_exception import KavanaValueError
 from lib.core.managers.base_manager import BaseManager
 from lib.core.token import TokenStatus
+from lib.core.token_custom import ImageToken
+from lib.core.token_type import TokenType
 
 class ImageManager(BaseManager):
     def __init__(self, **kwargs):
         super().__init__(kwargs.get("executor", None))
         self.command = kwargs.get("command")  # resize, clip, ...
-        self.from_var = kwargs.get("from_var")
-        self.to_var = kwargs.get("to_var")
-        self.from_file = kwargs.get("from_file")
-        self.to_file = kwargs.get("to_file")
+        self.from_var = kwargs.get("from_var", None)
+        self.to_var = kwargs.get("to_var", None)
+        self.from_file = kwargs.get("from_file", None)
+        self.to_file = kwargs.get("to_file", None)
         # 옵션들
-        self.width = kwargs.get("width")
-        self.height = kwargs.get("height")
+        self.factor = kwargs.get("factor", None)
+        self.width = kwargs.get("width", None)
+        self.height = kwargs.get("height", None)
         self.region = kwargs.get("region")      # (x, y, w, h)
         self.angle = kwargs.get("angle", 0)
         self.radius = kwargs.get("radius", 2)
         self.level = kwargs.get("level", 128)
-        self.format = kwargs.get("format")      # jpg, png 등
+        
 
     def execute(self):
         commands = {
@@ -59,6 +65,59 @@ class ImageManager(BaseManager):
         cv2.imwrite(self.to_file, img)
         self.log("INFO", f"저장 완료: {self.to_file}")
     
+    def resize(self):
+        ''' 이미지 크기 조정 '''
+        if self.from_var:
+            from_img_token = self.executor.get_variable(self.from_var)
+            if not from_img_token:
+                self.raise_error(f"변수 {self.from_var}에 이미지가 없습니다.")
+            img_obj = from_img_token.data
+        elif self.from_file:
+            img_obj = Image(self.from_file)
+            img_obj.load()  # 이미지 로딩
+        else:
+            self.raise_error("IMAGE resize: from_var 또는 from_file 중 하나는 필요합니다.")
+
+        if self.factor:
+            w = img_obj.width * self.factor
+            h = img_obj.height * self.factor
+        elif self.width is not None:
+                ratio = self.width / img_obj.width
+                w = self.width 
+                h = int(img_obj.height * ratio)
+        elif self.height is not None:
+                ratio = self.height / img_obj.height
+                h = self.height
+                w = int(img_obj.width * ratio)
+        else:
+            raise KavanaValueError("IMAGE resize: width 또는 height 중 하나는 지정해야 합니다.")
+
+        # resize
+        resized_img = cv2.resize(img_obj.data, (w, h))
+
+        if self.to_file is not None:
+            cv2.imwrite(self.to_file, resized_img)
+        elif self.to_var is not None:
+            # 임시로 저장한 후 불러들인다.
+            temp_file_path = self._save_temp_image(resized_img)
+            new_img = Image(temp_file_path)
+            new_img.load()  # 이미지 로딩
+            new_img_token = ImageToken(data=new_img)
+            new_img_token.type = TokenType.IMAGE            
+            new_img_token.status = TokenStatus.EVALUATED
+            self.executor.set_variable(self.to_var, new_img_token)
+        else:
+            self.raise_error("IMAGE resize : to_file 또는 to_var 파라미터가 필요합니다.")
+
+
+    def _save_temp_image(self, img):
+        """임시 이미지 저장 후 경로 반환"""
+        with tempfile.NamedTemporaryFile(delete=False, suffix=".png") as tmp_file:
+            tmp_path = tmp_file.name  # 파일 경로 추출
+
+        cv2.imwrite(tmp_path, img)
+        return tmp_path
+        
     def open_image(self):
         try:
             return Image.open(self.file)
@@ -72,12 +131,7 @@ class ImageManager(BaseManager):
         img.save(self.save_as, format=fmt)
         self.log("INFO", f"저장 완료: {self.save_as}")
 
-    def resize(self):
-        img = self.open_image()
-        if not self.width or not self.height:
-            self.raise_error("resize에는 width와 height가 필요합니다.")
-        resized = img.resize((int(self.width), int(self.height)))
-        self.save_image(resized)
+
 
     def clip(self):
         img = self.open_image()

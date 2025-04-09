@@ -1,5 +1,5 @@
 import threading
-
+#TODO:  모든 command는 result를 반환해야하지 않을까?
 class BaseManager:
     """공통 매니저 기능을 제공하는 기본 클래스 (싱글톤)"""
     _instances = {}

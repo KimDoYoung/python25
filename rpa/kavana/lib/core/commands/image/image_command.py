@@ -1,3 +1,4 @@
+import copy
 from lib.core.commands.base_command import BaseCommand
 from lib.core.exceptions.kavana_exception import KavanaImageError
 from lib.core.token import Token
@@ -16,7 +17,7 @@ class ImageCommand(BaseCommand):
                 ["to_file", "to_var"]
             ],
             "required_together": [  # 함께 있어야만 유효한 조합
-                ["width", "height"]
+                # ["width", "height"]
             ]
         }
     }
@@ -46,32 +47,40 @@ class ImageCommand(BaseCommand):
         "width": {"required": False, "allowed_types": [TokenType.INTEGER]},
         "height": {"required": False, "allowed_types": [TokenType.INTEGER]},
         "factor" : {"required": False, "allowed_types": [TokenType.FLOAT]},
-        "region": {"required": False, "allowed_types": [TokenType.REGION]},  # (x, y, w, h)
-        "angle": {"required": False, "allowed_types": [TokenType.INTEGER]},
+        #---
+        "x": {"required": False, "allowed_types": [TokenType.INTEGER]},
+        "y": {"required": False, "allowed_types": [TokenType.INTEGER]},
+        "width": {"required": False, "allowed_types": [TokenType.INTEGER]},
+        "height": {"required": False, "allowed_types": [TokenType.INTEGER]},
+        "region": {"required": False, "allowed_types": [TokenType.REGION]},  
+        "rectangle" : {"required": False, "allowed_types": [TokenType.REGION]},
     }
 
     def get_option_map(self, sub_command: str) -> dict:
+        # 원본 옵션 정의 복사
+        option_defs = copy.deepcopy(self.OPTION_DEFINITIONS)
+
         match sub_command:
             case "save":
-                self.OPTION_DEFINITIONS["from_var"]["required"] = True
-                self.OPTION_DEFINITIONS["to_file"]["required"] = True
-                return self.option_map_define("from_var", "to_file")
+                option_defs["from_var"]["required"] = True
+                option_defs["to_file"]["required"] = True
+                return self.option_map_define(option_defs, "from_var", "to_file")
             case "resize":
-                return self.option_map_define("from_var", "from_file","to_var", "to_file", "width", "height", "factor")
+                return self.option_map_define(option_defs, "from_var", "from_file","to_var", "to_file", "width", "height", "factor")
             case "clip":
-                return self.option_map_define("file", "save_as", "region")
+                return self.option_map_define(option_defs, "from_var", "from_file","to_var", "to_file", "width", "height", "x", "y", "region", "rectangle")
             case "to_gray":
-                return self.option_map_define("file", "save_as")
+                return self.option_map_define(option_defs, "file", "save_as")
             case "convert_to":
-                return self.option_map_define("file", "save_as", "format")
+                return self.option_map_define(option_defs, "file", "save_as", "format")
             case "rotate":
-                return self.option_map_define("file", "save_as", "angle")
+                return self.option_map_define(option_defs, "file", "save_as", "angle")
             case "blur":
-                return self.option_map_define("file", "save_as", "radius")
+                return self.option_map_define(option_defs, "file", "save_as", "radius")
             case "threshold":
-                return self.option_map_define("file", "save_as", "level")
+                return self.option_map_define(option_defs, "file", "save_as", "level")
             case _:
                 raise KavanaImageError(f"지원하지 않는 IMAGE sub_command: {sub_command}")
 
-    def option_map_define(self, *keys):
-        return {k: self.OPTION_DEFINITIONS[k] for k in keys if k in self.OPTION_DEFINITIONS}
+    def option_map_define(self, option_defs:dict,  *keys):
+        return {k: option_defs[k] for k in keys if k in option_defs}
