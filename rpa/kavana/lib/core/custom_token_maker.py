@@ -1,6 +1,6 @@
 # custom_token_maker.py: 사용자 정의 객체 토큰 생성기
 from lib.core.exceptions.kavana_exception import CustomTokenMakerError
-from lib.core.token import CustomToken
+from lib.core.token_custom import CustomToken
 from lib.core.token_type import TokenType
 
 

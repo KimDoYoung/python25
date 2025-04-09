@@ -452,7 +452,7 @@ class ExprEvaluator:
             # evaluated = self.safe_decode_unicode_escapes(string_value)
             evaluated = TokenUtil.decode_escaped_string(string_value)
 
-        return Token(
+        return StringToken(
             data=String(evaluated),
             type=TokenType.STRING,
             line=token.line,

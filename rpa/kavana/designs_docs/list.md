@@ -10,8 +10,8 @@
 set a = [1,2,3] -> SET, a , =, ListExtoken
 set a[1] = 3 -> SET, ListIndexToken, =, 3
 set a = [1,olist[3],4] -> SET, a, =, ListExToken(element_expres=[[1],[ListIndexToken],[4]])
-set a = [[1,2,3],[4,5]] -> SET, a, = ListExToken(element_expres=[[ListExToken],[ListExToken]]
-set a = [[a,b,c+1],[4,5]] -> SET, a, = ListExToken(element_expres=[[ListExToken],[ListExToken]]
+set a = [[1,2,3],[4,5]] -> SET, a, = ListExToken(element_expres=[[ListExToken],[ListExToken]])
+set a = [[a,b,c+1],[4,5]] -> SET, a, = ListExToken(element_expres=[[ListExToken],[ListExToken]])
 set a = [e1,2,3,(2+3*4)]
 set a[1,2,list[3]] = 3 -> set, ListIndexToken, =, 3
 set a[1,2] = 10
