@@ -5,13 +5,13 @@ from lib.core.command_preprocessor import CommandPreprocessor
 # 대입
 script = """
 MAIN
-    BROWSER OPEN url="https://haruta.co.kr/product/list.html?cate_no=52" headless=True
-    BROWSER CLICK selector="#submit" selector_type="css"
-    BROWSER TYPE selector="#input" text="Hello, World!"
-    BROWSER WAIT seconds=5
-    BROWSER GET_TEXT selector="#output" to_var="output_text"
-    PRINT output_text
-    BROWSER CAPTURE filename="screenshot.png"
+    BROWSER OPEN url="https://haruta.co.kr/product/list.html?cate_no=52"
+    //BROWSER CLICK selector="#submit" selector_type="css"
+    //BROWSER TYPE selector="#input" text="Hello, World!"
+    //BROWSER WAIT seconds=5
+    //BROWSER GET_TEXT selector="#output" to_var="output_text"
+    //PRINT output_text
+    //BROWSER CAPTURE filename="screenshot.png"
     BROWSER CLOSE
 END_MAIN
 """

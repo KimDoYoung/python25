@@ -122,7 +122,8 @@ class CommandPreprocessor:
             original_column_start = self.get_leading_space_info(line)
 
             if remove_comments:
-                line = re.sub(r'//.*', '', line).rstrip()
+                if "//" in line:
+                    line = self.remove_comments_from_line(line)
                 if line.strip() == "":
                     continue
 
@@ -155,3 +156,29 @@ class CommandPreprocessor:
             raise KavanaSyntaxError("문자열 리터럴이 닫히지 않았습니다.")
 
         return merged_lines
+
+    def remove_comments_from_line(self, line: str) -> str:
+        in_string = False
+        quote_char = ''
+        result = ''
+        i = 0
+        while i < len(line):
+            char = line[i]
+
+            if char in ('"', "'"):
+                if not in_string:
+                    in_string = True
+                    quote_char = char
+                elif char == quote_char:
+                    in_string = False
+                result += char
+                i += 1
+                continue
+
+            if char == '/' and i + 1 < len(line) and line[i + 1] == '/' and not in_string:
+                break  # 주석 시작 → 이후 다 제거
+            else:
+                result += char
+            i += 1
+
+        return result.strip()

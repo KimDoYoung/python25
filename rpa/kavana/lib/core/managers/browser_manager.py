@@ -22,44 +22,51 @@ class BrowserManager(BaseManager):
         if BrowserManager._driver is None:
             options = webdriver.ChromeOptions()
             if self.options.get("headless", False):
-                options.add_argument("--headless")
+                # 최신 Chrome 버전에서 권장되는 headless 모드 설정
+                options.add_argument("--headless=new")
             if self.options.get("user_agent"):
                 options.add_argument(f"user-agent={self.options['user_agent']}")
             if self.options.get("window_size"):
                 options.add_argument(f"--window-size={self.options['window_size']}")
             options.add_argument("--disable-dev-shm-usage")
             options.add_argument("--no-sandbox")
-            BrowserManager._driver = webdriver.Chrome(
-                service=Service(ChromeDriverManager().install()), options=options
-            )
+            options.add_argument("--disable-gpu") # GPU X
+            # options.add_argument("--disable-software-rasterizer") # 고급옵션 X
+            # options.add_experimental_option('excludeSwitches', ['enable-logging']) #로그사용X 
+            # options.add_experimental_option('excludeSwitches', ['enable-logging'])
+            options.add_experimental_option('useAutomationExtension', False)
+            
+            try:
+                BrowserManager._driver = webdriver.Chrome(
+                    service=Service(ChromeDriverManager().install()), options=options
+                )
+            except Exception as e:
+                self.log("ERROR", f"브라우저 드라이버 초기화 오류: {str(e)}")
+                self.raise_error(f"브라우저 드라이버 초기화 실패: {str(e)}")
+                
         return BrowserManager._driver
-
-    def find_element(self, selector, selector_type="css"):
-        driver = self.get_driver()
-        if selector_type == "xpath":
-            return driver.find_element(By.XPATH, selector)
-        elif selector_type == "id":
-            return driver.find_element(By.ID, selector)
-        else:
-            return driver.find_element(By.CSS_SELECTOR, selector)
 
     def execute(self):
         method_map = {
-            "OPEN": self.open_browser,
-            "CLICK": self.click,
-            "TYPE": self.type_text,
-            "WAIT": self.wait,
-            "GET_TEXT": self.get_text,
-            "CAPTURE": self.capture,
-            "EXECUTE_JS": self.execute_js,
-            "FIND_ELEMENTS": self.find_elements,
-            "CLOSE": self.close_browser,
-            "SCROLL_TO": self.scroll_to,
-            "SWITCH_IFRAME": self.switch_iframe,
+            "open": self.open_browser,
+            "click": self.click,
+            "put_text": self.type_text,
+            "wait": self.wait,
+            "get_text": self.get_text,
+            "close": self.close_browser,
+            "capture": self.capture,
+            "execute_js": self.execute_js,
+            "find_elements": self.find_elements,
+            "scroll_to": self.scroll_to,
+            "switch_iframe": self.switch_iframe
         }
-        func = method_map.get(self.command.upper())
+        
+        func = method_map.get(self.command)
         if not func:
-            self.raise_error(f"지원하지 않는 명령어: {self.command}")
+            self.log("ERROR", f"BROWSER Manager: 알 수 없는 명령어: {self.command}")
+            self.raise_error(f"BROWSER Manager 지원하지 않는 명령어: {self.command}")
+        
+        # 실행 코드 추가
         return func()
 
     def open_browser(self):
@@ -172,6 +179,12 @@ class BrowserManager(BaseManager):
 
     def close_browser(self):
         if BrowserManager._driver:
-            BrowserManager._driver.quit()
-            BrowserManager._driver = None
-            self.log("INFO", "브라우저 종료 완료")
+            try:
+                BrowserManager._driver.quit()
+            except Exception as e:
+                self.log("WARN", f"브라우저 종료 중 오류 발생: {str(e)}")
+            finally:
+                BrowserManager._driver = None
+                self.log("INFO", "브라우저 종료 완료")
+
+                
