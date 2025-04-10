@@ -29,8 +29,6 @@ IMAGE resize width=300 height=200 from_file="input.png" to_file="output.png"
 
 ### clip
 
-IMAGE clip x=50 y=50 width=100 height=100 from_var=img2 to_var=img3
-IMAGE clip x=10 y=10 width=50 height=50 from_file="src.png" to_file="cropped.png"
 IMAGE clip region=region(0,0,400,300) from_file="src.png" to_file="cropped.png"
 IMAGE clip rectangle= rectangle(0,0,100,100) from_file="src.png" to_var="img4"
 

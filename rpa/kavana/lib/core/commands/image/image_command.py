@@ -19,6 +19,61 @@ class ImageCommand(BaseCommand):
             "required_together": [  # 함께 있어야만 유효한 조합
                 # ["width", "height"]
             ]
+        },
+        "clip": {
+            "mutually_exclusive": [
+                ["region", "rectangle"],
+                ["from_file", "from_var"],
+                ["to_file", "to_var"]
+            ],
+            "required_together": [
+                # ["width", "height"]
+            ]
+        },
+        "to_gray": {
+            "mutually_exclusive": [
+                ["from_file", "from_var"],
+                ["to_file", "to_var"]
+            ],
+            "required_together": [
+                # ["width", "height"]
+            ]
+        },
+        "convert_to": {
+            "mutually_exclusive": [
+                ["from_file", "from_var"],
+                ["to_file", "to_var"]
+            ],
+            "required_together": [
+                # ["mode"]
+            ]
+        },
+        "rotate": {
+            "mutually_exclusive": [
+                ["from_file", "from_var"],
+                ["to_file", "to_var"]
+            ],
+            "required_together": [
+                # ["angle"]
+            ]
+        },
+        "blur": {
+            "mutually_exclusive": [
+                ["from_file", "from_var"],
+                ["to_file", "to_var"]
+            ],
+            "required_together": [
+                # ["radius"]
+            ]
+        },
+        "threshold": {
+            "mutually_exclusive": [
+                ["from_file", "from_var"],
+                ["to_file", "to_var"]
+            ],
+            "required_together": [
+                # ["level", "type"]
+            ]
         }
     }
 
@@ -48,12 +103,15 @@ class ImageCommand(BaseCommand):
         "height": {"required": False, "allowed_types": [TokenType.INTEGER]},
         "factor" : {"required": False, "allowed_types": [TokenType.FLOAT]},
         #---
-        "x": {"required": False, "allowed_types": [TokenType.INTEGER]},
-        "y": {"required": False, "allowed_types": [TokenType.INTEGER]},
-        "width": {"required": False, "allowed_types": [TokenType.INTEGER]},
-        "height": {"required": False, "allowed_types": [TokenType.INTEGER]},
         "region": {"required": False, "allowed_types": [TokenType.REGION]},  
         "rectangle" : {"required": False, "allowed_types": [TokenType.REGION]},
+        "mode" : {"required": False, "allowed_types": [TokenType.STRING]},
+        #---
+        "angle": {"required": False, "allowed_types": [TokenType.INTEGER]},
+        "radius": {"required": False, "allowed_types": [TokenType.FLOAT]},
+        #---
+        "level": {"default": 128, "allowed_types": [TokenType.INTEGER]},
+        "type": {"default": "BINARY_INV", "allowed_types": [TokenType.STRING]},
     }
 
     def get_option_map(self, sub_command: str) -> dict:
@@ -68,17 +126,18 @@ class ImageCommand(BaseCommand):
             case "resize":
                 return self.option_map_define(option_defs, "from_var", "from_file","to_var", "to_file", "width", "height", "factor")
             case "clip":
-                return self.option_map_define(option_defs, "from_var", "from_file","to_var", "to_file", "width", "height", "x", "y", "region", "rectangle")
+                return self.option_map_define(option_defs, "from_var", "from_file","to_var", "to_file", "region", "rectangle")
             case "to_gray":
-                return self.option_map_define(option_defs, "file", "save_as")
+                return self.option_map_define(option_defs, "from_var", "from_file","to_var", "to_file")
             case "convert_to":
-                return self.option_map_define(option_defs, "file", "save_as", "format")
+                option_defs["mode"]["required"] = True
+                return self.option_map_define(option_defs, "from_var", "from_file","to_var", "to_file", "mode")
             case "rotate":
-                return self.option_map_define(option_defs, "file", "save_as", "angle")
+                return self.option_map_define(option_defs, "from_var", "from_file","to_var", "to_file", "angle")
             case "blur":
-                return self.option_map_define(option_defs, "file", "save_as", "radius")
+                return self.option_map_define(option_defs, "from_var", "from_file","to_var", "to_file", "radius")
             case "threshold":
-                return self.option_map_define(option_defs, "file", "save_as", "level")
+                return self.option_map_define(option_defs, "from_var", "from_file","to_var", "to_file", "level", "type")
             case _:
                 raise KavanaImageError(f"지원하지 않는 IMAGE sub_command: {sub_command}")
 
