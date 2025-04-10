@@ -21,10 +21,12 @@ class ImageManager(BaseManager):
         self.factor = kwargs.get("factor", None)
         self.width = kwargs.get("width", None)
         self.height = kwargs.get("height", None)
-        self.region = kwargs.get("region")      # (x, y, w, h)
+        self.area = kwargs.get("area")      # (x, y, w, h)
         self.angle = kwargs.get("angle", 0)
         self.radius = kwargs.get("radius", 2)
         self.level = kwargs.get("level", 128)
+        self.type = kwargs.get("type", "BINARY_INV")
+        self.mode = kwargs.get("mode", None)
         
 
     def execute(self):
@@ -67,26 +69,27 @@ class ImageManager(BaseManager):
     
     def resize(self):
         ''' 이미지 크기 조정 '''
-        if self.from_var:
-            from_img_token = self.executor.get_variable(self.from_var)
-            if not from_img_token:
-                self.raise_error(f"변수 {self.from_var}에 이미지가 없습니다.")
-            img_obj = from_img_token.data
-        elif self.from_file:
-            img_obj = Image(self.from_file)
-            img_obj.load()  # 이미지 로딩
-        else:
-            self.raise_error("IMAGE resize: from_var 또는 from_file 중 하나는 필요합니다.")
+        # if self.from_var:
+        #     from_img_token = self.executor.get_variable(self.from_var)
+        #     if not from_img_token:
+        #         self.raise_error(f"변수 {self.from_var}에 이미지가 없습니다.")
+        #     img_obj = from_img_token.data
+        # elif self.from_file:
+        #     img_obj = Image(self.from_file)
+        #     img_obj.load()  # 이미지 로딩
+        # else:
+        #     self.raise_error("IMAGE resize: from_var 또는 from_file 중 하나는 필요합니다.")
+        img_obj = self._get_my_image_type()
 
         if self.factor:
-            w = img_obj.width * self.factor
-            h = img_obj.height * self.factor
+            w = int(img_obj.width * self.factor)
+            h = int(img_obj.height * self.factor)
         elif self.width is not None:
-                ratio = self.width / img_obj.width
+                ratio = int(self.width / img_obj.width)
                 w = self.width 
                 h = int(img_obj.height * ratio)
         elif self.height is not None:
-                ratio = self.height / img_obj.height
+                ratio = int(self.height / img_obj.height)
                 h = self.height
                 w = int(img_obj.width * ratio)
         else:
@@ -95,38 +98,49 @@ class ImageManager(BaseManager):
         # resize
         resized_img = cv2.resize(img_obj.data, (w, h))
 
-        if self.to_file is not None:
-            cv2.imwrite(self.to_file, resized_img)
-        elif self.to_var is not None:
-            # 임시로 저장한 후 불러들인다.
-            temp_file_path = self._save_temp_image(resized_img)
-            new_img = Image(temp_file_path)
-            new_img.load()  # 이미지 로딩
-            new_img_token = ImageToken(data=new_img)
-            new_img_token.type = TokenType.IMAGE            
-            new_img_token.status = TokenStatus.EVALUATED
-            self.executor.set_variable(self.to_var, new_img_token)
-        else:
-            self.raise_error("IMAGE resize : to_file 또는 to_var 파라미터가 필요합니다.")
+        # 파일 저장 또는 var에 저장
+        self._save_to_file_or_var(resized_img)
+        # if self.to_file is not None:
+        #     cv2.imwrite(self.to_file, resized_img)
+        # elif self.to_var is not None:
+        #     # 임시로 저장한 후 불러들인다.
+        #     temp_file_path = self._save_temp_image(resized_img)
+        #     new_img = Image(temp_file_path)
+        #     new_img.load()  # 이미지 로딩
+        #     new_img_token = ImageToken(data=new_img)
+        #     new_img_token.type = TokenType.IMAGE            
+        #     new_img_token.status = TokenStatus.EVALUATED
+        #     self.executor.set_variable(self.to_var, new_img_token)
+        # else:
+        #     self.raise_error("IMAGE resize : to_file 또는 to_var 파라미터가 필요합니다.")
 
 
     def clip(self):
         ''' 이미지 자르기 '''
-        # from_file, from_var 처리
         my_img = self._get_my_image_type()
-    
-        if self.region is not None:
-            x, y, w, h = self.region.x, self.region.y, self.region.width, self.region.height
-        elif self.rectangle is not None:
-            x, y, w, h = self.rectangle.x, self.rectangle.y, self.rectangle.width, self.rectangle.height
+
+        if not self.area:
+            self.raise_error("IMAGE clip: area 파라미터가 필요합니다.")
+
+        # area 타입 확인 및 분기 처리
+        if isinstance(self.area, dict):
+            x = self.area["x"]
+            y = self.area["y"]
+            w = self.area["width"]
+            h = self.area["height"]
+        elif isinstance(self.area, (tuple, list)) and len(self.area) == 4:
+            x, y, w, h = self.area
         else:
-            self.raise_error("IMAGE clip: region 또는 rectangle 중 하나는 필요합니다.")
+            self.raise_error("IMAGE clip: area는 dict 또는 (x, y, w, h) 형태의 tuple/list여야 합니다.")
+
         x_end = x + w
         y_end = y + h
-        clipped= my_img[x:x_end, y:y_end]    
 
-        # 파일 저장 또는 var에 저장
+        # OpenCV 배열은 (y, x) 순서로 슬라이싱해야 함
+        clipped = my_img.data[y:y_end, x:x_end]
+
         self._save_to_file_or_var(clipped)
+
 
         return    
 
@@ -147,21 +161,17 @@ class ImageManager(BaseManager):
             self.raise_error("convert_to: 지원하지 않는 모드입니다. mode는 '1', 'L', 'RGB', 'RGBA', 'CMYK', 'P' 중 하나여야 합니다.")   
 
         my_img = self._get_my_image_type()
-        if self.mode == "1":
-            converted_img = my_img.convert("1")
-        elif self.mode == "L":
-            converted_img = my_img.convert("L")
-        elif self.mode == "RGB":
-            converted_img = my_img.convert("RGB")
-        elif self.mode == "RGBA":
-            converted_img = my_img.convert("RGBA")
-        elif self.mode == "CMYK":
-            converted_img = my_img.convert("CMYK")
-        elif self.mode == "P":
-            converted_img = my_img.convert("P")
-        else:
-            self.raise_error(f"지원하지 않는 모드입니다: {self.mode}")
-        self._save_to_file_or_var(converted_img)
+
+        # numpy ndarray → PIL 이미지로 변환
+        from PIL import Image as PILImage
+        pil_img = PILImage.fromarray(my_img.data)
+
+        # convert 실행
+        converted_pil = pil_img.convert(self.mode)
+
+        # 다시 numpy 배열로 변환해서 저장
+        converted_np = np.array(converted_pil)
+        self._save_to_file_or_var(converted_np)
         return
 
     def rotate(self):
@@ -172,7 +182,7 @@ class ImageManager(BaseManager):
             self.raise_error("rotate: angle 파라미터가 필요합니다.")
         if self.angle is not None and not isinstance(self.angle, (int)):
             self.raise_error("rotate: angle은 정수여야 합니다.")
-        (h, w) = my_img.shape[:2]
+        (h, w) = my_img.data.shape[:2]
         center = (w // 2, h // 2)
         M = cv2.getRotationMatrix2D(center, self.angle, 1.0)
 
@@ -186,7 +196,7 @@ class ImageManager(BaseManager):
         M[0, 2] += (new_w / 2) - center[0]
         M[1, 2] += (new_h / 2) - center[1]
 
-        rotated_img =  cv2.warpAffine(my_img, M, (new_w, new_h))
+        rotated_img =  cv2.warpAffine(my_img.data, M, (new_w, new_h))
         
         # 파일 저장 또는 var에 저장
         self._save_to_file_or_var(rotated_img)
@@ -257,10 +267,14 @@ class ImageManager(BaseManager):
         return img_obj
 
     def _save_to_file_or_var(self, img):
+        # bool → uint8 변환 (OpenCV 저장을 위해)
+        if isinstance(img, np.ndarray) and img.dtype == np.bool_:
+            img = img.astype(np.uint8) * 255
+
         if self.to_file is not None:
             cv2.imwrite(self.to_file, img)
+
         elif self.to_var is not None:
-            # 임시로 저장한 후 불러들인다.
             temp_file_path = self._save_temp_image(img)
             new_img = Image(temp_file_path)
             new_img.load()
@@ -269,5 +283,4 @@ class ImageManager(BaseManager):
             new_img_token.status = TokenStatus.EVALUATED
             self.executor.set_variable(self.to_var, new_img_token)
         else:
-            self.raise_error("IMAGE clip : to_file 또는 to_var 파라미터가 필요합니다.")
-        return    
+            self.raise_error("IMAGE 저장 실패: to_file 또는 to_var 파라미터가 필요합니다.")

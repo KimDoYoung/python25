@@ -22,7 +22,6 @@ class ImageCommand(BaseCommand):
         },
         "clip": {
             "mutually_exclusive": [
-                ["region", "rectangle"],
                 ["from_file", "from_var"],
                 ["to_file", "to_var"]
             ],
@@ -103,8 +102,7 @@ class ImageCommand(BaseCommand):
         "height": {"required": False, "allowed_types": [TokenType.INTEGER]},
         "factor" : {"required": False, "allowed_types": [TokenType.FLOAT]},
         #---
-        "region": {"required": False, "allowed_types": [TokenType.REGION]},  
-        "rectangle" : {"required": False, "allowed_types": [TokenType.REGION]},
+        "area": {"required": False, "allowed_types": [TokenType.REGION]},  
         "mode" : {"required": False, "allowed_types": [TokenType.STRING]},
         #---
         "angle": {"required": False, "allowed_types": [TokenType.INTEGER]},
@@ -126,7 +124,7 @@ class ImageCommand(BaseCommand):
             case "resize":
                 return self.option_map_define(option_defs, "from_var", "from_file","to_var", "to_file", "width", "height", "factor")
             case "clip":
-                return self.option_map_define(option_defs, "from_var", "from_file","to_var", "to_file", "region", "rectangle")
+                return self.option_map_define(option_defs, "from_var", "from_file","to_var", "to_file", "area")
             case "to_gray":
                 return self.option_map_define(option_defs, "from_var", "from_file","to_var", "to_file")
             case "convert_to":
