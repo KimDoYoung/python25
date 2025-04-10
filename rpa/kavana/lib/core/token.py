@@ -24,6 +24,14 @@ class Token:
         return f"Token(data={self.data}, type={self.type}, line={self.line}, column={self.column})"
 
 @dataclass
+class NoneToken(Token):
+    data: KavanaDataType = field(default=None, init=False)
+    type: TokenType = field(default=TokenType.NONE, init=False)
+    
+    def __post_init__(self):
+        object.__setattr__(self, "data", None)  # 명시적으로 None
+
+@dataclass
 class StringToken(Token):
     is_raw: bool = False
     is_formatted: bool = False
@@ -44,46 +52,6 @@ class FunctionToken(Token):
         """디버깅을 위한 문자열 표현"""
         arg_str = ", ".join([repr(arg) for arg in self.arguments])
         return f"FunctionToken(function_name={self.function_name}, arguments=[{arg_str}], line={self.line}, column={self.column})"
-
-
-# @dataclass
-# class CustomToken(Token):
-#     """✅ 'Point', 'Rectangle', 'Region', 'Image' 등의 객체를 표현하는 커스텀 토큰"""
-#     data: KavanaDataType = field(init=False)
-#     type: TokenType = field(default=TokenType.CUSTOM_TYPE, init=False)  
-#     object_type: TokenType = TokenType.UNKNOWN  # ✅ 'POINT', 'RECTANGLE', 'REGION', 'IMAGE' 등의 타입
-#     arguments: List[List[Token]] = field(default_factory=list)  # ✅ 인자 리스트
-    
-#     def __post_init__(self):
-#         object.__setattr__(self, "data", String(str(self.type)))  # ✅ `data`를 function_name으로 설정
-
-#     def __repr__(self):
-#         """디버깅을 위한 문자열 표현"""
-#         arg_str = ", ".join([repr(arg) for arg in self.arguments])
-#         return f"CustomToken(type={self.object_type}, arguments=[{arg_str}], line={self.line}, column={self.column})"
-
-# @dataclass
-# class CustomToken(Token):
-#     expressions: List[List[Token]] = field(default_factory=list)
-#     status: TokenStatus = TokenStatus.PARSED  # ✅ enum 사용
-
-# @dataclass
-# class PointToken(CustomToken):
-#     """✅ 'Point' 객체를 표현하는 토큰"""
-#     x: Integer = field(default=Integer(0))  # ✅ x 좌표
-#     y: Integer = field(default=Integer(0))
-#     type: TokenType = field(default=TokenType.POINT, init=False)
-
-# @dataclass
-# class RegionToken(CustomToken):
-#     """✅ 'Point' 객체를 표현하는 토큰"""
-#     x: Integer = field(default=Integer(0))  # ✅ x 좌표
-#     y: Integer = field(default=Integer(0))
-#     width: Integer = field(default=Integer(0))  # ✅ 너비
-#     height: Integer = field(default=Integer(0))
-#     type: TokenType = field(default=TokenType.REGION, init=False)
-
-
 
 @dataclass
 class YmdTimeToken(Token):

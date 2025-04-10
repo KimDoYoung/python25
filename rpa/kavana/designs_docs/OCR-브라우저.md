@@ -7,6 +7,15 @@
 
 ## 📘 OCR 명령어 목록 (Kavana)
 
+### FIX
+```kvs
+OCR READ from_file="screen.png", to_var="text1"
+OCR READ from_var=img1, area=(100, 200, 300, 100), to_var="text1"
+
+OCR FIND text="계좌번호", from_file="screen.png", area=area1, to_var="found_point"
+OCR GET_ALL from_var=img1, to_var="ocr_results"
+```
+
 ### ✅ READ
 - 영역 또는 이미지에서 문자열을 읽어들인다.
 - 옵션들
@@ -27,11 +36,11 @@ OCR READ image=image1, to_var=text1
 - 특정 단어를 영역이나 이미지에서 찾는다. 찾은 좌표를 리턴
 - 옵션들
     - text: 찾고자 하는 문자열
-    - region 
-    - retangle
-    - image_path
-    - image
+    - area
+    - from_file
+    - from_var
     - to_var : 저장할 좌표
+    - to_file
 ```kvs
 OCR FIND text="로그인" region=r1, to_var="found_point"
 OCR FIND text="계좌번호" image_path="screen.png", to_var="p1"

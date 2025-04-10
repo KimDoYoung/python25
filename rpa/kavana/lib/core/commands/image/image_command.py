@@ -87,8 +87,8 @@ class ImageCommand(BaseCommand):
         option_values = self.parse_and_validate_options(options, option_map, executor)
         self.check_command_rules(self.IMAGE_RULES, sub_command, option_values)
         try:
-            image = ImageManager(command=sub_command, executor=executor, **option_values)
-            image.execute()
+            image_manager = ImageManager(command=sub_command, executor=executor, **option_values)
+            image_manager.execute()
         except KavanaImageError as e:
             raise KavanaImageError(f"`{sub_command}` 명령어 처리 중 오류: {str(e)}") from e
 

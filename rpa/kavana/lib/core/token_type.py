@@ -71,3 +71,4 @@ class TokenType(Enum):
     EOF = "EOF"
 
     CUSTOM_TYPE = "CUSTOM_TYPE" # 사용자 정의 데이터 타입
+    

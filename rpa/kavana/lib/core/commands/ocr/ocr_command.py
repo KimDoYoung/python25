@@ -7,54 +7,84 @@ from lib.core.managers.ocr_manager import OcrManager  # OCR 처리를 담당하�
 class OcrCommand(BaseCommand):
     '''OCR 명령어 해석'''
 
+    OCR_RULES = {
+        "read": {
+            "mutually_exclusive": [  # 서로 동시에 존재하면 안 되는 파라미터들
+                ["from_file", "from_var"],
+            ],
+            "required_together": [  # 함께 있어야만 유효한 조합
+                # ["width", "height"]
+            ]
+        },
+        "find": {
+            "mutually_exclusive": [
+                ["from_file", "from_var"],
+            ],
+            "required_together": [
+                # ["width", "height"]
+            ]
+        },
+        "get_all": {
+            "mutually_exclusive": [
+                ["from_file", "from_var"],
+            ],
+            "required_together": [
+                # ["width", "height"]
+            ]
+        }
+    }
+
     def execute(self, args: list[Token], executor):
         if not args:
             raise KavanaOcrError("OCR 명령어는 최소 하나 이상의 인자가 필요합니다.")
 
-        sub_command = args[0].data.value.upper()
+        sub_command = args[0].data.value.lower()
         options, _ = self.extract_all_options(args, 1)
 
         option_map = self.get_option_map(sub_command)
         option_values = self.parse_and_validate_options(options, option_map, executor)
+        self.check_command_rules(self.OCR_RULES, sub_command, option_values)
 
         try:
-            ocr_manager = OcrManager(**option_values, executor=executor)
-
-            match sub_command:
-                case "READ":
-                    result = ocr_manager.read()
-                case "FIND":
-                    result = ocr_manager.find()
-                case "GET_ALL":
-                    result = ocr_manager.get_all()
-                case _:
-                    raise KavanaOcrError(f"지원하지 않는 OCR 서브 명령어: {sub_command}")
-
-            if "to_var" in option_values:
-                executor.set_variable(option_values["to_var"], result)
-
+            ocr_manager = OcrManager(command=sub_command,**option_values, executor=executor)
+            ocr_manager.execute()
         except KavanaOcrError as e:
             raise KavanaOcrError(f"OCR `{sub_command}` 명령어 처리 중 오류 발생: {str(e)}") from e
 
+
     OPTION_DEFINITIONS = {
-        "region": {"required": False, "allowed_types": [TokenType.STRING]},
-        "rectangle": {"required": False, "allowed_types": [TokenType.STRING]},
-        "image_path": {"required": False, "allowed_types": [TokenType.STRING]},
-        "image": {"required": False, "allowed_types": [TokenType.IMAGE]},
-        "text": {"required": False, "allowed_types": [TokenType.STRING]},  # FIND용
+        "preprocess": {"default": False, "allowed_types": [TokenType.BOOLEAN]},
+        #---------전처리 옵션------------------
+        "gray": {"default": False, "allowed_types": [TokenType.BOOLEAN]},
+        "threshold": {"default": "adaptive", "allowed_types": [TokenType.STRING]},
+        "blur": {"default": False, "allowed_types": [TokenType.BOOLEAN]},
+        "resize": {"default": 1.0, "allowed_types": [TokenType.FLOAT]},
+        "invert": {"default": False, "allowed_types": [TokenType.BOOLEAN]},
+        #------------------------------------
+        "area": {"required": False, "allowed_types": [TokenType.REGION]},
+        "text": {"required": False, "allowed_types": [TokenType.STRING]},
+        "from_var": {"required": False, "allowed_types": [TokenType.STRING]},
+        "from_file": {"required": False, "allowed_types": [TokenType.STRING]},
         "to_var": {"required": False, "allowed_types": [TokenType.STRING]},
     }
 
+
     def get_option_map(self, sub_command: str) -> dict:
         match sub_command:
-            case "READ":
-                return self.option_map_define("region", "rectangle", "image_path", "image", "to_var")
-            case "FIND":
-                return self.option_map_define("text", "region", "rectangle", "image_path", "image", "to_var")
-            case "GET_ALL":
-                return self.option_map_define("region", "rectangle", "image_path", "image", "to_var")
+            case "read":
+                return self.option_map_define("from_var", "from_file", "area", "to_var")
+            case "find":
+                return self.option_map_define("from_var", "from_file", "area", "to_var", "text")
+            case "get_all":
+                return self.option_map_define("from_var", "from_file", "area", "to_var")
             case _:
                 raise KavanaOcrError(f"지원하지 않는 OCR sub_command: {sub_command}")
 
     def option_map_define(self, *keys):
-        return {k: self.OPTION_DEFINITIONS[k] for k in keys if k in self.OPTION_DEFINITIONS}
+        required_keys = {"preprocess", "gray", "blur", "threshold", "resize", "invert"}
+        keys = set(keys) | required_keys # keys에 없는 required_keys(필수키) 추가
+
+        option_map = {}
+        for key in keys:
+            option_map[key] = self.OPTION_DEFINITIONS[key]
+        return option_map   
