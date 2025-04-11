@@ -1,3 +1,4 @@
+import time
 from selenium import webdriver
 from selenium.webdriver.common.by import By
 from selenium.webdriver.common.keys import Keys
@@ -6,6 +7,7 @@ from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
 from webdriver_manager.chrome import ChromeDriverManager
 from lib.core.managers.base_manager import BaseManager
+from lib.core.token_util import TokenUtil
 
 class BrowserManager(BaseManager):
     _driver = None
@@ -49,16 +51,17 @@ class BrowserManager(BaseManager):
     def execute(self):
         method_map = {
             "open": self.open_browser,
+            "wait": self.wait,
+            "extract": self.extract,
             "click": self.click,
             "put_text": self.type_text,
-            "wait": self.wait,
             "get_text": self.get_text,
-            "close": self.close_browser,
             "capture": self.capture,
             "execute_js": self.execute_js,
             "find_elements": self.find_elements,
             "scroll_to": self.scroll_to,
-            "switch_iframe": self.switch_iframe
+            "switch_iframe": self.switch_iframe,
+            "close": self.close_browser
         }
         
         func = method_map.get(self.command)
@@ -96,23 +99,98 @@ class BrowserManager(BaseManager):
         element.send_keys(text)
         self.log("INFO", f"입력: {text} → {selector}")
 
-    def wait(self):
-        selector = self.options.get("selector")
+    def wait(self): 
+        selector = self.options.get("select")
+        seconds = self.options.get("seconds")
         until = self.options.get("until", "visible")
         timeout = int(self.options.get("timeout", 10))
-        by_type = self.options.get("selector_type", "css")
+        by_type = self.options.get("select_by", "css")
         driver = self.get_driver()
 
+        # 단순 시간 대기
+        if selector is None and seconds:
+            time.sleep(float(seconds))
+            self.log("INFO", f"{seconds}초간 대기 완료")
+            return
+
+        if selector is None:
+            self.raise_error("selector 또는 seconds 중 하나는 반드시 필요합니다.")
+
+        # 셀렉터를 사용하는 기존 로직
         by = By.CSS_SELECTOR if by_type == "css" else By.XPATH if by_type == "xpath" else By.ID
         cond = {
             "visible": EC.visibility_of_element_located((by, selector)),
             "clickable": EC.element_to_be_clickable((by, selector)),
             "present": EC.presence_of_element_located((by, selector)),
         }.get(until)
+        
         if cond is None:
             self.raise_error(f"지원하지 않는 until 조건: {until}")
+        
         WebDriverWait(driver, timeout).until(cond)
         self.log("INFO", f"WAIT 완료: {selector} ({until})")
+
+    def extract(self):
+        ''' 웹페이지에서 요소를 추출하는 메서드, ArrayToken을 to_var에 저장'''
+        select = self.options.get("select")
+        select_by = self.options.get("select_by", "css")
+        within = self.options.get("within")
+        attr = self.options.get("attr", "text")
+        to_var = self.options.get("to_var")
+        driver = self.get_driver()
+
+        # 셀렉터 타입 결정
+        by_map = {
+            "css": By.CSS_SELECTOR,
+            "xpath": By.XPATH,
+            "id": By.ID
+        }
+
+        if select_by not in by_map:
+            self.log("ERROR", f"BROWSER extract : 지원하지 않는 select_by: {select_by}")
+            return TokenUtil.list_to_array_token([])
+
+        by = by_map[select_by]
+
+        # 탐색 범위 설정
+        search_scope = driver
+        if within:
+            try:
+                search_scope = driver.find_element(by, within)
+            except Exception:
+                self.log("WARN", f"BROWSER extract : within 요소를 찾을 수 없습니다: {within}")
+                return TokenUtil.list_to_array_token([])
+                
+        # 대상 요소 찾기
+        try:
+            elements = search_scope.find_elements(by, select)
+        except Exception:
+            self.log("WARN", f"select에 해당하는 요소를 찾을 수 없습니다: {select}")
+            return TokenUtil.list_to_array_token([])
+
+        # 값 추출
+        results = []
+        for el in elements:
+            try:
+                if attr == "text":
+                    value = el.text
+                else:
+                    value = el.get_attribute(attr)
+                if value:
+                    results.append(value)
+            except Exception as e:
+                self.log("WARN", f"추출 중 오류 발생: {e}")
+                return TokenUtil.list_to_array_token([])
+
+        # 결과 저장
+        if to_var:
+            result_token = TokenUtil.list_to_array_token(results)
+            self.executor.set_variable(to_var, result_token)
+            self.log("INFO", f"{len(results)}개 추출 → 변수 '{to_var}'에 저장 완료")
+        else:
+            self.log("INFO", f"{len(results)}개 추출됨 (변수 저장 없음)")
+
+        return results
 
     def get_text(self):
         selector = self.options.get("selector")

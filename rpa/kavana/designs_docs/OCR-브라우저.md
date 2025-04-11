@@ -91,6 +91,15 @@ SCROLL_TO	요소로 스크롤 이동
 SWITCH_IFRAME	iframe 전환
 ASSERT_TEXT	특정 텍스트 존재 여부 검증
 WAIT_FOR_TEXT	특정 텍스트가 나올 때까지 대기
+
+## Extract
+
+select	추출할 요소 선택자
+select_by	선택자 방식: css(기본), xpath, id
+within	탐색 범위를 제한할 상위 요소 셀렉터
+attr	추출할 속성: src, href, text 등
+to_var	결과 저장 변수 이름
+
 ### 옵션들
 url	접속할 URL	"https://example.com"
 selector	CSS, XPath 등 요소 선택자	"#login", "//button[text()='확인']"

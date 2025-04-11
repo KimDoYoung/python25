@@ -6,7 +6,11 @@ from lib.core.command_preprocessor import CommandPreprocessor
 script = """
 MAIN
     BROWSER OPEN url="https://haruta.co.kr/product/list.html?cate_no=52"
-    //BROWSER CLICK selector="#submit" selector_type="css"
+    //BROWSER WAIT seconds=5
+    BROWSER WAIT select=".prdList" select_by="css" until="present", timeout=10
+    BROWSER EXTRACT select=".thumb" select_by="css" within=".prdList" attr="src" to_var="image_urls"
+    print image_urls
+    //BROWSER CLICK selector="" selector_type="css"
     //BROWSER TYPE selector="#input" text="Hello, World!"
     //BROWSER WAIT seconds=5
     //BROWSER GET_TEXT selector="#output" to_var="output_text"
