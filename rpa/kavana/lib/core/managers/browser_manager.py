@@ -192,6 +192,7 @@ class BrowserManager(BaseManager):
 
         return results
 
+
     def get_text(self):
         selector = self.options.get("selector")
         to_var = self.options.get("to_var")
