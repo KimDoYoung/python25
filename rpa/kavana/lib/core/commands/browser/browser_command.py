@@ -59,10 +59,24 @@ class BrowserCommand(BaseCommand):
         "within": {"required": False, "allowed_types": [TokenType.STRING]},
         "attr": {"required": False, "allowed_types": [TokenType.STRING]},
     
-        #-----
+        #-----click
+        "click_js": {"required": False, "allowed_types": [TokenType.BOOLEAN]},
+        "scroll_first": {"required": True, "allowed_types": [TokenType.BOOLEAN]},
+        #-----put_text
         "text": {"required": False, "allowed_types": [TokenType.STRING]},
         "clear_before": {"default": False, "allowed_types": [TokenType.BOOLEAN]},
+        #-----get_text
+        "attr": {"default": "text", "allowed_types": [TokenType.STRING]},
+
+        #=--- capture
+        "to_file": {"required": True, "allowed_types": [TokenType.STRING]},
+        "multi": {"default": False, "allowed_types": [TokenType.BOOLEAN]},
+
+        #--- script_js
+        "script": {"required": True, "allowed_types": [TokenType.STRING]},
+
         "to_var": {"required": False, "allowed_types": [TokenType.STRING]},
+
         "path": {"required": False, "allowed_types": [TokenType.STRING]},
         "script": {"required": False, "allowed_types": [TokenType.STRING]},
         "full_page": {"default": False, "allowed_types": [TokenType.BOOLEAN]},
@@ -84,11 +98,20 @@ class BrowserCommand(BaseCommand):
                 option_defs["select"]["required"] = True
                 return self.option_map_define(option_defs, "select", "select_by", "within", "attr", "to_var")        
             case "click":
-                return self.option_map_define(option_defs, "selector")
+                option_defs["select"]["required"] = True
+                return self.option_map_define(option_defs, "select", "select_by", "within","timeout", "click_js", "scroll_first")
             case "put_text":
-                return self.option_map_define(option_defs, "selector", "text", "clear_before")
+                option_defs["select"]["required"] = True
+                option_defs["text"]["required"] = True
+                return self.option_map_define(option_defs, "select", "select_by", "within", "timeout", "text", "clear_before", "scroll_first") 
             case "get_text":
                 return self.option_map_define(option_defs, "selector", "to_var")
+            case "capture":
+                option_defs["to_file"]["required"] = True
+                return self.option_map_define(option_defs, "select", "select_by", "within", "scroll_first", "to_file", "multi")
+            case "script_js":
+                option_defs["script"]["required"] = True
+                return self.option_map_define(option_defs, "script", "select", "select_by", "within", "scroll_first", "to_var")
             case "close":
                 return {}
             case _:

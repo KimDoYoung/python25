@@ -1,3 +1,4 @@
+import os
 import time
 from selenium import webdriver
 from selenium.webdriver.common.by import By
@@ -7,6 +8,7 @@ from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
 from webdriver_manager.chrome import ChromeDriverManager
 from lib.core.managers.base_manager import BaseManager
+from lib.core.token import Token
 from lib.core.token_util import TokenUtil
 
 class BrowserManager(BaseManager):
@@ -54,7 +56,7 @@ class BrowserManager(BaseManager):
             "wait": self.wait,
             "extract": self.extract,
             "click": self.click,
-            "put_text": self.type_text,
+            "put_text": self.put_text,
             "get_text": self.get_text,
             "capture": self.capture,
             "execute_js": self.execute_js,
@@ -81,23 +83,49 @@ class BrowserManager(BaseManager):
         self.log("INFO", f"브라우저 열기: {url}")
 
     def click(self):
-        selector = self.options.get("selector")
-        if not selector:
-            self.raise_error("selector 옵션이 필요합니다.")
-        element = self.find_element(selector, self.options.get("selector_type", "css"))
-        element.click()
-        self.log("INFO", f"클릭: {selector}")
+        select = self.options.get("select")
+        select_by = self.options.get("select_by", "css")
+        within = self.options.get("within")
+        timeout = int(self.options.get("timeout", 10))
+        scroll_first = self.options.get("scroll_first", True)
+        click_js = self.options.get("click_js", False)
 
-    def type_text(self):
-        selector = self.options.get("selector")
-        text = self.options.get("text")
-        if not selector or text is None:
-            self.raise_error("TYPE에는 selector와 text가 필요합니다.")
-        element = self.find_element(selector, self.options.get("selector_type", "css"))
-        if self.options.get("clear_before", False):
-            element.clear()
-        element.send_keys(text)
-        self.log("INFO", f"입력: {text} → {selector}")
+        if not select:
+            self.raise_error("select 옵션이 필요합니다.")
+
+        by = {
+            "css": By.CSS_SELECTOR,
+            "xpath": By.XPATH,
+            "id": By.ID
+        }.get(select_by, By.CSS_SELECTOR)
+
+        driver = self.get_driver()
+
+        try:
+            search_scope = driver
+            if within:
+                search_scope = driver.find_element(by, within)
+                self.log("INFO", f"within 요소 탐색 성공: {within}")
+
+            self.log("INFO", f"요소 클릭 대기 중: {select}")
+            element = WebDriverWait(search_scope, timeout).until(
+                EC.element_to_be_clickable((by, select))
+            )
+
+            if scroll_first:
+                driver.execute_script("arguments[0].scrollIntoView({block: 'center'});", element)
+                self.log("INFO", f"스크롤 완료: {select}")
+
+            if click_js:
+                driver.execute_script("arguments[0].click();", element)
+                self.log("INFO", f"JS로 클릭 완료: {select}")
+            else:
+                element.click()
+                self.log("INFO", f"클릭 완료: {select}")
+
+        except Exception as e:
+            self.log("ERROR", f"클릭 실패: {select} - {str(e)}")
+            self.raise_error(f"클릭 실패: {str(e)}")
 
     def wait(self): 
         selector = self.options.get("select")
@@ -192,38 +220,201 @@ class BrowserManager(BaseManager):
 
         return results
 
+    def put_text(self):
+        ''' 웹페이지의 요소에 텍스트를 입력하는 메서드 '''
+        select = self.options.get("select")
+        select_by = self.options.get("select_by", "css")
+        within = self.options.get("within")
+        text = self.options.get("text")
+        scroll_first = self.options.get("scroll_first", True)
+        timeout = int(self.options.get("timeout", 10))
+
+        by = {
+            "css": By.CSS_SELECTOR,
+            "xpath": By.XPATH,
+            "id": By.ID
+        }.get(select_by, By.CSS_SELECTOR)
+
+        driver = self.get_driver()
+
+        try:
+            search_scope = driver
+            if within:
+                search_scope = driver.find_element(by, within)
+                self.log("INFO", f"within 요소 탐색 성공: {within}")
+
+            self.log("INFO", f"입력할 요소 대기 중: {select}")
+            element = WebDriverWait(search_scope, timeout).until(
+                EC.visibility_of_element_located((by, select))
+            )
+
+            if scroll_first:
+                driver.execute_script("arguments[0].scrollIntoView({block: 'center'});", element)
+                self.log("INFO", f"스크롤 완료: {select}")
+
+            if self.options.get("clear_before", False):
+                element.clear()
+
+            element.send_keys(text)
+            self.log("INFO", f"입력 완료: '{text}' → {select}")
+
+        except Exception as e:
+            self.log("ERROR", f"텍스트 입력 실패: {select} - {str(e)}")
+            self.raise_error(f"PUT_TEXT 실패: {str(e)}")
 
     def get_text(self):
-        selector = self.options.get("selector")
+        ''' 웹페이지의 요소에서 텍스트를 추출하는 메서드 '''
+        select = self.options.get("select")
+        select_by = self.options.get("select_by", "css")
+        within = self.options.get("within")
+        scroll_first = self.options.get("scroll_first", True)
         to_var = self.options.get("to_var")
-        if not selector or not to_var:
-            self.raise_error("GET_TEXT에는 selector와 to_var가 필요합니다.")
-        element = self.find_element(selector, self.options.get("selector_type", "css"))
-        text = element.text
-        self.log("INFO", f"GET_TEXT: {text}")
-        if self.executor:
-            self.executor.set_var(to_var, text)
-        return text
+        timeout = int(self.options.get("timeout", 10))
+        attr = self.options.get("attr", "text")  # 기본은 text
+
+        if not select or not to_var:
+            self.raise_error("GET_TEXT에는 select와 to_var가 필요합니다.")
+
+        by = {
+            "css": By.CSS_SELECTOR,
+            "xpath": By.XPATH,
+            "id": By.ID
+        }.get(select_by, By.CSS_SELECTOR)
+
+        driver = self.get_driver()
+
+        try:
+            search_scope = driver
+            if within:
+                search_scope = driver.find_element(by, within)
+
+            element = WebDriverWait(search_scope, timeout).until(
+                EC.presence_of_element_located((by, select))
+            )
+
+            if scroll_first:
+                driver.execute_script("arguments[0].scrollIntoView({block: 'center'});", element)
+
+            # 텍스트 추출 방식
+            if attr == "text":
+                value = element.text
+            else:
+                value = element.get_attribute(attr)
+            
+            str_token = TokenUtil.string_to_string_token(value)
+
+            self.executor.set_variable(to_var, str_token)
+            self.log("INFO", f"GET_TEXT 완료: '{value}' → {to_var}")
+            return value
+
+        except Exception as e:
+            self.log("ERROR", f"GET_TEXT 실패: {select} - {str(e)}")
+            self.raise_error(f"GET_TEXT 실패: {str(e)}")
+
 
     def capture(self):
-        path = self.options.get("path")
-        if not path:
-            self.raise_error("CAPTURE에는 path가 필요합니다.")
+        ''' 웹페이지의 스크린샷을 저장하는 메서드 '''
+        to_file = self.options.get("to_file")
+        select = self.options.get("select")
+        select_by = self.options.get("select_by", "css")
+        scroll_first = self.options.get("scroll_first", True)
+        multi = self.options.get("multi", False)
+
+        if not to_file:
+            self.raise_error("CAPTURE에는 to_file 옵션이 필요합니다.")
+
         driver = self.get_driver()
-        driver.save_screenshot(path)
-        self.log("INFO", f"스크린샷 저장: {path}")
+
+        if select:
+            by = {
+                "css": By.CSS_SELECTOR,
+                "xpath": By.XPATH,
+                "id": By.ID
+            }.get(select_by, By.CSS_SELECTOR)
+
+            elements = driver.find_elements(by, select)
+            if not elements:
+                self.raise_error(f"요소를 찾을 수 없습니다: {select}")
+
+            if len(elements) > 1 and not multi:
+                self.log("WARN", f"복수 요소 발견. 첫 번째 요소만 캡처됩니다. (multi=False)")
+
+            targets = elements if multi else [elements[0]]
+            base, ext = os.path.splitext(to_file)
+
+            for idx, el in enumerate(targets):
+                try:
+                    if scroll_first:
+                        driver.execute_script("arguments[0].scrollIntoView({block: 'center'});", el)
+
+                    # 파일명 결정
+                    if multi:
+                        file_path = to_file.replace("#", str(idx + 1))
+                        if file_path == to_file:
+                            file_path = f"{base}_{idx + 1}{ext}"
+                    else:
+                        file_path = to_file
+
+                    el.screenshot(file_path)
+                    self.log("INFO", f"[{idx + 1}] 요소 스크린샷 저장 완료: {file_path}")
+
+                except Exception as e:
+                    self.log("WARN", f"[{idx + 1}] 스크린샷 실패: {e}")
+        else:
+            driver.save_screenshot(to_file)
+            self.log("INFO", f"전체 페이지 스크린샷 저장 완료: {to_file}")
+
 
     def execute_js(self):
         script = self.options.get("script")
         to_var = self.options.get("to_var")
+        select = self.options.get("select")
+        select_by = self.options.get("select_by", "css")
+        within = self.options.get("within")
+        scroll_first = self.options.get("scroll_first", True)
+
         if not script:
             self.raise_error("EXECUTE_JS에는 script가 필요합니다.")
+
         driver = self.get_driver()
-        result = driver.execute_script(script)
+
+        arg = None
+        if select:
+            by = {
+                "css": By.CSS_SELECTOR,
+                "xpath": By.XPATH,
+                "id": By.ID
+            }.get(select_by, By.CSS_SELECTOR)
+
+            search_scope = driver
+            if within:
+                search_scope = driver.find_element(by, within)
+
+            element = search_scope.find_element(by, select)
+
+            if scroll_first:
+                driver.execute_script("arguments[0].scrollIntoView({block: 'center'});", element)
+
+            arg = element
+
+        result = driver.execute_script(script, arg) if arg else driver.execute_script(script)
+
         self.log("INFO", f"JS 실행 결과: {result}")
         if to_var and self.executor:
-            self.executor.set_var(to_var, result)
+            if isinstance(result, list):
+                result = TokenUtil.list_to_array_token(result)
+            elif isinstance(result, str):
+                result = TokenUtil.string_to_string_token(result)
+            elif isinstance(result, dict):
+                result = TokenUtil.dict_to_dict_token(result)
+            else:
+                result_data = TokenUtil.primitive_to_kavanatype(result)
+                result_type = TokenUtil.get_element_token_type(result)
+                result = Token(data=result_data, type=result_type)
+
+            self.executor.set_variable(to_var, result)
         return result
+
 
     def find_elements(self):
         selector = self.options.get("selector")

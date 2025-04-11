@@ -176,8 +176,6 @@ class CommandExecutor:
             elif  self.find_index(args, TokenType.IN) != -1: # for i in range(1,10)
                 loop_var_name, iterable = self.parse_for_in_args(args)
                 for t in iterable:
-                    #TODO iterable이 Integer가 아닌경우
-                    # loop_var_token = Token(data=Integer(t.data.value), type=TokenType.INTEGER)
                     if isinstance(t, int):
                         loop_var_token = Token(data=Integer(t), type=TokenType.INTEGER)
                     elif isinstance(t, str):

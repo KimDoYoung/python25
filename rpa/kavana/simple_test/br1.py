@@ -10,12 +10,14 @@ MAIN
     BROWSER WAIT select=".prdList" select_by="css" until="present", timeout=10
     BROWSER EXTRACT select=".thumb" select_by="css" within=".prdList" attr="src" to_var="image_urls"
     print image_urls
-    //BROWSER CLICK selector="" selector_type="css"
-    //BROWSER TYPE selector="#input" text="Hello, World!"
+    BROWSER click select=".buy-btn" within=".product" select_by="css" scroll_first=True click_js=False
+
+
+    BROWSER PUT_TEXT select="#input" within=".product" select_by="css" text="Hello, World!" 
     //BROWSER WAIT seconds=5
-    //BROWSER GET_TEXT selector="#output" to_var="output_text"
+    BROWSER GET_TEXT select="#input" within=".product" select_by="css" scroll_first=True to_var="output_text"
     //PRINT output_text
-    //BROWSER CAPTURE filename="screenshot.png"
+    BROWSER CAPTURE to_file="screenshot.png"
     BROWSER CLOSE
 END_MAIN
 """

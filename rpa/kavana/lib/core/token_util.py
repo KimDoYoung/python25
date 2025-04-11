@@ -7,7 +7,7 @@ from lib.core.datatypes.kavana_datatype import Boolean, Float, Integer, KavanaDa
 from lib.core.datatypes.array import Array
 from lib.core.datatypes.ymd_time import Ymd, YmdTime
 from lib.core.exceptions.kavana_exception import DataTypeError, KavanaSyntaxError
-from lib.core.token import ArrayToken, HashMapToken, Token
+from lib.core.token import ArrayToken, HashMapToken, StringToken, Token
 from lib.core.token_type import TokenType
 
 
@@ -211,4 +211,13 @@ class TokenUtil:
             element_type=element_token_type,
             element_expresses=[],
             status="Evaled"
-        )    
+        )
+
+    @staticmethod
+    def string_to_string_token(data: str) -> Token:
+        """문자열을 StringToken으로 변환"""
+        from lib.core.datatypes.kavana_datatype import KavanaDataType
+        from lib.core.exceptions.kavana_exception import KavanaTypeError
+
+        str_token = StringToken(data=String(data), type=TokenType.STRING)
+        return str_token
