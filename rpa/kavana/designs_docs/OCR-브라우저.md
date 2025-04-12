@@ -186,3 +186,16 @@ BROWSER EXTRACT select=".product" attr="data-id" to_var="ids"
 for id in ids:
     BROWSER EXECUTE_JS script="console.log(arguments[0])" select=f".product[data-id='{id}']"
 ```
+
+## switch_frame
+
+- select iframe 요소 셀렉터
+- select_by 셀렉터 타입 (css, xpath, id)
+- within (선택) 상위 영역 안에서 검색
+- to_default True일 경우 기본 페이지로 복귀
+- scroll_first (선택) 진입 전 iframe 뷰포트 이동 (기본: True)
+
+```kvs
+BROWSER SWITCH_TO_FRAME select="iframe[name='preview']"
+BROWSER SWITCH_TO_FRAME to_default=True
+```

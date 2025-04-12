@@ -79,7 +79,9 @@ class BrowserCommand(BaseCommand):
 
         "path": {"required": False, "allowed_types": [TokenType.STRING]},
         "script": {"required": False, "allowed_types": [TokenType.STRING]},
-        "full_page": {"default": False, "allowed_types": [TokenType.BOOLEAN]},
+
+        #--- switch_frame
+        "to_default": {"default": False, "allowed_types": [TokenType.BOOLEAN]},
     }
 
     def option_map_define(self, option_defs:dict,  *keys):
@@ -112,6 +114,11 @@ class BrowserCommand(BaseCommand):
             case "script_js":
                 option_defs["script"]["required"] = True
                 return self.option_map_define(option_defs, "script", "select", "select_by", "within", "scroll_first", "to_var")
+            
+            case "switch_frame":
+                option_defs["select"]["required"] = True
+                return self.option_map_define(option_defs, "script", "select", "select_by", "within", "scroll_first", "to_default")
+            
             case "close":
                 return {}
             case _:

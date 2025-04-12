@@ -430,22 +430,42 @@ class BrowserManager(BaseManager):
             self.executor.set_var(to_var, elements)
         return elements
 
-    def scroll_to(self):
-        selector = self.options.get("selector")
-        if not selector:
-            self.raise_error("SCROLL_TO에는 selector가 필요합니다.")
-        element = self.find_element(selector, self.options.get("selector_type", "css"))
-        driver = self.get_driver()
-        driver.execute_script("arguments[0].scrollIntoView({behavior: 'smooth', block: 'center'});", element)
-        self.log("INFO", f"스크롤 이동 완료: {selector}")
 
     def switch_iframe(self):
-        selector = self.options.get("selector")
-        if not selector:
-            self.raise_error("SWITCH_IFRAME에는 selector가 필요합니다.")
-        element = self.find_element(selector, self.options.get("selector_type", "css"))
-        self.get_driver().switch_to.frame(element)
-        self.log("INFO", f"iframe 전환 완료: {selector}")
+        to_default = self.options.get("to_default", False)
+        if to_default:
+            self.get_driver().switch_to.default_content()
+            self.log("INFO", "기본 프레임으로 복귀")
+            return
+
+        select = self.options.get("select")
+        select_by = self.options.get("select_by", "css")
+        within = self.options.get("within")
+        scroll_first = self.options.get("scroll_first", True)
+
+        if not select:
+            self.raise_error("SWITCH_TO_FRAME에는 select 또는 to_default 옵션이 필요합니다.")
+
+        by = {
+            "css": By.CSS_SELECTOR,
+            "xpath": By.XPATH,
+            "id": By.ID
+        }.get(select_by, By.CSS_SELECTOR)
+
+        driver = self.get_driver()
+
+        search_scope = driver
+        if within:
+            search_scope = driver.find_element(by, within)
+
+        iframe_element = search_scope.find_element(by, select)
+
+        if scroll_first:
+            driver.execute_script("arguments[0].scrollIntoView({block: 'center'});", iframe_element)
+
+        driver.switch_to.frame(iframe_element)
+        self.log("INFO", f"iframe 전환 완료: {select}")
+
 
     def close_browser(self):
         if BrowserManager._driver:
