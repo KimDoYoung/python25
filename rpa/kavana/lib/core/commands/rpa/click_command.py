@@ -3,7 +3,7 @@ from lib.actions.actions import wait_for_image
 from lib.core.commands.base_command import BaseCommand
 from lib.core.exceptions.kavana_exception import KavanaSyntaxError
 from lib.core.expr_evaluator import ExprEvaluator
-from lib.core.managers.rpa_manager import RPAManager
+from lib.core.managers.rpa_manager import RpaManager
 from lib.core.token import Token
 from lib.core.token_type import TokenType
 
@@ -23,7 +23,7 @@ class ClickCommand(BaseCommand):
         
         # 옵션 값 초기화
         option_values = {key: option_map[key].get("default", None) for key in option_map}        
-        rpa_manager = RPAManager(executor=executor)
+        rpa_manager = RpaManager(executor=executor)
         executor.set_last_error("")
         if (len(args) >= 2  # click 10,20
             and args[0].type == TokenType.INTEGER  

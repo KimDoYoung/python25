@@ -7,9 +7,17 @@ from lib.core.builtins.builtin_consts import PointName
 from lib.core.exceptions.kavana_exception import KavanaSyntaxError
 from lib.core.managers.base_manager import BaseManager
 
-class RPAManager(BaseManager):
+class RpaManager(BaseManager):
     """RPA 기능을 담당하는 매니저"""
     
+    def __init__(self, **kwargs):
+        super().__init__(kwargs.get("executor", None))
+        self.command = kwargs.get("command")
+        self.options = kwargs
+
+        if not self.command:
+            self.raise_error("command는 필수입니다.")
+
     def wait(self, seconds: int):
         """ WAIT 명령어 실행 (일반 대기)"""
         super().log("INFO", f"[RPA] {seconds}초 동안 대기...")

@@ -5,7 +5,7 @@ import pyautogui
 import pyperclip
 from lib.core.commands.base_command import BaseCommand
 from lib.core.expr_evaluator import ExprEvaluator
-from lib.core.managers.rpa_manager import RPAManager
+from lib.core.managers.rpa_manager import RpaManager
 from lib.core.token import StringToken
 from lib.core.token_type import TokenType
 
@@ -14,7 +14,7 @@ class GetTextCommand(BaseCommand):
     def execute(self, args, executor):
         ''' GET_TEXT var_to=var_name :text를 var_name에 저장합니다 '''
 
-        rpa_manager = RPAManager(executor=executor)
+        rpa_manager = RpaManager(executor=executor)
         executor.set_last_error("")
         rpa_manager.key_in(["ctrl+a", "ctrl+c"])
         time.sleep(0.2)  # 복사 시간 고려

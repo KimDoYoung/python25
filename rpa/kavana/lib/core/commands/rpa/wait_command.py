@@ -4,7 +4,7 @@ from lib.core.datatypes.image import Image
 from lib.core.datatypes.kavana_datatype import String
 from lib.core.exceptions.kavana_exception import KavanaSyntaxError, KavanaTypeError
 from lib.core.expr_evaluator import ExprEvaluator
-from lib.core.managers.rpa_manager import RPAManager
+from lib.core.managers.rpa_manager import RpaManager
 from lib.core.token import Token
 from lib.core.token_type import TokenType
 from lib.core.token_util import TokenUtil
@@ -81,7 +81,7 @@ class WaitCommand(BaseCommand):
         grayscale = option_values["grayscale"]
 
         try:
-            location = RPAManager(executor=executor).wait_for_image(
+            location = RpaManager(executor=executor).wait_for_image(
                 image_path=image_path,
                 timeout=timeout,
                 confidence=confidence,
