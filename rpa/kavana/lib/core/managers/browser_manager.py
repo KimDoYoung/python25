@@ -415,22 +415,7 @@ class BrowserManager(BaseManager):
             self.executor.set_variable(to_var, result)
         return result
 
-
-    def find_elements(self):
-        selector = self.options.get("selector")
-        to_var = self.options.get("to_var")
-        if not selector or not to_var:
-            self.raise_error("FIND_ELEMENTS에는 selector와 to_var가 필요합니다.")
-        driver = self.get_driver()
-        selector_type = self.options.get("selector_type", "css")
-        by = By.CSS_SELECTOR if selector_type == "css" else By.XPATH if selector_type == "xpath" else By.ID
-        elements = driver.find_elements(by, selector)
-        self.log("INFO", f"{len(elements)}개의 요소 발견")
-        if self.executor:
-            self.executor.set_var(to_var, elements)
-        return elements
-
-
+  
     def switch_iframe(self):
         to_default = self.options.get("to_default", False)
         if to_default:
