@@ -1,12 +1,14 @@
 # RPA 명령어
 
-1. APPLICATION
-    - APP_OPEN
-    - APP_CLOSE
+## APP_OPEN
+
 ```kvs
+SET esafe_path = "C:\\Program Files\\esafe\\esafe.exe"
 SET esafe = Application(esafe_path)
-RPA app_open from_var="esafe"  maximize=False, process_name=process_name
+APP_OPEN from_var="esafe" maximize=True process_name="esafe"
 ```
+## APP_CLOSE
+
 2. WAIT
     - WAIT 3
     - WAIT UNTIL image_path=<express>, timeout=<express:integer 60>, confidence=<express:float 0.8>, region=<express:region default None>, grayscale=<express:boolean>
@@ -34,7 +36,7 @@ rpa wait_for_image from_file="" area=Region(0,0,100,200), timeout=10, grayscale=
     - PUT_TEXT <express:string>
     - GET_TEXT  VAR_TO=<var:string> clipboard=true
 
-    
+
 7. CAPTURE : 모니터의 screen을 캡쳐한다.
     - CAPTURE
     - CAPTURE <region:express>, SAVE_TO=<path :express>, VAR_TO <string>

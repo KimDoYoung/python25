@@ -4,6 +4,7 @@ import pyautogui
 import pyperclip
 
 from lib.core.builtins.builtin_consts import PointName
+from lib.core.datatypes.application import Application
 from lib.core.exceptions.kavana_exception import KavanaSyntaxError
 from lib.core.managers.base_manager import BaseManager
 
@@ -17,6 +18,51 @@ class RpaManager(BaseManager):
 
         if not self.command:
             self.raise_error("command는 필수입니다.")
+
+    def app_open(self):
+        ''' 애플리케이션 실행 '''
+        from_var = self.options.get("from_var")
+        maximize = self.options.get("maximize", False)
+        process_name = self.options.get("process_name")
+
+        if not from_var:
+            self.raise_error("app_open 명령에는 'from_var' 옵션이 필요합니다.")
+
+        app = self.get_variable(from_var)
+
+        if not isinstance(app, Application):
+            self.raise_error(f"'{from_var}'는 Application 인스턴스가 아닙니다.")
+
+        self.log("INFO", f"Application 실행: {app.path}")
+        try:
+            app.launch(
+                executor=self.executor,
+                maximize=maximize,
+                process_name=process_name
+            )
+        except Exception as e:
+            self.raise_error(f"Application 실행 실패: {e}")
+
+    def app_close(self):
+        ''' 애플리케이션 종료 '''
+        from_var = self.options.get("from_var")
+
+        if not from_var:
+            self.raise_error("app_close 명령에는 'from_var' 옵션이 필요합니다.")
+
+        app = self.get_variable(from_var)
+
+        if not isinstance(app, Application):
+            self.raise_error(f"'{from_var}'는 Application 인스턴스가 아닙니다.")
+
+        self.log("INFO", f"Application 종료 요청: {app.path}")
+        try:
+            app.close()
+            self.log("INFO", f"Application 종료 완료: {app.path}")
+        except Exception as e:
+            self.raise_error(f"Application 종료 실패: {e}")
+
+
 
     def wait(self, seconds: int):
         """ WAIT 명령어 실행 (일반 대기)"""
@@ -144,28 +190,24 @@ class RpaManager(BaseManager):
     
     def execute(self):
         method_map = {
-            "OPEN": self.open,
-            "CLICK": self.click,
-            "TYPE": self.type_text,
-            "WAIT": self.wait,
-            "GET_TEXT": self.get_text,
-            "CAPTURE": self.capture,
-            "EXECUTE_JS": self.execute_js,
-            "FIND_ELEMENTS": self.find_elements,
-            "CLOSE": self.close_browser,
-            "SCROLL_TO": self.scroll_to,
-            "SWITCH_IFRAME": self.switch_iframe,
+            "wait": self.wait,
+            "wait_for_image": self.wait_for_image,
+            "click_point": self.click_point,
+            "click_image": self.click_image,
+            "click_region": self.click_region,
+            "mouse_move": self.mouse_move,
+            "key_in": self.key_in,
+            "put_text": self.put_text,
+            "capture": self.capture_screen,
+            "get_text": self.get_text,
+            "app_open": self.app_open,
+            "app_close": self.app_close,
         }
 
-        func = method_map.get(self.command.upper())
+        func = method_map.get(self.command.lower())
         if not func:
-            self.raise_error(f"브라우저 명령어에서 지원하지 않는 sub명령어: {self.command}")
+            self.raise_error(f"RPA 명령어에서 지원하지 않는 sub명령어: {self.command}")
 
         result = func()  # 실제 실행
-
-        # to_var이 있을 경우, executor에 저장
-        to_var = self.options.get("to_var")
-        if to_var and result is not None and self.executor:
-            self.executor.set_var(to_var, result)
 
         return result
