@@ -1,5 +1,7 @@
 import threading
 #TODO:  모든 command는 result를 반환해야하지 않을까?
+#TODO: command와 manager는 같은 형태여야한다.
+#TODO: option들을 체크하는 로직에 포함되어야할 문자들을 체크해야한다.
 class BaseManager:
     """공통 매니저 기능을 제공하는 기본 클래스 (싱글톤)"""
     _instances = {}

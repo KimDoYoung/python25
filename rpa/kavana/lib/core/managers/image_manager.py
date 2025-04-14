@@ -9,6 +9,8 @@ from lib.core.token import TokenStatus
 from lib.core.token_custom import ImageToken
 from lib.core.token_type import TokenType
 
+# TODO : create_image() 메서드 추가 text로 이미지 생성
+# 
 class ImageManager(BaseManager):
     def __init__(self, **kwargs):
         super().__init__(kwargs.get("executor", None))
@@ -69,16 +71,6 @@ class ImageManager(BaseManager):
     
     def resize(self):
         ''' 이미지 크기 조정 '''
-        # if self.from_var:
-        #     from_img_token = self.executor.get_variable(self.from_var)
-        #     if not from_img_token:
-        #         self.raise_error(f"변수 {self.from_var}에 이미지가 없습니다.")
-        #     img_obj = from_img_token.data
-        # elif self.from_file:
-        #     img_obj = Image(self.from_file)
-        #     img_obj.load()  # 이미지 로딩
-        # else:
-        #     self.raise_error("IMAGE resize: from_var 또는 from_file 중 하나는 필요합니다.")
         img_obj = self._get_my_image_type()
 
         if self.factor:
@@ -100,20 +92,6 @@ class ImageManager(BaseManager):
 
         # 파일 저장 또는 var에 저장
         self._save_to_file_or_var(resized_img)
-        # if self.to_file is not None:
-        #     cv2.imwrite(self.to_file, resized_img)
-        # elif self.to_var is not None:
-        #     # 임시로 저장한 후 불러들인다.
-        #     temp_file_path = self._save_temp_image(resized_img)
-        #     new_img = Image(temp_file_path)
-        #     new_img.load()  # 이미지 로딩
-        #     new_img_token = ImageToken(data=new_img)
-        #     new_img_token.type = TokenType.IMAGE            
-        #     new_img_token.status = TokenStatus.EVALUATED
-        #     self.executor.set_variable(self.to_var, new_img_token)
-        # else:
-        #     self.raise_error("IMAGE resize : to_file 또는 to_var 파라미터가 필요합니다.")
-
 
     def clip(self):
         ''' 이미지 자르기 '''

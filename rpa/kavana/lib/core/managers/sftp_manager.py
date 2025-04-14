@@ -25,23 +25,6 @@ class SftpManager(BaseManager):
         self.ssh = None
         self.sftp = None
 
-    # @property
-    # def files(self):
-    #     return self._files
-
-    # @files.setter
-    # def files(self, value):
-    #     if not isinstance(value, list):
-    #         raise ValueError("files는 리스트여야 합니다.")
-    #     expanded = []
-    #     for item in value:
-    #         matched = glob.glob(item)
-    #         if matched:
-    #             expanded.extend(matched)
-    #         else:
-    #             expanded.append(item)
-    #     self._files = expanded
-
     def _ensure_remote_dir(self, path):
         """remote_dir이 없으면 생성하고 순차적으로 이동"""
         if not path or path == "/":
