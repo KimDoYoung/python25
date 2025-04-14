@@ -78,7 +78,7 @@ class RpaCommand(BaseCommand):
         return {k: option_defs[k] for k in keys if k in option_defs}
 
     def get_option_map(self, sub_command: str) -> dict:
-        # 원본 옵션 정의 복사
+        '''sub_command에 따라 옵션 맵을 정의합니다.'''
         option_defs = copy.deepcopy(self.OPTION_DEFINITIONS)        
         match sub_command:
             case "app_open":
