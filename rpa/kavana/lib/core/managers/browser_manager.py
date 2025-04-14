@@ -22,7 +22,32 @@ class BrowserManager(BaseManager):
         if not self.command:
             self.raise_error("command는 필수입니다.")
 
-    def get_driver(self):
+    def execute(self):
+        method_map = {
+            "open": self.open_browser,
+            "wait": self.wait,
+            "extract": self.extract,
+            "click": self.click,
+            "put_text": self.put_text,
+            "get_text": self.get_text,
+            "capture": self.capture,
+            "execute_js": self.execute_js,
+            "find_elements": self.find_elements,
+            "scroll_to": self.scroll_to,
+            "switch_iframe": self.switch_iframe,
+            "close": self.close_browser
+        }
+        
+        func = method_map.get(self.command)
+        if not func:
+            self.log("ERROR", f"BROWSER Manager: 알 수 없는 명령어: {self.command}")
+            self.raise_error(f"BROWSER Manager 지원하지 않는 명령어: {self.command}")
+        
+        # 실행 코드 추가
+        return func()
+
+
+    def _get_driver(self):
         if BrowserManager._driver is None:
             options = webdriver.ChromeOptions()
             if self.options.get("headless", False):
@@ -50,35 +75,11 @@ class BrowserManager(BaseManager):
                 
         return BrowserManager._driver
 
-    def execute(self):
-        method_map = {
-            "open": self.open_browser,
-            "wait": self.wait,
-            "extract": self.extract,
-            "click": self.click,
-            "put_text": self.put_text,
-            "get_text": self.get_text,
-            "capture": self.capture,
-            "execute_js": self.execute_js,
-            "find_elements": self.find_elements,
-            "scroll_to": self.scroll_to,
-            "switch_iframe": self.switch_iframe,
-            "close": self.close_browser
-        }
-        
-        func = method_map.get(self.command)
-        if not func:
-            self.log("ERROR", f"BROWSER Manager: 알 수 없는 명령어: {self.command}")
-            self.raise_error(f"BROWSER Manager 지원하지 않는 명령어: {self.command}")
-        
-        # 실행 코드 추가
-        return func()
-
     def open_browser(self):
         url = self.options.get("url")
         if not url:
             self.raise_error("url 옵션이 필요합니다.")
-        driver = self.get_driver()
+        driver = self._get_driver()
         driver.get(url)
         self.log("INFO", f"브라우저 열기: {url}")
 
@@ -99,7 +100,7 @@ class BrowserManager(BaseManager):
             "id": By.ID
         }.get(select_by, By.CSS_SELECTOR)
 
-        driver = self.get_driver()
+        driver = self._get_driver()
 
         try:
             search_scope = driver
@@ -133,7 +134,7 @@ class BrowserManager(BaseManager):
         until = self.options.get("until", "visible")
         timeout = int(self.options.get("timeout", 10))
         by_type = self.options.get("select_by", "css")
-        driver = self.get_driver()
+        driver = self._get_driver()
 
         # 단순 시간 대기
         if selector is None and seconds:
@@ -165,7 +166,7 @@ class BrowserManager(BaseManager):
         within = self.options.get("within")
         attr = self.options.get("attr", "text")
         to_var = self.options.get("to_var")
-        driver = self.get_driver()
+        driver = self._get_driver()
 
         # 셀렉터 타입 결정
         by_map = {
@@ -235,7 +236,7 @@ class BrowserManager(BaseManager):
             "id": By.ID
         }.get(select_by, By.CSS_SELECTOR)
 
-        driver = self.get_driver()
+        driver = self._get_driver()
 
         try:
             search_scope = driver
@@ -281,7 +282,7 @@ class BrowserManager(BaseManager):
             "id": By.ID
         }.get(select_by, By.CSS_SELECTOR)
 
-        driver = self.get_driver()
+        driver = self._get_driver()
 
         try:
             search_scope = driver
@@ -323,7 +324,7 @@ class BrowserManager(BaseManager):
         if not to_file:
             self.raise_error("CAPTURE에는 to_file 옵션이 필요합니다.")
 
-        driver = self.get_driver()
+        driver = self._get_driver()
 
         if select:
             by = {
@@ -376,7 +377,7 @@ class BrowserManager(BaseManager):
         if not script:
             self.raise_error("EXECUTE_JS에는 script가 필요합니다.")
 
-        driver = self.get_driver()
+        driver = self._get_driver()
 
         arg = None
         if select:
@@ -419,7 +420,7 @@ class BrowserManager(BaseManager):
     def switch_iframe(self):
         to_default = self.options.get("to_default", False)
         if to_default:
-            self.get_driver().switch_to.default_content()
+            self._get_driver().switch_to.default_content()
             self.log("INFO", "기본 프레임으로 복귀")
             return
 
@@ -437,7 +438,7 @@ class BrowserManager(BaseManager):
             "id": By.ID
         }.get(select_by, By.CSS_SELECTOR)
 
-        driver = self.get_driver()
+        driver = self._get_driver()
 
         search_scope = driver
         if within:

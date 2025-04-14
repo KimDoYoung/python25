@@ -19,6 +19,30 @@ class RpaManager(BaseManager):
         if not self.command:
             self.raise_error("command는 필수입니다.")
 
+    def execute(self):
+        method_map = {
+            "app_open": self.app_open,
+            "app_close": self.app_close,
+            "wait": self.wait,
+            "wait_for_image": self.wait_for_image,
+            "click_point": self.click_point,
+            "click_image": self.click_image,
+            "click_region": self.click_region,
+            "mouse_move": self.mouse_move,
+            "key_in": self.key_in,
+            "put_text": self.put_text,
+            "get_text": self.get_text,
+            "capture": self.capture_screen,
+        }
+
+        func = method_map.get(self.command.lower())
+        if not func:
+            self.raise_error(f"RPA 명령어에서 지원하지 않는 sub명령어: {self.command}")
+
+        result = func()  # 실제 실행
+
+        return result
+
     def app_open(self):
         ''' 애플리케이션 실행 '''
         from_var = self.options.get("from_var")
@@ -426,26 +450,3 @@ class RpaManager(BaseManager):
             self.raise_error(f"[RPA] 화면 캡처 실패: {e}")
 
     
-    def execute(self):
-        method_map = {
-            "app_open": self.app_open,
-            "app_close": self.app_close,
-            "wait": self.wait,
-            "wait_for_image": self.wait_for_image,
-            "click_point": self.click_point,
-            "click_image": self.click_image,
-            "click_region": self.click_region,
-            "mouse_move": self.mouse_move,
-            "key_in": self.key_in,
-            "put_text": self.put_text,
-            "get_text": self.get_text,
-            "capture": self.capture_screen,
-        }
-
-        func = method_map.get(self.command.lower())
-        if not func:
-            self.raise_error(f"RPA 명령어에서 지원하지 않는 sub명령어: {self.command}")
-
-        result = func()  # 실제 실행
-
-        return result

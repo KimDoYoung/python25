@@ -73,7 +73,7 @@ class RpaCommand(BaseCommand):
         "strip": {"default": True, "allowed_types": [TokenType.BOOLEAN]},
         "wait_before": {"default": 0.5, "allowed_types": [TokenType.FLOAT]},
     }
-#rpa wait_for_image from_file="" area=Region(0,0,100,200), timeout=10, grayscale=False, confidence=0.8
+
     def option_map_define(self, option_defs:dict,  *keys):
         return {k: option_defs[k] for k in keys if k in option_defs}
 

@@ -7,6 +7,7 @@ SET esafe_path = "C:\\Program Files\\esafe\\esafe.exe"
 SET esafe = Application(esafe_path)
 RPA APP_OPEN from_var="esafe" maximize=True process_name="esafe"
 ```
+
 ## APP_CLOSE
 
 2. WAIT
@@ -14,18 +15,21 @@ RPA APP_OPEN from_var="esafe" maximize=True process_name="esafe"
     - WAIT UNTIL image_path=<express>, timeout=<express:integer 60>, confidence=<express:float 0.8>, region=<express:region default None>, grayscale=<express:boolean>
 
 3. WAIT_FOR_IMAGE
-   
+
 ```kvs
 rpa wait_for_image from_file="" area=Region(0,0,100,200), timeout=10, grayscale=False, confidence=0.8
 ```
+
 4. CLICK_POINT
    - x,y위치를 찾아서 클릭한다.
    - click_type: double|right
    - click_count: 클릭 횟수 default 1
    - duration은 클릭 count가 1이상일 때 유효
+
   ```kvs
   RPA click_point x=10, y=10 click_count = 2
   ```
+
 5. CLICK_IMAGE
     - 이미지를 찾아서  click한다.
     - 이미지는 from_var에 있는 이미지나, from_file에서 가져온다.
@@ -33,12 +37,11 @@ rpa wait_for_image from_file="" area=Region(0,0,100,200), timeout=10, grayscale=
 case "click_image":
     return self.option_map_define(option_defs, "area", "from_var", "from_file","timeout", "grayscale", "confidence")
 
-    
     2 CLICK image_path=<express>  confidence=<express:float 0.8>, region=<express:region default None>, grayscale=<express:boolean>
     3 CLICK <express:point or region or rectange>
   
     > 구분 expression이 1개 이면 3번, expression이 2개이면 1번, key value에 image_path가 있으면 2번
-    1. click x=10, y=10, type="double|right" count=3, 
+    1. click x=10, y=10, type="double|right" count=3,
     2. click area=Region(10,10,100,200), click_type= count
     3. click from_file="a.png", grayscale=, confidence type count
 
@@ -55,7 +58,7 @@ case "click_image":
 
 9. GET_TEXT
     - GET_TEXT to_var="var1" clipboard=true
-    - 
+    -
 
 10. CAPTURE : 모니터의 screen을 캡쳐한다.
     - CAPTURE to_file or to_var  전체 화면을 to_var의 값을 변수명으로 이미지저장
@@ -89,5 +92,3 @@ exists_x == true CLICK x=200, y=300, type="drag"  // 드래그 시작
 CLICK x=250, y=350, type="drop"  // 드래그 끝 (드롭)
 CLICK x=150, y=250, type="hold", duration=2  // 2초간 길게 누름
 CLICK x=150, y=250, type="release"  // 길게 누름 해제
-
-
