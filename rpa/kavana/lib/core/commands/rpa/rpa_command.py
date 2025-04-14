@@ -61,14 +61,17 @@ class RpaCommand(BaseCommand):
         #-----RPA click
         "x": {"required": False, "allowed_types": [TokenType.INTEGER]},
         "y": {"required": False, "allowed_types": [TokenType.INTEGER]},
-        "click_type": {"required": False, "allowed_types": [TokenType.STRING]},
-        "click_count": {"required": False, "allowed_types": [TokenType.INTEGER]},
-        "duration": {"required": False, "allowed_types": [TokenType.FLOAT]},
-
+        "click_type": {"default": 'left', "allowed_types": [TokenType.STRING]},
+        "click_count": {"default": 1, "allowed_types": [TokenType.INTEGER]},
+        "duration": {"default": 0.2, "allowed_types": [TokenType.FLOAT]},
+        #-----RPA mouse_move
+        "relative": {"default": False, "allowed_types": [TokenType.BOOLEAN]},
         #-----RPA key_in
         "keys": {"required": True, "allowed_types": [TokenType.ARRAY]},
-        "speed": {"required": False, "allowed_types": [TokenType.FLOAT]},
-
+        "speed": {"default": 0.5, "allowed_types": [TokenType.FLOAT]},
+        #-----RPA get_text
+        "strip": {"default": True, "allowed_types": [TokenType.BOOLEAN]},
+        "wait_before": {"default": 0.5, "allowed_types": [TokenType.FLOAT]},
     }
 #rpa wait_for_image from_file="" area=Region(0,0,100,200), timeout=10, grayscale=False, confidence=0.8
     def option_map_define(self, option_defs:dict,  *keys):
@@ -84,31 +87,30 @@ class RpaCommand(BaseCommand):
                 return self.option_map_define(option_defs, "from_var")
             
             case "wait":
-                return self.option_map_define(option_defs, "select", "select_by", "within", "attr", "to_var")        
+                return self.option_map_define(option_defs, "seconds")        
 
             case "wait_for_image":
                 return self.option_map_define(option_defs, "area", "from_var", "from_file","timeout", "grayscale", "confidence")
             
             case "click_point":
-                return self.option_map_define(option_defs, "x", "y", "click_type", "click_count", "duration","area", "from_var", "from_file","timeout", "grayscale", "confidence") 
+                option_defs["x"]["default"] = True
+                option_defs["y"]["default"] = True
+                return self.option_map_define(option_defs, "x", "y", "click_type", "click_count", "duration") 
 
             case "click_image":
                 return self.option_map_define(option_defs, "area", "from_var", "from_file","timeout", "grayscale", "confidence")
-            
-            case "click_region":
-                return self.option_map_define(option_defs, "area", "from_var", "from_file","timeout", "grayscale", "confidence")
-            
+                        
             case "mouse_move":
-                return self.option_map_define(option_defs, "x", "y", "duration")
+                return self.option_map_define(option_defs, "x", "y", "duration","relative")
             
             case "key_in":
                 return self.option_map_define(option_defs, "keys", "speed")
 
             case "put_text":
                 return self.option_map_define(option_defs, "text")
-            
+
             case "get_text":
-                return self.option_map_define(option_defs, "to_var")
+                return self.option_map_define(option_defs, "to_var", "strip", "wait_before")
             
             case "capture":
                 return self.option_map_define(option_defs, "area", "to_var", "to_file")

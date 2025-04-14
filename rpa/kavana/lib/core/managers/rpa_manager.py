@@ -66,23 +66,95 @@ class RpaManager(BaseManager):
 
     def wait(self, seconds: int):
         """ WAIT 명령어 실행 (일반 대기)"""
-        super().log("INFO", f"[RPA] {seconds}초 동안 대기...")
-        time.sleep(seconds)
+        seconds = self.options.get("seconds")
 
-    def wait_for_image(self, image_path: str, timeout: int = 10, confidence: float = 0.8, grayscale: bool = False, region=None):
-        """ 특정 이미지가 화면에 나타날 때까지 대기"""
-        super().log("INFO", f"[RPA] {timeout}초 동안 이미지 {image_path} 대기 중...")
+        if not isinstance(seconds, int) or seconds < 0:
+            self.raise_error("seconds는 0 이상의 정수여야 합니다.")
+
+        self.log("INFO", f"[RPA] {seconds}초 동안 대기 시작...")
+
+        try:
+            time.sleep(seconds)
+        except KeyboardInterrupt:
+            super().log("WARNING", "[RPA] 대기 중단됨 (사용자 인터럽트)")
+            raise
+
+        self.log("INFO", "[RPA] 대기 완료")
+
+    def wait_for_image(self):
+        """RPA 명령어: wait_for_image - 특정 이미지가 화면에 나타날 때까지 대기"""
+
+        image_path = self.options.get("from_file")
+        region = self.options.get("area")
+        timeout = int(self.options.get("timeout", 10))
+        grayscale = self.options.get("grayscale", False)
+        confidence = float(self.options.get("confidence", 0.8))
+
+        if not image_path:
+            self.raise_error("wait_for_image 명령에는 'from_file' 옵션이 필요합니다.")
+
+        # Region 객체를 pyautogui 호환 튜플로 변환
+        if region and hasattr(region, "left"):
+            region = (region.left, region.top, region.width, region.height)
+
+        self.log("INFO", f"[RPA] {timeout}초 동안 이미지 '{image_path}' 대기 중...")
+
         start_time = time.time()
-        
         while time.time() - start_time < timeout:
-            location = pyautogui.locateOnScreen(image_path, confidence=confidence, grayscale=grayscale, region=region)
-            if location:
-                super().log("INFO", f"[RPA] 이미지 {image_path} 발견됨.")
-                return location
+            try:
+                location = pyautogui.locateOnScreen(
+                    image_path,
+                    confidence=confidence,
+                    grayscale=grayscale,
+                    region=region
+                )
+                if location:
+                    self.log("INFO", f"[RPA] 이미지 '{image_path}' 발견됨: {location}")
+                    return location
+            except Exception as e:
+                self.log("ERROR", f"[RPA] 이미지 검색 중 오류 발생: {e}")
+
             time.sleep(0.5)
 
-        super().log("WARN", f"[RPA] 이미지 {image_path}를 {timeout}초 동안 찾을 수 없음.")
+        self.log("WARN", f"[RPA] 이미지 '{image_path}'를 {timeout}초 내에 찾을 수 없음.")
         return None
+
+    def click_point(self):
+        """RPA 명령어: click_point - 주어진 좌표에서 마우스 클릭 수행"""
+
+        x = self.options.get("x")
+        y = self.options.get("y")
+        click_count = int(self.options.get("click_count", 1))
+        click_type = self.options.get("click_type", "left").lower()
+        duration = float(self.options.get("duration", 0.2))  # duration은 기본 0초 (즉시 클릭)
+
+        if x is None or y is None:
+            self.raise_error("click_point 명령에는 'x'와 'y' 값이 필요합니다.")
+
+        # 좌표 로그
+        self.log("INFO", f"[RPA] 위치 ({x}, {y}) 클릭 - 타입: {click_type}, 횟수: {click_count}, duration: {duration}")
+
+        # 유효한 클릭 타입 확인
+        if click_type not in ("left", "right", "double"):
+            self.raise_error(f"지원되지 않는 click_type: {click_type} (left|right|double만 가능)")
+
+        # 클릭 수행
+        pyautogui.moveTo(x, y, duration=duration if click_count == 1 else 0)
+
+        if click_type == "double":
+            pyautogui.doubleClick(x, y)
+        elif click_type == "right":
+            for _ in range(click_count):
+                pyautogui.rightClick(x, y)
+                if click_count > 1 and duration > 0:
+                    time.sleep(duration)
+        else:  # 기본 left click
+            for _ in range(click_count):
+                pyautogui.click(x, y)
+                if click_count > 1 and duration > 0:
+                    time.sleep(duration)
+
+        self.log("INFO", f"[RPA] CLICK_POINT  완료")
 
 
     def click(self, click_type:str, x:int, y:int, click_count:int=1, duration:float=0.2):
@@ -111,19 +183,81 @@ class RpaManager(BaseManager):
                 super().log("ERROR", f"CLICK 명령어의 type 옵션 '{click_type}'은 올바르지 않습니다.")
 
 
-    def mouse_move(self, x: int, y: int, duration: float = 0.5):
-        """ 마우스를 특정 위치로 이동"""
-        super().log("INFO", f"[RPA] 마우스 이동: ({x}, {y})")
+    def click_image(self):
+        """RPA 명령어: click_image - 화면에서 이미지 찾아 클릭"""
+
+        # 옵션 추출
+        option_defs = ["area", "from_var", "from_file", "timeout", "grayscale", "confidence"]
+        opts = self.option_map_define(option_defs, *option_defs)
+
+        region = opts.get("area")
+        from_var = opts.get("from_var")
+        from_file = opts.get("from_file")
+        timeout = int(opts.get("timeout", 10))
+        grayscale = opts.get("grayscale", False)
+        confidence = float(opts.get("confidence", 0.8))
+
+        # 이미지 경로 확인
+        image_path = None
+        if from_var:
+            image_path = self.get_variable(from_var)
+            if not isinstance(image_path, str):
+                self.raise_error(f"'{from_var}' 변수는 문자열 경로여야 합니다.")
+        elif from_file:
+            image_path = from_file
+        else:
+            self.raise_error("click_image 명령에는 'from_var' 또는 'from_file' 중 하나가 필요합니다.")
+
+        # region 객체 변환
+        if region and hasattr(region, 'left'):
+            region = (region.left, region.top, region.width, region.height)
+
+        self.log("INFO", f"[RPA] 이미지 '{image_path}' 클릭 대기 (timeout: {timeout}s, conf: {confidence})")
+
+        start_time = time.time()
+        while time.time() - start_time < timeout:
+            try:
+                location = pyautogui.locateOnScreen(
+                    image_path,
+                    region=region,
+                    grayscale=grayscale,
+                    confidence=confidence
+                )
+                if location:
+                    center = pyautogui.center(location)
+                    pyautogui.moveTo(center)
+                    pyautogui.click()
+                    self.log("INFO", f"[RPA] 이미지 클릭 완료: {center}")
+                    return center
+            except Exception as e:
+                self.log("ERROR", f"[RPA] 이미지 검색 중 오류 발생: {e}")
+
+            time.sleep(0.5)
+
+        self.log("WARN", f"[RPA] 이미지 '{image_path}'를 {timeout}초 내에 찾지 못했습니다.")
+        return None
+
+
+    def mouse_move(self):
+        """RPA 명령어: mouse_move - 마우스를 지정 좌표로 이동 (절대/상대)"""
+
+        x = self.options.get("x")
+        y = self.options.get("y")
+        duration = float(self.options.get("duration", 0))
+        relative = self.options.get("relative", False)
+
+        if x is None or y is None:
+            self.raise_error("mouse_move 명령에는 'x'와 'y' 옵션이 필요합니다.")
+
+        if relative:
+            current_x, current_y = pyautogui.position()
+            x += current_x
+            y += current_y
+            self.log("DEBUG", f"[RPA] 상대 이동 → 기준: ({current_x}, {current_y}) → 목적지: ({x}, {y})")
+
+        self.log("INFO", f"[RPA] 마우스 이동 → ({x}, {y}), duration={duration}s")
         pyautogui.moveTo(x, y, duration=duration)
 
-    def mouse_click(self, x: int = None, y: int = None, button="left"):
-        """ 마우스 클릭"""
-        if x is not None and y is not None:
-            super().log("INFO", f"[RPA] 마우스 클릭: ({x}, {y}) 버튼={button}")
-            pyautogui.click(x, y, button=button)
-        else:
-            super().log("INFO", f"[RPA] 마우스 클릭 (현재 위치) 버튼={button}")
-            pyautogui.click(button=button)
 
     def key_press(self, key: str):
         """ 특정 키 입력"""
@@ -164,32 +298,138 @@ class RpaManager(BaseManager):
         except pyautogui.ImageNotFoundException:
             return None
     
-    def key_in(self, keys: List[str], speed: float = 0.5):
-        """ 특정 키 입력 """
-        super().log("INFO", f"[RPA] 키 입력: {key}")
+
+    def key_in(self):
+        """RPA 명령어: key_in - Enter, Ctrl, Alt 등 특수 키 입력"""
+
+        keys = self.options.get("keys")
+        speed = float(self.options.get("speed", 0.5))
+
+        if not keys:
+            self.raise_error("key_in 명령에는 'keys' 옵션이 필요합니다.")
+
+        # 문자열 하나만 들어온 경우 리스트로 처리
+        if isinstance(keys, str):
+            keys = [keys]
+
+        self.log("INFO", f"[RPA] 특수 키 입력 시작: {keys}, 간격: {speed}s")
+
         for key in keys:
-            lower_key = key.lower()
-            if '+' in lower_key:
-                pyautogui.hotkey(*lower_key.split('+'), interval=speed)
+            key = key.strip().lower()
+
+            # 허용된 특수 키만 처리
+            if '+' in key:
+                parts = key.split('+')
+                self.log("DEBUG", f"[RPA] 조합 키 입력: {parts}")
+                pyautogui.hotkey(*parts)
             else:
-                pyautogui.press(lower_key, interval=speed)
-            
-    def put_text(self, text: str):
-        """ 텍스트 입력 """
-        super().log("INFO", f"[RPA] 텍스트 입력: {text}")
-        # pyautogui.typewrite(text)
-        pyperclip.copy(text)  # 클립보드에 복사
-        time.sleep(0.2)  # 복사가 완료될 때까지 잠깐 대기
-        pyautogui.hotkey("ctrl", "v")  # Ctrl+V로 붙여넣기
-    
-    def capture_screen(self, image_path: str=None, region=None):
-        """ 화면 캡쳐 """
-        """ 전체 화면 캡쳐 """
-        super().log("INFO", "[RPA] 전체 화면 캡쳐")
-        return pyautogui.screenshot(imageFilename=image_path, region=region)
+                self.log("DEBUG", f"[RPA] 단일 키 입력: {key}")
+                pyautogui.press(key)
+
+            time.sleep(speed)
+
+        self.log("INFO", "[RPA] 특수 키 입력 완료")
+
+
+    def put_text(self):
+        """RPA 명령어: put_text - 텍스트를 클립보드로 복사해 붙여넣기"""
+
+        text = self.options.get("text")
+        if not text:
+            self.raise_error("put_text 명령에는 'text' 옵션이 필요합니다.")
+
+        self.log("INFO", f"[RPA] 텍스트 입력 시작: {text}")
+
+        try:
+            # 클립보드에 텍스트 복사
+            pyperclip.copy(text)
+            time.sleep(0.2)  # 클립보드 안정화 대기
+
+            # 붙여넣기
+            pyautogui.hotkey("ctrl", "v")
+            self.log("INFO", "[RPA] 텍스트 입력 완료 (Ctrl+V)")
+        except Exception as e:
+            self.raise_error(f"[RPA] 텍스트 입력 중 오류 발생: {e}")
+
+
+    def get_text(self):
+        """RPA 명령어: get_text - 현재 위치에서 텍스트 복사 후 변수에 저장"""
+
+        to_var = self.options.get("to_var")
+        strip = self.options.get("strip", True)
+        wait_before = float(self.options.get("wait_before", 0.5))
+
+        if not to_var:
+            self.raise_error("get_text 명령에는 'to_var' 옵션이 필요합니다.")
+
+        self.log("INFO", f"[RPA] 텍스트 복사 시작 (to_var: {to_var}, strip={strip}, wait_before={wait_before}s)")
+
+        try:
+            if wait_before > 0:
+                time.sleep(wait_before)
+
+            # 전체 선택 후 복사
+            pyautogui.hotkey("ctrl", "a")
+            time.sleep(0.1)
+            pyautogui.hotkey("ctrl", "c")
+            time.sleep(0.2)  # 클립보드 복사 대기
+
+            # 클립보드에서 읽어오기
+            copied_text = pyperclip.paste()
+
+            if strip and isinstance(copied_text, str):
+                copied_text = copied_text.strip()
+
+            if not copied_text:
+                self.log("WARN", "[RPA] 복사된 텍스트가 비어 있습니다.")
+
+            # 변수 저장
+            self.set_variable(to_var, copied_text)
+            self.log("INFO", f"[RPA] 텍스트 복사 완료 → 변수 '{to_var}'에 저장됨")
+
+        except Exception as e:
+            self.raise_error(f"[RPA] 텍스트 복사 중 오류 발생: {e}")
+
+
+    def capture(self):
+        """RPA 명령어: capture - 화면 또는 특정 영역을 이미지로 캡처 (파일 저장 또는 변수 저장)"""
+
+        area = self.options.get("area")  # Region 객체
+        to_file = self.options.get("to_file")
+        to_var = self.options.get("to_var")
+
+        if not to_file and not to_var:
+            self.raise_error("capture 명령에는 'to_file' 또는 'to_var' 중 하나는 필요합니다.")
+
+        # 영역 지정이 있다면 pyautogui용 튜플로 변환
+        region = None
+        if area and hasattr(area, "left"):
+            region = (area.left, area.top, area.width, area.height)
+
+        try:
+            self.log("INFO", f"[RPA] 화면 캡처 시작 (영역: {region if region else '전체 화면'})")
+
+            # 스크린샷 찍기
+            screenshot = pyautogui.screenshot(region=region)
+
+            # to_file로 저장
+            if to_file:
+                screenshot.save(to_file)
+                self.log("INFO", f"[RPA] 이미지 저장 완료: {to_file}")
+
+            # to_var에 저장
+            if to_var:
+                self.set_variable(to_var, screenshot)
+                self.log("INFO", f"[RPA] 이미지 객체 변수 저장 완료: {to_var}")
+
+        except Exception as e:
+            self.raise_error(f"[RPA] 화면 캡처 실패: {e}")
+
     
     def execute(self):
         method_map = {
+            "app_open": self.app_open,
+            "app_close": self.app_close,
             "wait": self.wait,
             "wait_for_image": self.wait_for_image,
             "click_point": self.click_point,
@@ -198,10 +438,8 @@ class RpaManager(BaseManager):
             "mouse_move": self.mouse_move,
             "key_in": self.key_in,
             "put_text": self.put_text,
-            "capture": self.capture_screen,
             "get_text": self.get_text,
-            "app_open": self.app_open,
-            "app_close": self.app_close,
+            "capture": self.capture_screen,
         }
 
         func = method_map.get(self.command.lower())
