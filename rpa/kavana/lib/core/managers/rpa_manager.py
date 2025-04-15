@@ -7,6 +7,7 @@ from lib.core.builtins.builtin_consts import PointName
 from lib.core.datatypes.application import Application
 from lib.core.exceptions.kavana_exception import KavanaSyntaxError
 from lib.core.managers.base_manager import BaseManager
+from lib.core.token_type import TokenType
 
 class RpaManager(BaseManager):
     """RPA 기능을 담당하는 매니저"""
@@ -27,12 +28,11 @@ class RpaManager(BaseManager):
             "wait_for_image": self.wait_for_image,
             "click_point": self.click_point,
             "click_image": self.click_image,
-            "click_region": self.click_region,
             "mouse_move": self.mouse_move,
             "key_in": self.key_in,
             "put_text": self.put_text,
             "get_text": self.get_text,
-            "capture": self.capture_screen,
+            "capture": self.capture,
         }
 
         func = method_map.get(self.command.lower())
@@ -52,11 +52,12 @@ class RpaManager(BaseManager):
         if not from_var:
             self.raise_error("app_open 명령에는 'from_var' 옵션이 필요합니다.")
 
-        app = self.get_variable(from_var)
+        app_token = self.executor.get_variable(from_var)
 
-        if not isinstance(app, Application):
+        if app_token.type != TokenType.APPLICATION:
             self.raise_error(f"'{from_var}'는 Application 인스턴스가 아닙니다.")
 
+        app = app_token.data
         self.log("INFO", f"Application 실행: {app.path}")
         try:
             app.launch(
@@ -74,11 +75,11 @@ class RpaManager(BaseManager):
         if not from_var:
             self.raise_error("app_close 명령에는 'from_var' 옵션이 필요합니다.")
 
-        app = self.get_variable(from_var)
+        app_token = self.executor.get_variable(from_var)
 
-        if not isinstance(app, Application):
+        if app_token.type != TokenType.APPLICATION:
             self.raise_error(f"'{from_var}'는 Application 인스턴스가 아닙니다.")
-
+        app = app_token.data
         self.log("INFO", f"Application 종료 요청: {app.path}")
         try:
             app.close()
@@ -88,7 +89,7 @@ class RpaManager(BaseManager):
 
 
 
-    def wait(self, seconds: int):
+    def wait(self):
         """ WAIT 명령어 실행 (일반 대기)"""
         seconds = self.options.get("seconds")
 
@@ -181,30 +182,30 @@ class RpaManager(BaseManager):
         self.log("INFO", f"[RPA] CLICK_POINT  완료")
 
 
-    def click(self, click_type:str, x:int, y:int, click_count:int=1, duration:float=0.2):
-            """ 클릭 유형에 따라 적절한 pyautogui 동작을 실행 """
-            if click_type == "single":
-                for _ in range(click_count):
-                    pyautogui.click(x, y)
-            elif click_type == "double":
-                pyautogui.doubleClick(x, y)
-            elif click_type == "right":
-                pyautogui.rightClick(x, y)
-            elif click_type == "middle":
-                pyautogui.middleClick(x, y)
-            elif click_type == "triple":
-                pyautogui.tripleClick(x, y)
-            elif click_type == "drag":
-                pyautogui.mouseDown(x, y)
-            elif click_type == "drop":
-                pyautogui.mouseUp(x, y)
-            elif click_type == "hold":
-                pyautogui.mouseDown(x, y)
-                time.sleep(duration)
-            elif click_type == "release":
-                pyautogui.mouseUp(x, y)
-            else:
-                super().log("ERROR", f"CLICK 명령어의 type 옵션 '{click_type}'은 올바르지 않습니다.")
+    # def click(self, click_type:str, x:int, y:int, click_count:int=1, duration:float=0.2):
+    #         """ 클릭 유형에 따라 적절한 pyautogui 동작을 실행 """
+    #         if click_type == "single":
+    #             for _ in range(click_count):
+    #                 pyautogui.click(x, y)
+    #         elif click_type == "double":
+    #             pyautogui.doubleClick(x, y)
+    #         elif click_type == "right":
+    #             pyautogui.rightClick(x, y)
+    #         elif click_type == "middle":
+    #             pyautogui.middleClick(x, y)
+    #         elif click_type == "triple":
+    #             pyautogui.tripleClick(x, y)
+    #         elif click_type == "drag":
+    #             pyautogui.mouseDown(x, y)
+    #         elif click_type == "drop":
+    #             pyautogui.mouseUp(x, y)
+    #         elif click_type == "hold":
+    #             pyautogui.mouseDown(x, y)
+    #             time.sleep(duration)
+    #         elif click_type == "release":
+    #             pyautogui.mouseUp(x, y)
+    #         else:
+    #             super().log("ERROR", f"CLICK 명령어의 type 옵션 '{click_type}'은 올바르지 않습니다.")
 
 
     def click_image(self):
@@ -224,7 +225,7 @@ class RpaManager(BaseManager):
         # 이미지 경로 확인
         image_path = None
         if from_var:
-            image_path = self.get_variable(from_var)
+            image_path = self.executor.get_variable(from_var)
             if not isinstance(image_path, str):
                 self.raise_error(f"'{from_var}' 변수는 문자열 경로여야 합니다.")
         elif from_file:
@@ -288,7 +289,7 @@ class RpaManager(BaseManager):
         super().log("INFO", f"[RPA] 키 입력: {key}")
         pyautogui.press(key)
 
-    def get_point_with_name(self, region, point_name: str):
+    def _get_point_with_name(self, region, point_name: str):
         """ Region 객체에서 point_name에 해당하는 좌표를 반환"""
         x,y,w,h = region
         point_enum = PointName(point_name.lower())

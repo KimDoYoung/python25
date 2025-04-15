@@ -43,7 +43,7 @@ class OcrCommand(BaseCommand):
 
         option_map = self.get_option_map(sub_command)
         option_values = self.parse_and_validate_options(options, option_map, executor)
-        self.check_command_rules(self.OCR_RULES, sub_command, option_values)
+        self.check_option_rules(self.OCR_RULES, sub_command, option_values)
 
         try:
             ocr_manager = OcrManager(command=sub_command,**option_values, executor=executor)

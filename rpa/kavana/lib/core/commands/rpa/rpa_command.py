@@ -15,7 +15,7 @@ class RpaCommand(BaseCommand):
         "seconds": {"required": False, "allowed_types": [TokenType.INTEGER]},
         "from_file": {"required": False, "allowed_types": [TokenType.STRING]},
         "grayscale": {"default": True, "allowed_types": [TokenType.BOOLEAN]},
-        "confidence": {"default": 0.8, "allowed_types": [TokenType.FLOAT]},
+        "confidence": {"default": 0.8, "allowed_types": [TokenType.FLOAT], "min": 0.0, "max": 1.0},
         "area": {"required": False, "allowed_types": [TokenType.REGION]},
         "timeout": {"default": 10, "allowed_types": [TokenType.INTEGER]},
         "x": {"required": False, "allowed_types": [TokenType.INTEGER]},
@@ -85,7 +85,7 @@ class RpaCommand(BaseCommand):
         }
     }
 
-    RPA_RULES = {
+    OPTION_RULES = {
         "wait": {
             "mutually_exclusive": [["select", "seconds"]],
             "required_together": []
@@ -101,7 +101,7 @@ class RpaCommand(BaseCommand):
 
         option_map = self.get_option_definitions(sub_command)
         option_values = self.parse_and_validate_options(options, option_map, executor)
-        self.check_command_rules(self.RPA_RULES, sub_command, option_values)
+        self.check_option_rules(sub_command, option_values)
 
         try:
             manager = RpaManager(command=sub_command, **option_values, executor=executor)

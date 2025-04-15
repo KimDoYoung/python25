@@ -1,4 +1,5 @@
 from abc import ABC, abstractmethod
+import copy
 from typing import List
 
 from lib.core.exceptions.kavana_exception import KavanaSyntaxError, KavanaValueError
@@ -133,8 +134,9 @@ class BaseCommand(ABC):
     
     def extract_all_options(self, tokens: List[Token], start_idx: int):
         """
+        주어진 tokens 리스트에서 key=value 옵션을 모두 추출하는 함수.
         key=value 옵션들을 ',' 없이도 연속적으로 추출
-        - 다음 토큰이 IDENTIFIER, 그 다음이 ASSIGN(=)이면 새로운 옵션으로 간주
+        다음 토큰이 IDENTIFIER, 그 다음이 ASSIGN(=)이면 새로운 옵션으로 간주
         """
         options = {}
         i = start_idx
@@ -253,89 +255,6 @@ class BaseCommand(ABC):
 
         return key_token, expresses, i
 
-
-
-    def extract_option1_0(self, tokens: list[Token], start_index: int) -> tuple[Token, List[Token], int]:
-        """
-        - key=express 파싱
-        - 괄호 안의 =, , 는 무시
-        - key는 = 앞의 토큰
-        - express는 = 뒤부터 괄호 고려해서 , 또는 끝까지
-        """
-        if start_index >= len(tokens):
-            return None, None, start_index
-
-        # 괄호 스택을 사용해 중첩 추적
-        bracket_stack = []
-        assign_index = -1
-        i = start_index
-
-        # 1. ASSIGN(=) 토큰 찾기 (괄호 밖에서)
-        while i < len(tokens):
-            token = tokens[i]
-
-            if token.type in (TokenType.LEFT_PAREN, TokenType.LEFT_BRACKET):
-                bracket_stack.append(token.type)
-            elif token.type == TokenType.RIGHT_PAREN:
-                if bracket_stack and bracket_stack[-1] == TokenType.LEFT_PAREN:
-                    bracket_stack.pop()
-                else:
-                    raise KavanaSyntaxError("괄호 '(' 와 ')'가 맞지 않습니다.")
-            elif token.type == TokenType.RIGHT_BRACKET:
-                if bracket_stack and bracket_stack[-1] == TokenType.LEFT_BRACKET:
-                    bracket_stack.pop()
-                else:
-                    raise KavanaSyntaxError("괄호 '[' 와 ']'가 맞지 않습니다.")
-            elif token.type == TokenType.ASSIGN and not bracket_stack:
-                assign_index = i
-                break
-
-            i += 1
-
-        if assign_index == -1:
-            raise KavanaSyntaxError("옵션에 '=' 연산자가 없습니다.")
-
-        if assign_index == start_index:
-            raise KavanaSyntaxError("'=' 앞에 key 토큰이 없습니다.")
-
-        key_token = tokens[assign_index - 1]
-        if key_token.type != TokenType.IDENTIFIER:
-            raise KavanaSyntaxError("옵션의 key는 IDENTIFIER 타입이어야 합니다.")
-
-        # 2. express 수집 (괄호 안의 , 는 무시)
-        expresses = []
-        i = assign_index + 1
-        bracket_stack.clear()
-
-        while i < len(tokens):
-            token = tokens[i]
-
-            if token.type in (TokenType.LEFT_PAREN, TokenType.LEFT_BRACKET):
-                bracket_stack.append(token.type)
-            elif token.type == TokenType.RIGHT_PAREN:
-                if bracket_stack and bracket_stack[-1] == TokenType.LEFT_PAREN:
-                    bracket_stack.pop()
-                else:
-                    raise KavanaSyntaxError("괄호 '(' 와 ')'가 맞지 않습니다.")
-            elif token.type == TokenType.RIGHT_BRACKET:
-                if bracket_stack and bracket_stack[-1] == TokenType.LEFT_BRACKET:
-                    bracket_stack.pop()
-                else:
-                    raise KavanaSyntaxError("괄호 '[' 와 ']'가 맞지 않습니다.")
-
-            # 괄호 밖에서 , 만나면 종료
-            if token.type == TokenType.COMMA and not bracket_stack:
-                i += 1  # 다음 옵션으로 넘어가기 위해 인덱스 증가
-                break
-
-            expresses.append(token)
-            i += 1
-
-        if not expresses:
-            raise KavanaSyntaxError(f"옵션 '{key_token.data.string}'의 값이 없습니다.")
-
-        return key_token, expresses, i
-
     def hashmap_token_to_dict(self, token: Token, executor) -> dict:
         """HashMapToken을 dict로 변환"""
         if not isinstance(token, Token) or token.type != TokenType.HASH_MAP:
@@ -369,49 +288,40 @@ class BaseCommand(ABC):
             result.append(ExprEvaluator(executor=executor).evaluate(express).data.value)
         return result
     
+
     def parse_and_validate_options(self, options: dict, option_map: dict, executor) -> dict:
         """
         주어진 options를 option_map 기준으로 검증하고 최종 값 딕셔너리를 리턴한다.
         - 타입 체크, required 체크, default 적용 포함
-        options, i = self.extract_all_options(args, 0)
-
-        option_map = {
-            "count": {"default": 1, "allowed_types": [TokenType.INTEGER]},
-            "duration": {"default": 0.2, "allowed_types": [TokenType.FLOAT]},
-            "type": {"default": "single", "allowed_types": [TokenType.STRING]},
-            "x": {"required": True, "allowed_types": [TokenType.INTEGER]},
-        }
-
-        option_values = parse_and_validate_options(options, option_map, executor)        
+        - min/max, choices 검증 추가
         """
         option_values = {}
 
-        # 1. 주어진 옵션 해석 및 타입 체크
-        # with 옵션은 별도로 처리
-        with_values = {}
+        # 1. 'with=' 병합 처리
         if 'with' in options:
             var_name_express = options['with']["express"]
             hashmap_token = ExprEvaluator(executor=executor).evaluate(var_name_express)
-            with_values = self.hashmap_token_to_dict(hashmap_token,executor)
+            with_values = self.hashmap_token_to_dict(hashmap_token, executor)
+            option_values.update(with_values)
             del options['with']
 
-        option_values={}
-        option_values.update(with_values)
-
+        # 2. 개별 옵션 평가 및 타입 체크
         for key, value_dict in options.items():
             if key not in option_map:
                 raise KavanaSyntaxError(f"알 수 없는 옵션: '{key}'")
 
+            opt = option_map[key]
             value_express = value_dict["express"]
             evaluated = ExprEvaluator(executor=executor).evaluate(value_express)
 
-            allowed_types = option_map[key].get("allowed_types", [])
+            allowed_types = opt.get("allowed_types", [])
             if evaluated.type not in allowed_types:
                 raise KavanaSyntaxError(
                     f"옵션 '{key}'의 타입이 올바르지 않습니다. "
                     f"허용된 타입: {', '.join(t.name for t in allowed_types)}, "
                     f"실제 타입: {evaluated.type.name}"
                 )
+
             if evaluated.type == TokenType.HASH_MAP:
                 option_values[key] = self.hashmap_token_to_dict(evaluated, executor)
             elif evaluated.type == TokenType.ARRAY:
@@ -419,12 +329,26 @@ class BaseCommand(ABC):
             else:
                 option_values[key] = evaluated.data.value
 
-        # 2. 필수 옵션 누락 체크
+            # 🔍 값 범위 체크 (min/max)
+            if "min" in opt and option_values[key] < opt["min"]:
+                raise KavanaSyntaxError(f"옵션 '{key}' 값은 최소 {opt['min']} 이상이어야 합니다.")
+            if "max" in opt and option_values[key] > opt["max"]:
+                raise KavanaSyntaxError(f"옵션 '{key}' 값은 최대 {opt['max']} 이하여야 합니다.")
+
+            # 🔍 choices 체크 (열거형 제한)
+            if "choices" in opt and option_values[key] not in opt["choices"]:
+                raise KavanaSyntaxError(
+                    f"옵션 '{key}' 값은 다음 중 하나여야 합니다: "
+                    f"{', '.join(str(c) for c in opt['choices'])} "
+                    f"(현재 값: {option_values[key]})"
+                )
+
+        # 3. 필수 옵션 누락 체크
         for key, opt in option_map.items():
             if opt.get("required", False) and key not in option_values:
                 raise KavanaSyntaxError(f"필수 옵션 '{key}'가 누락되었습니다.")
 
-        # 3. 기본값 적용
+        # 4. 기본값 적용
         for key, opt in option_map.items():
             if key not in option_values and "default" in opt:
                 option_values[key] = opt["default"]
@@ -432,8 +356,9 @@ class BaseCommand(ABC):
         return option_values
 
 
-    def check_command_rules(self, rule_table: dict, subcommand: str, params: dict):
-        rules = rule_table.get(subcommand, {})
+    def check_option_rules(self, subcommand: str, params: dict):
+        ''' OPTION_RULES에 정의된 규칙을 체크한다.'''
+        rules = getattr(self, "OPTION_RULES", {}).get(subcommand, {})
 
         # 1. 상호 배타 (mutually exclusive)
         for group in rules.get("mutually_exclusive", []):
@@ -447,6 +372,7 @@ class BaseCommand(ABC):
             if 0 < len(present) < len(group):
                 missing = [key for key in group if key not in params]
                 raise KavanaValueError(f"{subcommand} 옵션 부족: {', '.join(group)} 는 함께 지정해야 합니다. 누락: {', '.join(missing)}")
+
 
 
     def _resolve_option_definitions(

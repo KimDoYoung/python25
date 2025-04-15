@@ -11,17 +11,8 @@ MAIN
     SET image_base_path = "C:\\Users\\PC\\Pictures\\SophiaCapture\\esafe"
     SET esafe = Application(esafe_path)
     
-    APP_OPEN from_var="esafe", maximize=False, process_name=process_name
-    
-    SET number = 1
-    WAIT (5+(2*2)+ number)
-    WAIT until image_path=image_base_path + "\\login_button.png"
-    if _LastError_ == ""
-        LOG_INFO "로그인 버튼을 찾았습니다."
-    else
-        LOG_ERROR "로그인 버튼을 찾지 못했습니다"
-    end_if
-    WAIT 10
+    RPA APP_OPEN from_var="esafe", maximize=False, process_name=process_name
+    RPA WAIT seconds = 5
     RPA app_close from_var="esafe" 
 END_MAIN
 """

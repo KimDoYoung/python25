@@ -37,7 +37,7 @@ class BrowserCommand(BaseCommand):
 
         option_map = self.get_option_map(sub_command)
         option_values = self.parse_and_validate_options(options, option_map, executor)
-        self.check_command_rules(self.BROWSER_RULES, sub_command, option_values)
+        self.check_option_rules(self.BROWSER_RULES, sub_command, option_values)
         try:
             browser_manager = BrowserManager(command=sub_command,**option_values, executor=executor)
             browser_manager.execute()

@@ -16,16 +16,7 @@ from lib.core.commands.ocr.ocr_command import OcrCommand
 from lib.core.commands.print_command import PrintCommand
 from lib.core.commands.raise_command import RaiseCommand
 from lib.core.commands.return_command import ReturnCommand
-from lib.core.commands.rpa.app_close_command import AppCloseCommand
-from lib.core.commands.rpa.app_open_command import AppOpenCommand
-from lib.core.commands.rpa.capture_screen_command import CaptureScreenCommand
-from lib.core.commands.rpa.click_command import ClickCommand
-from lib.core.commands.rpa.close_child_windows_command import CloseChildWindowsCommand
-from lib.core.commands.rpa.get_text_command import GetTextCommand
-from lib.core.commands.rpa.key_in_command import KeyInCommand
-from lib.core.commands.rpa.mouse_move_command import MouseMoveCommand
-from lib.core.commands.rpa.put_text_command import PutTextCommand
-from lib.core.commands.rpa.wait_command import WaitCommand
+from lib.core.commands.rpa.rpa_command import RpaCommand
 from lib.core.commands.set_command import SetCommand
 from lib.core.datatypes.kavana_datatype import Float, Integer, String
 from lib.core.exception_registry import ExceptionRegistry
@@ -63,16 +54,7 @@ class CommandExecutor:
         }
         # RPA 명령어 매핑
         self.rpa_command_map = {
-            "APP_OPEN": AppOpenCommand(),
-            "APP_CLOSE": AppCloseCommand(),
-            "CLOSE_CHILD_WINDOWS": CloseChildWindowsCommand(),
-            "WAIT": WaitCommand(),
-            "CLICK": ClickCommand(),
-            "MOUSE_MOVE": MouseMoveCommand(),
-            "KEY_IN" :KeyInCommand(),
-            "PUT_TEXT" : PutTextCommand(),
-            "GET_TEXT" : GetTextCommand(),
-            "CAPTURE_SCREEN" : CaptureScreenCommand(),
+            "RPA": RpaCommand(),
             "DB": DatabaseCommand(),
             # network
             "FTP": FtpCommand(),
