@@ -6,7 +6,7 @@ from lib.core.commands.database.sqlite_db_commander import SqliteDbCommander
 from lib.core.datatypes.hash_map import HashMap
 from lib.core.exceptions.kavana_exception import KavanaDatabaseError, KavanaValueError
 from lib.core.expr_evaluator import ExprEvaluator
-from lib.core.token import ArrayToken, HashMapToken
+from lib.core.token import ArrayToken, HashMapToken, Token
 from lib.core.token_type import TokenType
 from lib.core.datatypes.array import Array
 from lib.core.token_util import TokenUtil
@@ -21,7 +21,71 @@ class DatabaseCommand(BaseCommand):
         "sql": {"required": True, "allowed_types": [TokenType.STRING]},
         "to_var": {"required": False, "allowed_types": [TokenType.STRING]},
     }
-    def execute(self, args, executor):
+    COMMAND_OPTION_MAP = {
+        "connect": {
+            "keys": ["path", "url"],
+            "overrides": {
+                "path": {"required": True},
+                "url": {"required": True}
+            }
+        },
+        "execute": {
+            "keys": ["sql"],
+            "overrides": {
+                "sql": {"required": True}
+            }
+        },
+        "query": {
+            "keys": ["sql", "to_var"],
+            "overrides": {
+                "sql": {"required": True},
+                "to_var": {"required": False}
+            }
+        },
+        "close": {
+            "keys": [],
+        },
+        "begin_transaction": {
+            "keys": [],
+        },
+        "commit": {
+            "keys": [],
+        },
+        "rollback": {
+            "keys": [],
+        }       
+    }
+    OPTION_RULES = {
+        "connect": {
+            "mutually_exclusive": [],
+            "required_together": []
+        },
+        "execute": {
+            "mutually_exclusive": [],
+            "required_together": []
+        },
+        "query": {
+            "mutually_exclusive": [],
+            "required_together": []
+        },
+        "close": {
+            "mutually_exclusive": [],
+            "required_together": []
+        },
+        "begin_transaction": {
+            "mutually_exclusive": [],
+            "required_together": []
+        },
+        "commit": {
+            "mutually_exclusive": [],
+            "required_together": []
+        },
+        "rollback": {
+            "mutually_exclusive": [],
+            "required_together": []
+        }
+    }
+    def execute(self, args: list[Token], executor):
         self.executor = executor
         if not args:
             raise KavanaDatabaseError("DB 명령어는 최소 하나 이상의 인자가 필요합니다.")
@@ -152,9 +216,11 @@ class DatabaseCommand(BaseCommand):
             converted = {k: TokenUtil.primitive_to_kavana(v) for k, v in row.items()}
             row_map = HashMap(value=converted)
             hashmap_token = HashMapToken(row_map)
+            hashmap_token.status = "Evaled"
             result_array.append(hashmap_token)
 
         result_array_token = ArrayToken(result_array)
         result_array_token.element_type = TokenType.HASH_MAP
         result_array_token.type = TokenType.ARRAY
+        result_array_token.status = "Evaled"
         executor.set_variable(to_var, result_array_token)
