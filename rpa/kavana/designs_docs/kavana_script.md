@@ -263,8 +263,6 @@ END_FOR;
 9. ON_EXCEPTION BEGIN ..EXIT 1. END_EXCEPTION
 10. SET init_screen = CAPTURE_SCREEN 화면캡쳐해서 이미지변수에 저장
 
-## TODO
-
 ```text
 kavana script에 대해서 어느정도 core가 된 것 같아.
 지금꺄지한 것을 좀 정리를 하자면

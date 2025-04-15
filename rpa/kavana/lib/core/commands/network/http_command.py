@@ -111,8 +111,19 @@ class HttpCommand(BaseCommand):
         self.check_option_rules(sub_command, option_values)
 
         try:
-            manager = KavanaHttpError(command=sub_command, **option_values, executor=executor)
-            manager.execute()
+            manager = HttpManager(command=sub_command, **option_values, executor=executor)
+            response = manager.execute()
+            if response is None:
+                response = ""
+            var_name = option_values.get("to_var")
+            if var_name:
+                if isinstance(response, str):
+                    result_token = StringToken(data=String(response), type=TokenType.STRING)
+                elif isinstance(response, dict):
+                    result_token = TokenUtil.dict_to_hashmap_token(response)
+                else:
+                    raise KavanaHttpError(f"지원하지 않는 HTTP 응답 타입: {type(response)}")
+                executor.set_variable(var_name, result_token)            
         except KavanaHttpError as e:
             raise KavanaHttpError(f"HTTP `{sub_command}` 명령어 처리 중 오류 발생: {str(e)}") from e
 

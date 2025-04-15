@@ -21,7 +21,7 @@ MAIN
     print http_info
     HTTP get with=http_info to_var="http_response"
     print "--------------------------------------"
-    print http_response 
+    print http_response
     print "--------------------------------------"
 
 END_MAIN

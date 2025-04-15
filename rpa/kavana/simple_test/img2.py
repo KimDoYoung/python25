@@ -23,8 +23,10 @@ MAIN
     //print "rotate done"
     //IMAGE blur from_file=f"{base_dir}/1.png" to_file=f"{base_dir}/8.png" radius=5.0
     //print "blur done"
-    IMAGE threshold level=128 from_file=f"{base_dir}/1.png" to_file=f"{base_dir}/9.png"
-    print "threshold done"
+    //IMAGE threshold level=128 from_file=f"{base_dir}/1.png" to_file=f"{base_dir}/9.png"
+    //print "threshold done"
+    SET name = "홍길동"
+    Image create_text_image text=name font_size=12 to_file=f"{base_dir}/{name}.png"
 END_MAIN
 """
 #---------------------------

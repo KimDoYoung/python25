@@ -25,6 +25,13 @@ class ImageCommand(BaseCommand):
         #---
         "level": {"default": 128, "allowed_types": [TokenType.INTEGER]},
         "type": {"default": "BINARY_INV", "allowed_types": [TokenType.STRING]},
+        #--- create_text_image
+        # "text", "font_name", "font_size", "color", "bg_color","width","height", "to_file", "to_var"
+        "text": {"required": True, "allowed_types": [TokenType.STRING]},
+        "font_name": {"required": False, "allowed_types": [TokenType.STRING]},
+        "font_size": {"required": False, "allowed_types": [TokenType.INTEGER]},
+        "color": {"required": False, "allowed_types": [TokenType.STRING]},
+        "bg_color": {"required": False, "allowed_types": [TokenType.STRING]},
     }
     COMMAND_OPTION_MAP = {
         "save": {
@@ -95,6 +102,12 @@ class ImageCommand(BaseCommand):
                 "from_file": {"required": True},
                 "to_var": {"required": True},
                 "to_file": {"required": True}
+            }
+        },
+        "create_text_image": {
+            "keys": ["text", "font_name", "font_size", "color", "bg_color", "width", "height", "to_file", "to_var"],
+            "overrides": {
+                "text": {"required": True},
             }
         }
     }
