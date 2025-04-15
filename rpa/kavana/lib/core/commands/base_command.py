@@ -447,3 +447,35 @@ class BaseCommand(ABC):
             if 0 < len(present) < len(group):
                 missing = [key for key in group if key not in params]
                 raise KavanaValueError(f"{subcommand} 옵션 부족: {', '.join(group)} 는 함께 지정해야 합니다. 누락: {', '.join(missing)}")
+
+
+    def _resolve_option_definitions(
+        self,
+        option_keys: list[str],
+        base_definitions: dict,
+        overrides: dict = None
+    ) -> dict:
+        if overrides is None:
+            overrides = {}
+
+        resolved = {}
+        for key in option_keys:
+            if key not in base_definitions:
+                raise ValueError(f"정의되지 않은 옵션 키: {key}")
+            base = copy.deepcopy(base_definitions[key])
+            override = overrides.get(key, {})
+            resolved[key] = {**base, **override}
+        return resolved
+
+    def get_option_definitions(self, sub_command: str) -> dict:
+        """
+        COMMAND_OPTION_MAP과 OPTION_DEFINITIONS를 기반으로
+        명령어별 최종 옵션 정의 딕셔너리를 반환
+        """
+        config = self.COMMAND_OPTION_MAP.get(sub_command)
+        if not config:
+            raise ValueError(f"지원하지 않는 sub_command: {sub_command}")
+
+        keys = config.get("keys", [])
+        overrides = config.get("overrides", {})
+        return self._resolve_option_definitions(keys, self.OPTION_DEFINITIONS, overrides)
