@@ -13,7 +13,14 @@ from lib.core.token_util import TokenUtil
 
 class DatabaseCommand(BaseCommand):
     ''' 데이터베이스 명령어 해석'''
-
+    OPTION_DEFINITIONS = {
+        "type": {"default": "sqlite", "allowed_types": [TokenType.STRING]},
+        "name": {"default": "default", "allowed_types": [TokenType.STRING]},
+        "path": {"required": True, "allowed_types": [TokenType.STRING]},
+        "url": {"required": True, "allowed_types": [TokenType.STRING]},
+        "sql": {"required": True, "allowed_types": [TokenType.STRING]},
+        "to_var": {"required": False, "allowed_types": [TokenType.STRING]},
+    }
     def execute(self, args, executor):
         self.executor = executor
         if not args:
@@ -76,14 +83,7 @@ class DatabaseCommand(BaseCommand):
         else:
             raise KavanaDatabaseError(f"지원하지 않는 데이터베이스입니다.(지원:`sqlite`,`postgresql`,`mariadb`): {db_type}")
         
-    OPTION_DEFINITIONS = {
-        "type": {"default": "sqlite", "allowed_types": [TokenType.STRING]},
-        "name": {"default": "default", "allowed_types": [TokenType.STRING]},
-        "path": {"required": True, "allowed_types": [TokenType.STRING]},
-        "url": {"required": True, "allowed_types": [TokenType.STRING]},
-        "sql": {"required": True, "allowed_types": [TokenType.STRING]},
-        "to_var": {"required": False, "allowed_types": [TokenType.STRING]},
-    }
+
     # 필요한 키만 추려서 option_map 구성
     def option_map_define(self, *keys):
         option_map = {}

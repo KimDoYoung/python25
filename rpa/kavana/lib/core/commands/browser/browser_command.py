@@ -8,41 +8,6 @@ from lib.core.managers.browser_manager import BrowserManager
 
 class BrowserCommand(BaseCommand):
     ''' BROWSER 명령어 해석 및 실행 '''
-
-    BROWSER_RULES = {
-        "url": {
-            "mutually_exclusive": [  # 서로 동시에 존재하면 안 되는 파라미터들
-                # ["from_file", "from_var"],
-            ],
-            "required_together": [  # 함께 있어야만 유효한 조합
-                # ["width", "height"]
-            ]
-        },
-        "wait": {
-            "mutually_exclusive": [
-                 ["select", "seconds"],
-            ],
-            "required_together": [
-                # ["width", "height"]
-            ]
-        },
-    }
-
-    def execute(self, args: list[Token], executor):
-        if not args:
-            raise KavanaBrowserError("BROWSER 명령어는 최소 하나 이상의 인자가 필요합니다.")
-        
-        sub_command = args[0].data.value.lower()
-        options, _ = self.extract_all_options(args, 1)
-
-        option_map = self.get_option_map(sub_command)
-        option_values = self.parse_and_validate_options(options, option_map, executor)
-        self.check_option_rules(self.BROWSER_RULES, sub_command, option_values)
-        try:
-            browser_manager = BrowserManager(command=sub_command,**option_values, executor=executor)
-            browser_manager.execute()
-        except KavanaBrowserError as e:
-            raise KavanaBrowserError(f"BROWSER `{sub_command}` 명령어 처리 중 오류 발생: {str(e)}") from e
     OPTION_DEFINITIONS = {
         #-----browser open
         "url": {"required": False, "allowed_types": [TokenType.STRING]},
@@ -83,43 +48,195 @@ class BrowserCommand(BaseCommand):
         #--- switch_frame
         "to_default": {"default": False, "allowed_types": [TokenType.BOOLEAN]},
     }
+    COMMAND_OPTION_MAP = {
+        "open": {
+            "keys": ["url", "headless", "window_size", "user_agent"],
+            "overrides": {
+                "url": {"required": True},
+                "headless": {"required": False},
+                "window_size": {"required": False},
+                "user_agent": {"required": False}
+            }
+        },
+        "wait": {
+            "keys": ["select", "until", "select_by", "timeout", "seconds"],
+            "overrides": {
+                "select": {"required": True},
+                "until": {"required": False},
+                "select_by": {"required": False},
+                "timeout": {"required": False},
+                "seconds": {"required": False}
+            }
+        },
+        "extract": {
+            "keys": ["select", "select_by", "within", "attr", "to_var"],
+            "overrides": {
+                "select": {"required": True},
+                "select_by": {"required": False},
+                "within": {"required": False},
+                "attr": {"required": False},
+                "to_var": {"required": True}
+            }
+        },
+        "click": {
+            "keys": ["select", "select_by", "within", "timeout", "click_js", "scroll_first"],
+            "overrides": {
+                "select": {"required": True},
+                "select_by": {"required": False},
+                "within": {"required": False},
+                "timeout": {"required": False},
+                "click_js": {"required": False},
+                "scroll_first": {"required": True}
+            }
+        },
+        "put_text": {
+            "keys": ["select", "select_by", "within", "timeout", "text", "clear_before", "scroll_first"],
+            "overrides": {
+                "select": {"required": True},
+                "select_by": {"required": False},
+                "within": {"required": False},
+                "timeout": {"required": False},
+                "text": {"required": True},
+                "clear_before": {"required": False},
+                "scroll_first": {"required": True}
+            }
+        },
+        "get_text": {
+            "keys": ["select", "select_by", "within", "attr", "to_var"],
+            "overrides": {
+                "select": {"required": True},
+                "select_by": {"required": False},
+                "within": {"required": False},
+                "attr": {"required": False},
+                "to_var": {"required": True}
+            }
+        },
+        "capture": {
+            "keys": ["select", "select_by", "within", "scroll_first", "to_file", "multi"],
+            "overrides": {
+                "select": {"required": True},
+                "select_by": {"required": False},
+                "within": {"required": False},
+                "scroll_first": {"required": True},
+                "to_file": {"required": True},
+                "multi": {"required": False}
+            }
+        },
+        "script_js": {
+            "keys": ["script", "select", "select_by", "within", "scroll_first", "to_var"],
+            "overrides": {
+                "script": {"required": True},
+                "select": {"required": False},
+                "select_by": {"required": False},
+                "within": {"required": False},
+                "scroll_first": {"required": True},
+                "to_var": {"required": False}
+            }
+        },
+        "switch_frame": {
+            "keys": ["select", "select_by", "within", "scroll_first", "to_default"],
+            "overrides": {
+                "select": {"required": True},
+                "select_by": {"required": False},
+                "within": {"required": False},
+                "scroll_first": {"required": True},
+                "to_default": {"required": False}
+            }
+        },
+        "close": {
+            "keys": [],
+            "overrides": {}
+        }
+    }
+    # BROWSER 명령어에 대한 옵션 규칙 정의
+    OPTION_RULES = {
+        "url": {
+            "mutually_exclusive": [  # 서로 동시에 존재하면 안 되는 파라미터들
+                # ["from_file", "from_var"],
+            ],
+            "required_together": [  # 함께 있어야만 유효한 조합
+                # ["width", "height"]
+            ]
+        },
+        "wait": {
+            "mutually_exclusive": [
+                 ["select", "seconds"],
+            ],
+            "required_together": [
+                # ["width", "height"]
+            ]
+        },
+    }
+    def execute(self, args: list[Token], executor):
+        if not args:
+            raise KavanaBrowserError("Browser 명령어는 최소 하나 이상의 인자가 필요합니다.")
 
-    def option_map_define(self, option_defs:dict,  *keys):
-        return {k: option_defs[k] for k in keys if k in option_defs}
+        sub_command = args[0].data.value.lower()
+        options, _ = self.extract_all_options(args, 1)
 
-    def get_option_map(self, sub_command: str) -> dict:
-        # 원본 옵션 정의 복사
-        option_defs = copy.deepcopy(self.OPTION_DEFINITIONS)        
-        match sub_command:
-            case "open":
-                return self.option_map_define(option_defs, "url", "headless", "window_size", "user_agent")
-            case "wait":
-                return self.option_map_define(option_defs, "select", "until", "select_by","timeout", "seconds")
-            case "extract":
-                option_defs["to_var"]["required"] = True
-                option_defs["select"]["required"] = True
-                return self.option_map_define(option_defs, "select", "select_by", "within", "attr", "to_var")        
-            case "click":
-                option_defs["select"]["required"] = True
-                return self.option_map_define(option_defs, "select", "select_by", "within","timeout", "click_js", "scroll_first")
-            case "put_text":
-                option_defs["select"]["required"] = True
-                option_defs["text"]["required"] = True
-                return self.option_map_define(option_defs, "select", "select_by", "within", "timeout", "text", "clear_before", "scroll_first") 
-            case "get_text":
-                return self.option_map_define(option_defs, "selector", "to_var")
-            case "capture":
-                option_defs["to_file"]["required"] = True
-                return self.option_map_define(option_defs, "select", "select_by", "within", "scroll_first", "to_file", "multi")
-            case "script_js":
-                option_defs["script"]["required"] = True
-                return self.option_map_define(option_defs, "script", "select", "select_by", "within", "scroll_first", "to_var")
+        option_map = self.get_option_definitions(sub_command)
+        option_values = self.parse_and_validate_options(options, option_map, executor)
+        self.check_option_rules(sub_command, option_values)
+
+        try:
+            manager = BrowserManager(command=sub_command, **option_values, executor=executor)
+            manager.execute()
+        except KavanaBrowserError as e:
+            raise KavanaBrowserError(f"Browser `{sub_command}` 명령어 처리 중 오류 발생: {str(e)}") from e
+
+    # def execute(self, args: list[Token], executor):
+    #     if not args:
+    #         raise KavanaBrowserError("BROWSER 명령어는 최소 하나 이상의 인자가 필요합니다.")
+        
+    #     sub_command = args[0].data.value.lower()
+    #     options, _ = self.extract_all_options(args, 1)
+
+    #     option_map = self.get_option_map(sub_command)
+    #     option_values = self.parse_and_validate_options(options, option_map, executor)
+    #     self.check_option_rules(self.BROWSER_RULES, sub_command, option_values)
+    #     try:
+    #         browser_manager = BrowserManager(command=sub_command,**option_values, executor=executor)
+    #         browser_manager.execute()
+    #     except KavanaBrowserError as e:
+    #         raise KavanaBrowserError(f"BROWSER `{sub_command}` 명령어 처리 중 오류 발생: {str(e)}") from e
+
+
+    # def option_map_define(self, option_defs:dict,  *keys):
+    #     return {k: option_defs[k] for k in keys if k in option_defs}
+
+    # def get_option_map(self, sub_command: str) -> dict:
+    #     # 원본 옵션 정의 복사
+    #     option_defs = copy.deepcopy(self.OPTION_DEFINITIONS)        
+    #     match sub_command:
+    #         case "open":
+    #             return self.option_map_define(option_defs, "url", "headless", "window_size", "user_agent")
+    #         case "wait":
+    #             return self.option_map_define(option_defs, "select", "until", "select_by","timeout", "seconds")
+    #         case "extract":
+    #             option_defs["to_var"]["required"] = True
+    #             option_defs["select"]["required"] = True
+    #             return self.option_map_define(option_defs, "select", "select_by", "within", "attr", "to_var")        
+    #         case "click":
+    #             option_defs["select"]["required"] = True
+    #             return self.option_map_define(option_defs, "select", "select_by", "within","timeout", "click_js", "scroll_first")
+    #         case "put_text":
+    #             option_defs["select"]["required"] = True
+    #             option_defs["text"]["required"] = True
+    #             return self.option_map_define(option_defs, "select", "select_by", "within", "timeout", "text", "clear_before", "scroll_first") 
+    #         case "get_text":
+    #             return self.option_map_define(option_defs, "selector", "to_var")
+    #         case "capture":
+    #             option_defs["to_file"]["required"] = True
+    #             return self.option_map_define(option_defs, "select", "select_by", "within", "scroll_first", "to_file", "multi")
+    #         case "script_js":
+    #             option_defs["script"]["required"] = True
+    #             return self.option_map_define(option_defs, "script", "select", "select_by", "within", "scroll_first", "to_var")
             
-            case "switch_frame":
-                option_defs["select"]["required"] = True
-                return self.option_map_define(option_defs, "script", "select", "select_by", "within", "scroll_first", "to_default")
+    #         case "switch_frame":
+    #             option_defs["select"]["required"] = True
+    #             return self.option_map_define(option_defs, "script", "select", "select_by", "within", "scroll_first", "to_default")
             
-            case "close":
-                return {}
-            case _:
-                raise KavanaBrowserError(f"지원하지 않는 browser sub_command: {sub_command}")
+    #         case "close":
+    #             return {}
+    #         case _:
+    #             raise KavanaBrowserError(f"지원하지 않는 browser sub_command: {sub_command}")
