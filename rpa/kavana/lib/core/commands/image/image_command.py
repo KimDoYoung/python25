@@ -25,8 +25,8 @@ class ImageCommand(BaseCommand):
         "text": {"required": True, "allowed_types": [TokenType.STRING]},
         "font_name": {"required": False, "allowed_types": [TokenType.STRING]},
         "font_size": {"required": False, "allowed_types": [TokenType.INTEGER]},
-        "color": {"required": False, "allowed_types": [TokenType.STRING]},
-        "bg_color": {"required": False, "allowed_types": [TokenType.STRING]},
+        "color": {"required": False, "allowed_types": [TokenType.ARRAY]},
+        "bg_color": {"required": False, "allowed_types": [TokenType.ARRAY]},
     }
 
     COMMAND_SPECS = {
