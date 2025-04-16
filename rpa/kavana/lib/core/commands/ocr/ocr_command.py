@@ -21,12 +21,18 @@ class OcrCommand(BaseCommand):
         "from_file": {"required": False, "allowed_types": [TokenType.STRING]},
         "to_var": {"required": False, "allowed_types": [TokenType.STRING]},
     }
-    COMMAND_OPTION_MAP = {
+    COMMAND_SPECS = {
         "read": {
             "keys": ["from_var", "from_file", "area", "to_var"],
             "overrides": {
                 "from_var": {"required": True},
                 "from_file": {"required": True}
+            },
+            "rules": {
+                "mutually_exclusive": [
+                    ["from_file", "from_var"]
+                ],
+                "required_together": []
             }
         },
         "find": {
@@ -34,6 +40,12 @@ class OcrCommand(BaseCommand):
             "overrides": {
                 "from_var": {"required": True},
                 "from_file": {"required": True}
+            },
+            "rules": {
+                "mutually_exclusive": [
+                    ["from_file", "from_var"]
+                ],
+                "required_together": []
             }
         },
         "get_all": {
@@ -41,32 +53,16 @@ class OcrCommand(BaseCommand):
             "overrides": {
                 "from_var": {"required": True},
                 "from_file": {"required": True}
+            },
+            "rules": {
+                "mutually_exclusive": [
+                    ["from_file", "from_var"]
+                ],
+                "required_together": []
             }
         }
     }
-    OPTION_RULES = {
-        "read": {
-            "mutually_exclusive": [  # 서로 동시에 존재하면 안 되는 파라미터들
-                ["from_file", "from_var"],
-            ],
-            "required_together": [  # 함께 있어야만 유효한 조합
-            ]
-        },
-        "find": {
-            "mutually_exclusive": [
-                ["from_file", "from_var"],
-            ],
-            "required_together": [
-            ]
-        },
-        "get_all": {
-            "mutually_exclusive": [
-                ["from_file", "from_var"],
-            ],
-            "required_together": [
-            ]
-        }
-    }
+
 
     def execute(self, args: list[Token], executor):
         if not args:
@@ -75,9 +71,9 @@ class OcrCommand(BaseCommand):
         sub_command = args[0].data.value.lower()
         options, _ = self.extract_all_options(args, 1)
 
-        option_map = self.get_option_definitions(sub_command)
+        option_map, rules = self.get_option_spec(sub_command)
         option_values = self.parse_and_validate_options(options, option_map, executor)
-        self.check_option_rules(sub_command, option_values)
+        self.check_option_rules(sub_command, option_values, rules)
         
         try:
             ocr_manager = OcrManager(command=sub_command,**option_values, executor=executor)

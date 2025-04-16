@@ -169,40 +169,39 @@ class ImageManager(BaseManager):
         _, binary = cv2.threshold(gray, level, 255, threshold_type)
         self._save_to_file_or_var(binary)
 
+
     def create_text_image(self):
         text = self.options.get("text")
         font_name = self.options.get("font_name", "gulim.ttc")
         font_size = self.options.get("font_size", 12)
-        color = self.options.get("color", (255, 255, 255))
-        bg_color = self.options.get("bg_color", (0, 0, 0))
+        color = self.options.get("color", (0, 0, 0))         # 검정 글씨
+        bg_color = self.options.get("bg_color", (255, 255, 255))  # 흰색 배경 (RGB 가능)
         width = self.options.get("width", None)
         height = self.options.get("height", None)
 
         if not text:
             self.raise_error("create_text_image: text 파라미터가 필요합니다.")
 
-        # PIL을 사용하여 텍스트 이미지를 생성합니다.
+        try:
+            font = ImageFont.truetype(font_name, font_size)
+        except Exception as e:
+            self.raise_error(f"폰트 로딩 실패: {font_name} ({str(e)})")
+
         if width is None or height is None:
-            # 텍스트 크기 측정
-            dummy_img = PILImage.new("L", (1, 1))
+            dummy_img = PILImage.new("RGB", (1, 1))
             d = ImageDraw.Draw(dummy_img)
-            bbox = d.textbbox((0, 0), text, font=None)
+            bbox = d.textbbox((0, 0), text, font=font)
             text_width = bbox[2] - bbox[0]
             text_height = bbox[3] - bbox[1]
-            width = text_width + 20  # 여백 추가
-            height = text_height + 20
-        
-        img = PILImage.new("L", (width, height), color=bg_color)
+            width = width or (text_width + 2)
+            height = height or (text_height + 2)
+
+        img = PILImage.new("RGB", (width, height), color=bg_color)
         d = ImageDraw.Draw(img)
-        font = ImageFont.truetype(font_name, font_size)
-        d.text((10, 10), text, fill=color, font=font)  # 여백을 고려하여 텍스트 위치 조정
+        d.text((1, 1), text, fill=color, font=font)
 
-        # numpy 배열로 변환
         img_np = np.array(img)
-
-        # 파일 저장 또는 var에 저장
         self._save_to_file_or_var(img_np)
-
 
     def _get_my_image_type(self):
         from_var = self.options.get("from_var")
@@ -222,6 +221,10 @@ class ImageManager(BaseManager):
         return img_obj
 
     def _save_to_file_or_var(self, img):
+        import os
+        from pathlib import Path
+        from PIL import Image as PILImage  # ← 핵심 포인트!
+
         to_file = self.options.get("to_file")
         to_var = self.options.get("to_var")
 
@@ -229,7 +232,14 @@ class ImageManager(BaseManager):
             img = img.astype(np.uint8) * 255
 
         if to_file:
-            cv2.imwrite(to_file, img)
+            from pathlib import Path
+            Path(to_file).parent.mkdir(parents=True, exist_ok=True)
+
+            try:
+                PILImage.fromarray(img).save(to_file)
+                self.log("INFO", f"저장 완료: {to_file}")
+            except Exception as e:
+                self.raise_error(f"이미지 저장 실패 (PIL): {to_file} -> {e}")            
         elif to_var:
             temp_file_path = self._save_temp_image(img)
             new_img = Image(temp_file_path)

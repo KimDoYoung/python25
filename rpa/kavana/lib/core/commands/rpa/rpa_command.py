@@ -23,7 +23,7 @@ class RpaCommand(BaseCommand):
         "y": {"required": False, "allowed_types": [TokenType.INTEGER]},
         "click_type": {"default": 'left', "allowed_types": [TokenType.STRING]},
         "click_count": {"default": 1, "allowed_types": [TokenType.INTEGER]},
-        "duration": {"default": 0.2, "allowed_types": [TokenType.FLOAT]},
+        "duration": {"default": 0.5, "allowed_types": [TokenType.FLOAT]},
         "relative": {"default": False, "allowed_types": [TokenType.BOOLEAN]},
         "keys": {"required": False, "allowed_types": [TokenType.ARRAY]},
         "speed": {"default": 0.5, "allowed_types": [TokenType.FLOAT]},
@@ -34,64 +34,80 @@ class RpaCommand(BaseCommand):
         "to_file": {"required": False, "allowed_types": [TokenType.STRING]},
     }
 
-    COMMAND_OPTION_MAP = {
+
+    COMMAND_SPECS = {
         "app_open": {
-            "keys": ["from_var", "maximize", "process_name"]
+            "keys": ["from_var", "maximize", "process_name"],
+            "overrides": {},
+            "rules": {}
         },
         "app_close": {
             "keys": ["from_var"],
             "overrides": {
                 "from_var": {"required": True}
-            }
+            },
+            "rules": {}
         },
         "wait": {
             "keys": ["seconds"],
             "overrides": {
                 "seconds": {"required": True}
+            },
+            "rules": {
+                "mutually_exclusive": [["select", "seconds"]],
+                "required_together": []
             }
         },
-        "wait_for_image": {
-            "keys": ["area", "from_var", "from_file", "timeout", "grayscale", "confidence"]
+        # "wait_for_image": {
+        "wait_image_and_click": {
+            "keys": ["area", "from_var", "from_file", "timeout", "grayscale", "confidence"],
+            "overrides": {},
+            "rules": {}
         },
         "click_point": {
             "keys": ["x", "y", "click_type", "click_count", "duration"],
             "overrides": {
                 "x": {"required": True},
                 "y": {"required": True}
-            }
+            },
+            "rules": {}
         },
         "click_image": {
-            "keys": ["area", "from_var", "from_file", "timeout", "grayscale", "confidence"]
+            "keys": ["area", "from_var", "from_file", "timeout", "grayscale", "confidence"],
+            "overrides": {},
+            "rules": {}
         },
         "mouse_move": {
-            "keys": ["x", "y", "duration", "relative"]
+            "keys": ["x", "y", "duration", "relative"],
+            "overrides": {},
+            "rules": {}
         },
         "key_in": {
             "keys": ["keys", "speed"],
             "overrides": {
                 "keys": {"required": True}
-            }
+            },
+            "rules": {}
         },
         "put_text": {
             "keys": ["text"],
             "overrides": {
                 "text": {"required": True}
-            }
+            },
+            "rules": {}
         },
         "get_text": {
-            "keys": ["to_var", "strip", "wait_before"]
+            "keys": ["to_var", "strip", "wait_before"],
+            "overrides": {},
+            "rules": {}
         },
         "capture": {
-            "keys": ["area", "to_var", "to_file"]
+            "keys": ["area", "to_var", "to_file"],
+            "overrides": {},
+            "rules": {}
         }
     }
 
-    OPTION_RULES = {
-        "wait": {
-            "mutually_exclusive": [["select", "seconds"]],
-            "required_together": []
-        }
-    }
 
     def execute(self, args: list[Token], executor):
         if not args:
@@ -100,10 +116,10 @@ class RpaCommand(BaseCommand):
         sub_command = args[0].data.value.lower()
         options, _ = self.extract_all_options(args, 1)
 
-        option_map = self.get_option_definitions(sub_command)
+        option_map, rules = self.get_option_spec(sub_command)
         option_values = self.parse_and_validate_options(options, option_map, executor)
-        self.check_option_rules(sub_command, option_values)
-
+        self.check_option_rules(sub_command, option_values, rules)
+        
         try:
             manager = RpaManager(command=sub_command, **option_values, executor=executor)
             manager.execute()
