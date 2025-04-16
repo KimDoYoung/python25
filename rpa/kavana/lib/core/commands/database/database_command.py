@@ -21,18 +21,27 @@ class DatabaseCommand(BaseCommand):
         "sql": {"required": True, "allowed_types": [TokenType.STRING]},
         "to_var": {"required": False, "allowed_types": [TokenType.STRING]},
     }
-    COMMAND_OPTION_MAP = {
+
+    COMMAND_SPECS = {
         "connect": {
             "keys": ["path", "url"],
             "overrides": {
                 "path": {"required": True},
                 "url": {"required": True}
+            },
+            "rules": {
+                "mutually_exclusive": [],
+                "required_together": []
             }
         },
         "execute": {
             "keys": ["sql"],
             "overrides": {
                 "sql": {"required": True}
+            },
+            "rules": {
+                "mutually_exclusive": [],
+                "required_together": []
             }
         },
         "query": {
@@ -40,51 +49,47 @@ class DatabaseCommand(BaseCommand):
             "overrides": {
                 "sql": {"required": True},
                 "to_var": {"required": False}
+            },
+            "rules": {
+                "mutually_exclusive": [],
+                "required_together": []
             }
         },
         "close": {
             "keys": [],
+            "overrides": {},
+            "rules": {
+                "mutually_exclusive": [],
+                "required_together": []
+            }
         },
         "begin_transaction": {
             "keys": [],
+            "overrides": {},
+            "rules": {
+                "mutually_exclusive": [],
+                "required_together": []
+            }
         },
         "commit": {
             "keys": [],
+            "overrides": {},
+            "rules": {
+                "mutually_exclusive": [],
+                "required_together": []
+            }
         },
         "rollback": {
             "keys": [],
-        }       
-    }
-    OPTION_RULES = {
-        "connect": {
-            "mutually_exclusive": [],
-            "required_together": []
-        },
-        "execute": {
-            "mutually_exclusive": [],
-            "required_together": []
-        },
-        "query": {
-            "mutually_exclusive": [],
-            "required_together": []
-        },
-        "close": {
-            "mutually_exclusive": [],
-            "required_together": []
-        },
-        "begin_transaction": {
-            "mutually_exclusive": [],
-            "required_together": []
-        },
-        "commit": {
-            "mutually_exclusive": [],
-            "required_together": []
-        },
-        "rollback": {
-            "mutually_exclusive": [],
-            "required_together": []
+            "overrides": {},
+            "rules": {
+                "mutually_exclusive": [],
+                "required_together": []
+            }
         }
     }
+
+
     def execute(self, args: list[Token], executor):
         self.executor = executor
         if not args:

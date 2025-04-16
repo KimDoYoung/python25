@@ -58,44 +58,45 @@ class HttpCommand(BaseCommand):
         "timeout": {"default": 10, "allowed_types": [TokenType.INTEGER]},
         "to_var": {"required": True, "allowed_types": [TokenType.STRING]},
     }
-    COMMAND_OPTION_MAP = {
+    COMMAND_SPECS = {
         "get": {
             "keys": ["url", "headers", "params", "content_type", "verify_ssl", "timeout", "to_var"],
             "overrides": {
                 "url": {"required": True},
                 "to_var": {"required": True}
+            },
+            "rules": {
+                "mutually_exclusive": [],
+                "required_together": []
             }
         },
         "post": {
             "keys": ["url", "headers", "params", "body", "content_type", "verify_ssl", "timeout"],
             "overrides": {
                 "url": {"required": True}
-            }
+            },
+            "rules": {}
         },
         "put": {
             "keys": ["url", "headers", "params", "body", "content_type", "verify_ssl", "timeout"],
             "overrides": {
                 "url": {"required": True}
-            }
+            },
+            "rules": {}
         },
         "delete": {
             "keys": ["url", "headers", "params", "content_type", "verify_ssl", "timeout"],
             "overrides": {
                 "url": {"required": True}
-            }
+            },
+            "rules": {}
         },
         "patch": {
             "keys": ["url", "headers", "params", "body", "content_type", "verify_ssl", "timeout"],
             "overrides": {
                 "url": {"required": True}
-            }
-        }
-    }
-
-    OPTION_RULES = {
-        "get": {
-            "mutually_exclusive": [],
-            "required_together": []
+            },
+            "rules": {}
         }
     }
 
@@ -106,9 +107,9 @@ class HttpCommand(BaseCommand):
         sub_command = args[0].data.value.lower()
         options, _ = self.extract_all_options(args, 1)
 
-        option_map = self.get_option_definitions(sub_command)
+        option_map, rules = self.get_option_spec(sub_command)
         option_values = self.parse_and_validate_options(options, option_map, executor)
-        self.check_option_rules(sub_command, option_values)
+        self.check_option_rules(sub_command, option_values, rules)
 
         try:
             manager = HttpManager(command=sub_command, **option_values, executor=executor)
@@ -126,69 +127,3 @@ class HttpCommand(BaseCommand):
                 executor.set_variable(var_name, result_token)            
         except KavanaHttpError as e:
             raise KavanaHttpError(f"HTTP `{sub_command}` 명령어 처리 중 오류 발생: {str(e)}") from e
-
-    # def execute(self, args: list[Token], executor):
-    #     if not args:
-    #         raise KavanaHttpError("SFTP 명령어는 최소 하나 이상의 인자가 필요합니다.")
-
-    #     sub_command = args[0].data.value.upper()
-    #     options, _ = self.extract_all_options(args, 1)
-
-    #     option_map = self.get_option_map(sub_command)
-    #     option_values = self.parse_and_validate_options(options, option_map, executor)
-    #     try:
-    #         http_manager = HttpManager(executor=executor)
-    #         option_values["method"] = sub_command
-    #         if sub_command == "GET":
-    #             response = http_manager.execute(**option_values)
-    #             if response is None:
-    #                 response = ""
-    #             var_name = option_values.get("to_var")
-    #             if var_name:
-    #                 if isinstance(response, str):
-    #                     result_token = StringToken(data=String(response), type=TokenType.STRING)
-    #                 elif isinstance(response, dict):
-    #                     result_token = TokenUtil.dict_to_hashmap_token(response)
-    #                 else:
-    #                     raise KavanaHttpError(f"지원하지 않는 HTTP 응답 타입: {type(response)}")
-    #                 executor.set_variable(var_name, result_token)
-    #         elif sub_command == "POST":
-    #             http_manager.execute(**option_values)
-    #         elif sub_command == "PUT":
-    #             http_manager.execute(**option_values)
-    #         elif sub_command == "DELETE":
-    #             http_manager.execute(**option_values)
-    #         elif sub_command == "PATCH":
-    #             http_manager.execute(**option_values)
-    #         else:
-    #             raise KavanaHttpError(f"지원하지 않는 HTTP sub_command: {sub_command}")
-    #     except KavanaHttpError as e:
-    #         raise KavanaHttpError(f"`{sub_command}` 명령어 처리 중 오류 발생: {str(e)}") from e
-    #     return
-
-
-
-    # 필요한 키만 추려서 option_map 구성
-    # def option_map_define(self, *keys):
-    #     '''필요한 키만 추려서 option_map 구성'''
-    #     keys = set(keys) 
-        
-    #     option_map = {}
-    #     for key in keys:
-    #         option_map[key] = self.OPTION_DEFINITIONS[key]
-    #     return option_map   
-        
-    # def get_option_map(self, sub_command: str) -> dict:
-    #     '''sub_command에 따른 옵션 맵 생성'''
-    #     if sub_command == "GET":
-    #         return self.option_map_define('url', 'headers', 'params',  'content_type', 'verify_ssl', 'timeout', 'to_var')
-    #     elif sub_command == "POST":
-    #         pass
-    #     elif sub_command == "PUT":
-    #         pass
-    #     elif sub_command == "DELETE":
-    #         pass
-    #     elif sub_command == "PATCH":
-    #         pass
-    #     else:
-    #         raise KavanaHttpError(f"지원하지 않는 ftp sub_command: {sub_command}")    

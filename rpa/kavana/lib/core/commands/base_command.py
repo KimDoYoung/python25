@@ -102,35 +102,6 @@ class BaseCommand(ABC):
         
         return expresses, i
     
-    def extract_all_options0(self, tokens: List[Token], start_idx: int):
-        """
-        주어진 tokens 리스트에서 key=value 옵션을 모두 추출하는 함수.
-        - key는 IDENTIFIER
-        - '=' 연산자가 반드시 있어야 함
-        - value는 ',' 또는 tokens 끝까지 표현식을 포함
-        {
-            "limit": {
-                "key_token": Token(IDENTIFIER, 'limit'),
-                "express": [Token(INTEGER, '100')]
-            },
-            "offset": {
-                "key_token": Token(IDENTIFIER, 'offset'),
-                "express": [Token(INTEGER, '20')]
-            }
-        }        
-        """
-        options = {}
-        i = start_idx
-        
-        while i < len(tokens):
-            key_token, express_tokens, next_index = self.extract_option1(tokens, i)
-            if key_token is None:
-                break
-            key = key_token.data.string.strip().lower()
-            options[key] = {"key_token": key_token, "express": express_tokens}
-            i = next_index
-        
-        return options, i    
     
     def extract_all_options(self, tokens: List[Token], start_idx: int):
         """
@@ -288,25 +259,39 @@ class BaseCommand(ABC):
             result.append(ExprEvaluator(executor=executor).evaluate(express).data.value)
         return result
     
+    def get_option_spec(self, sub_command: str):
+        '''subcommand에 따른 옵션 사양을 반환, overrides는 옵션 정의를 덮어씀'''
+        spec = self.COMMAND_SPECS.get(sub_command)
+        if not spec:
+            raise KavanaValueError(f"지원하지 않는 sub_command: {sub_command}")
 
-    def parse_and_validate_options(self, options: dict, option_map: dict, executor) -> dict:
+        keys = spec.get("keys", [])
+        overrides = spec.get("overrides", {})
+        rules = spec.get("rules", {})
+
+        option_map = self._resolve_option_definitions(
+            option_keys=keys,
+            base_definitions=self.OPTION_DEFINITIONS,
+            overrides=overrides
+        )
+
+        return option_map, rules
+    def parse_and_validate_options(self, user_options: dict, option_map: dict, executor) -> dict:
         """
-        주어진 options를 option_map 기준으로 검증하고 최종 값 딕셔너리를 리턴한다.
-        - 타입 체크, required 체크, default 적용 포함
-        - min/max, choices 검증 추가
+          입력받은 user_options를 option_map의 rule 기준으로 검증하고 최종 값 딕셔너리를 리턴한다.
         """
         option_values = {}
 
         # 1. 'with=' 병합 처리
-        if 'with' in options:
-            var_name_express = options['with']["express"]
+        if 'with' in user_options:
+            var_name_express = user_options['with']["express"]
             hashmap_token = ExprEvaluator(executor=executor).evaluate(var_name_express)
             with_values = self.hashmap_token_to_dict(hashmap_token, executor)
             option_values.update(with_values)
-            del options['with']
+            del user_options['with']
 
         # 2. 개별 옵션 평가 및 타입 체크
-        for key, value_dict in options.items():
+        for key, value_dict in user_options.items():
             if key not in option_map:
                 raise KavanaSyntaxError(f"알 수 없는 옵션: '{key}'")
 
@@ -355,53 +340,36 @@ class BaseCommand(ABC):
 
         return option_values
 
-
-    def check_option_rules(self, subcommand: str, params: dict):
-        ''' OPTION_RULES에 정의된 규칙을 체크한다.'''
-        rules = getattr(self, "OPTION_RULES", {}).get(subcommand, {})
-
-        # 1. 상호 배타 (mutually exclusive)
+    def check_option_rules(self, subcommand: str, params: dict, rules: dict):
+        ''' rules에 따라 옵션 검증 '''
         for group in rules.get("mutually_exclusive", []):
             present = [key for key in group if key in params]
             if len(present) > 1:
                 raise KavanaValueError(f"{subcommand} 옵션 충돌: {', '.join(present)} 는 동시에 사용할 수 없습니다.")
 
-        # 2. 함께 있어야 함 (required together)
         for group in rules.get("required_together", []):
             present = [key for key in group if key in params]
             if 0 < len(present) < len(group):
                 missing = [key for key in group if key not in params]
                 raise KavanaValueError(f"{subcommand} 옵션 부족: {', '.join(group)} 는 함께 지정해야 합니다. 누락: {', '.join(missing)}")
 
+        for group in rules.get("at_least_one", []):
+            present = [key for key in group if key in params]
+            if len(present) == 0:
+                raise KavanaValueError(f"{subcommand} 명령어는 다음 중 최소 하나가 필요합니다: {', '.join(group)}")
 
+        for group in rules.get("exactly_one", []):
+            present = [key for key in group if key in params]
+            if len(present) != 1:
+                raise KavanaValueError(f"{subcommand} 명령어는 다음 중 정확히 하나만 지정해야 합니다: {', '.join(group)}")
 
-    def _resolve_option_definitions(
-        self,
-        option_keys: list[str],
-        base_definitions: dict,
-        overrides: dict = None
-    ) -> dict:
-        if overrides is None:
-            overrides = {}
-
-        resolved = {}
+    def _resolve_option_definitions(self, option_keys, base_definitions, overrides):
+        result = {}
         for key in option_keys:
             if key not in base_definitions:
-                raise ValueError(f"정의되지 않은 옵션 키: {key}")
+                raise KavanaValueError(f"정의되지 않은 옵션 키: {key}")
             base = copy.deepcopy(base_definitions[key])
             override = overrides.get(key, {})
-            resolved[key] = {**base, **override}
-        return resolved
+            result[key] = {**base, **override}
+        return result
 
-    def get_option_definitions(self, sub_command: str) -> dict:
-        """
-        COMMAND_OPTION_MAP과 OPTION_DEFINITIONS를 기반으로
-        명령어별 최종 옵션 정의 딕셔너리를 반환
-        """
-        config = self.COMMAND_OPTION_MAP.get(sub_command)
-        if not config:
-            raise ValueError(f"지원하지 않는 sub_command: {sub_command}")
-
-        keys = config.get("keys", [])
-        overrides = config.get("overrides", {})
-        return self._resolve_option_definitions(keys, self.OPTION_DEFINITIONS, overrides)
