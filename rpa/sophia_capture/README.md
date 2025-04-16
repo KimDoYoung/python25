@@ -1,6 +1,7 @@
 # sophia_capture
 
 ## 개요
+
 - RPA 프로젝트를 위한 유틸리티
 - 이미지에서 region이나 rectangle을 구함
 - 이미지에서 영역을 선택해서 이미지를 잘라내어 저장함.
@@ -105,7 +106,10 @@ File
 - 상단의 툴바에 3개의 버튼을 추가
     1.mark : 클릭시 mark-on = not makr-on으로 mark-on일때 마우스 클릭하는 곳마다. +를 표시 빨간색으로
     2.mark-clear : 클릭시 화면에 표시된 +를 모두 지움.
-    3.cross-cursor : on일때 커서가 움직일때마다 horizontal line과 vertical line으로 
+    3.cross-cursor : on일때 커서가 움직일때마다 horizontal line과 vertical line으로
     즉 이미지 전체 넓이와 이미지 전체 높이로 cross라인을 그리면서 마우스가 움직이도록
     on일때 다시 누르면 off
 
+## History
+
+0.2 : 2025-04-16 한글이미지 파일명 저장 안되는 것 수정

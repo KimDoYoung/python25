@@ -9,6 +9,8 @@ from PyQt5.QtGui import QPixmap, QImage, QFont, QIcon, QCursor
 from PyQt5.QtCore import Qt, QRect, QPoint
 from PyQt5.QtCore import QSize
 
+from utils import RegionName, get_region
+
 
 class CustomLabel(QLabel):
     """ (요구사항 3) Rubber Band (점선 사각형) 구현 """
@@ -126,7 +128,7 @@ class CustomLabel(QLabel):
 class SophiaCapture(QMainWindow):
     def __init__(self):
         super().__init__()
-        self.VERSION = "0.1"  # 버전 정보 추가
+        self.VERSION = "0.2"  # 버전 정보 추가
         # 이미지 관련 변수
         self.original_image = None  # 원본 이미지
         self.displayed_image = None  # 확대/축소용 이미지
@@ -177,9 +179,35 @@ class SophiaCapture(QMainWindow):
         quit_action.triggered.connect(self.close)
         file_menu.addAction(quit_action)
 
+        # ✅ Action 메뉴 추가
+        action_menu = self.menu.addMenu("Action")
+
+        # Save info...
+        save_info_action = QAction("Save info...", self)
+        save_info_action.triggered.connect(self.save_info_to_file)
+        action_menu.addAction(save_info_action)
+
+        # Copy to clipboard
+        copy_clipboard_action = QAction("Copy to clipboard", self)
+        copy_clipboard_action.triggered.connect(self.copy_info_to_clipboard)
+        action_menu.addAction(copy_clipboard_action)
+
+        # Separator
+        action_menu.addSeparator()
+
+        # Clear info
+        clear_info_action = QAction("Clear info", self)
+        clear_info_action.triggered.connect(self.clear_info_text)
+        action_menu.addAction(clear_info_action)
+
+
         # (요구사항 2) 툴바 설정
         self.toolbar = QToolBar("Toolbar")
         self.addToolBar(self.toolbar)
+
+        self.info_btn = QPushButton("Info")
+        self.info_btn.clicked.connect(self.show_image_regions)
+        self.toolbar.addWidget(self.info_btn)
 
         self.zoom_in_btn = QPushButton("Zoom In")
         self.zoom_in_btn.clicked.connect(self.zoom_in)
@@ -319,11 +347,19 @@ class SophiaCapture(QMainWindow):
 
         if self.image_capture_mode:
             save_path = os.path.join(self.save_folder, f"image_{self.captured_images_count}.png")
-            cropped = self.original_image[y:y+h, x:x+w]  # ✅ 원본 이미지에서 정확한 영역 잘라내기
-            cv2.imwrite(save_path, cropped)
-            self.captured_images_count += 1
-            self.info_text.append("-----> ")
-            self.info_text.append(f"{save_path} saved")
+            cropped = self.original_image[y:y+h, x:x+w]
+
+            ext = ".png"
+            ret, buffer = cv2.imencode(ext, cropped)
+            if ret:
+                buffer.tofile(save_path)  # ✅ 한글 경로 지원
+                self.info_text.append("-----> ")
+                self.info_text.append(f"{save_path} saved")
+                self.captured_images_count += 1
+            else:
+                print("⚠️ 이미지 인코딩 실패")
+
+
         elif self.rect_capture_mode:
             self.info_text.append("-----> ")
             self.info_text.append(f"rect: ({rect.left()}, {rect.top()}) - ({rect.right()}, {rect.bottom()})")
@@ -375,6 +411,20 @@ class SophiaCapture(QMainWindow):
 
         self.display_image()
 
+    def show_image_regions(self):
+        """ Info 버튼 클릭 시 info_text에 Region 정보 출력 """
+        if self.original_image is None:
+            self.info_text.append("❌ 이미지가 로드되지 않았습니다.")
+            return
+
+        h, w, _ = self.original_image.shape
+        base_region = (0, 0, w, h)
+        self.info_text.append("-----> Image Region Info")
+        self.info_text.append(f"base_region = Region(0, 0, {w}, {h})")
+
+        for region_name in RegionName:
+            region = get_region(region_name, base_region)
+            self.info_text.append(f"{region_name.name}_REGION = Region{region}")
 
     def reset_zoom(self):
         """ 이미지 원래 크기로 복원 """
@@ -523,6 +573,32 @@ class SophiaCapture(QMainWindow):
         else:
             print("❌ Mark mode OFF: Cursor reset to Default")  
             self.image_label.setCursor(Qt.ArrowCursor)  # 🔹 기본 커서로 변경
+    #------------------------------------------------------------------
+    def save_info_to_file(self):
+        """ info_text 내용을 파일로 저장 """
+        text = self.info_text.toPlainText()
+        if not text.strip():
+            QMessageBox.information(self, "Info", "저장할 내용이 없습니다.")
+            return
+
+        file_path, _ = QFileDialog.getSaveFileName(self, "Save Info", "", "Text Files (*.txt);;All Files (*)")
+        if file_path:
+            try:
+                with open(file_path, "w", encoding="utf-8") as f:
+                    f.write(text)
+                QMessageBox.information(self, "Saved", f"{file_path} 저장 완료")
+            except Exception as e:
+                QMessageBox.critical(self, "오류", f"파일 저장 실패: {e}")
+
+    def copy_info_to_clipboard(self):
+        """ info_text 내용을 클립보드로 복사 """
+        clipboard = QApplication.clipboard()
+        clipboard.setText(self.info_text.toPlainText())
+        QMessageBox.information(self, "Copied", "클립보드에 복사되었습니다.")
+
+    def clear_info_text(self):
+        """ info_text 내용 지우기 """
+        self.info_text.clear()
 
 
 
