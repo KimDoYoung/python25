@@ -1,5 +1,7 @@
+import datetime
 import sys
 import os
+import traceback
 import cv2
 import numpy as np
 from PyQt5.QtWidgets import (QApplication, QMainWindow, QLabel, QFileDialog, 
@@ -339,6 +341,11 @@ class SophiaCapture(QMainWindow):
         w = int(rect.width() / self.scale_factor)
         h = int(rect.height() / self.scale_factor)
 
+        # ✅ 잘못된 크기 방지
+        if w <= 0 or h <= 0:
+            print(f"❌ 잘못된 선택 영역: width={w}, height={h}")
+            return
+
         # 원본 이미지 기준으로 좌표 확인
         h_img, w_img, _ = self.original_image.shape
         if x < 0 or y < 0 or x + w > w_img or y + h > h_img:
@@ -348,6 +355,10 @@ class SophiaCapture(QMainWindow):
         if self.image_capture_mode:
             save_path = os.path.join(self.save_folder, f"image_{self.captured_images_count}.png")
             cropped = self.original_image[y:y+h, x:x+w]
+            # ✅ 비어있는 이미지 방지
+            if cropped is None or cropped.size == 0:
+                print("❌ 잘라낸 이미지가 비어있습니다.")
+                return
 
             ext = ".png"
             ret, buffer = cv2.imencode(ext, cropped)
@@ -530,7 +541,6 @@ class SophiaCapture(QMainWindow):
             mark.deleteLater()  # QLabel 제거
         self.mark_list.clear()  # 리스트 초기화
 
-
     def toggle_cross_cursor(self):
         """ Cross-Cursor 모드 ON/OFF """
         self.cross_cursor_mode = not self.cross_cursor_mode
@@ -571,7 +581,7 @@ class SophiaCapture(QMainWindow):
             print("✅ Mark mode ON: Cursor changed to Cross")  
             self.image_label.setCursor(Qt.CrossCursor)  # 🔹 커서를 십자로 변경
         else:
-            print("❌ Mark mode OFF: Cursor reset to Default")  
+            print("Mark mode OFF: Cursor reset to Default")  
             self.image_label.setCursor(Qt.ArrowCursor)  # 🔹 기본 커서로 변경
     #------------------------------------------------------------------
     def save_info_to_file(self):
@@ -617,4 +627,17 @@ if __name__ == "__main__":
 
         sys.exit(app.exec_())  # 이벤트 루프 실행
     except Exception as e:
-        print(f"Error: {e}")  # 예외 발생 시 출력
+        # 현재 시간 기준 로그 파일명 생성
+        now = datetime.now()
+        timestamp = now.strftime("%Y_%m_%d_%H_%M_%S")
+        log_dir = "C:/tmp"
+        os.makedirs(log_dir, exist_ok=True)
+        log_path = os.path.join(log_dir, f"sophia_{timestamp}.log")
+
+        # 로그 파일 저장
+        with open(log_path, "w", encoding="utf-8") as f:
+            f.write("Unhandled Exception:\n\n")
+            f.write(traceback.format_exc())
+
+        # 콘솔에도 출력 (optional)
+        print(f"❌ 오류 발생! 로그 저장됨: {log_path}")
