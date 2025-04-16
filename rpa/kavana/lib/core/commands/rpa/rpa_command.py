@@ -23,7 +23,7 @@ class RpaCommand(BaseCommand):
         "y": {"required": False, "allowed_types": [TokenType.INTEGER]},
         "click_type": {"default": 'left', "allowed_types": [TokenType.STRING]},
         "click_count": {"default": 1, "allowed_types": [TokenType.INTEGER]},
-        "duration": {"default": 0.2, "allowed_types": [TokenType.FLOAT]},
+        "duration": {"default": 0.5, "allowed_types": [TokenType.FLOAT]},
         "relative": {"default": False, "allowed_types": [TokenType.BOOLEAN]},
         "keys": {"required": False, "allowed_types": [TokenType.ARRAY]},
         "speed": {"default": 0.5, "allowed_types": [TokenType.FLOAT]},
