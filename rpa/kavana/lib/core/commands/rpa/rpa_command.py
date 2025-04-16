@@ -58,7 +58,8 @@ class RpaCommand(BaseCommand):
                 "required_together": []
             }
         },
-        "wait_for_image": {
+        # "wait_for_image": {
+        "wait_image_and_click": {
             "keys": ["area", "from_var", "from_file", "timeout", "grayscale", "confidence"],
             "overrides": {},
             "rules": {}

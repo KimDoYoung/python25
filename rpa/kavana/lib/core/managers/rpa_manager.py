@@ -25,7 +25,7 @@ class RpaManager(BaseManager):
             "app_open": self.app_open,
             "app_close": self.app_close,
             "wait": self.wait,
-            "wait_for_image": self.wait_for_image,
+            "wait_image_and_click": self.wait_image_and_click,
             "click_point": self.click_point,
             "click_image": self.click_image,
             "mouse_move": self.mouse_move,
@@ -106,42 +106,43 @@ class RpaManager(BaseManager):
 
         self.log("INFO", "[RPA] 대기 완료")
 
-    def wait_for_image(self):
-        """RPA 명령어: wait_for_image - 특정 이미지가 화면에 나타날 때까지 대기"""
-
-        image_path = self.options.get("from_file")
+    def wait_image_and_click(self):
+        """RPA 명령어: find_image_and_click - 특정 이미지가 화면에 나타날 때까지 대기 그리고 click"""
         region = self.options.get("area")
         timeout = int(self.options.get("timeout", 10))
         grayscale = self.options.get("grayscale", False)
         confidence = float(self.options.get("confidence", 0.8))
 
-        if not image_path:
-            self.raise_error("wait_for_image 명령에는 'from_file' 옵션이 필요합니다.")
+        target_image = self._load_pilimage()
 
         # Region 객체를 pyautogui 호환 튜플로 변환
         if region and hasattr(region, "left"):
             region = (region.left, region.top, region.width, region.height)
 
-        self.log("INFO", f"[RPA] {timeout}초 동안 이미지 '{image_path}' 대기 중...")
+        self.log("INFO", f"[RPA] {timeout}초 동안 대기 중...")
 
         start_time = time.time()
         while time.time() - start_time < timeout:
             try:
                 location = pyautogui.locateOnScreen(
-                    image_path,
+                    target_image,
                     confidence=confidence,
                     grayscale=grayscale,
                     region=region
                 )
                 if location:
-                    self.log("INFO", f"[RPA] 이미지 '{image_path}' 발견됨: {location}")
+                    center = pyautogui.center(location)
+                    pyautogui.moveTo(center)
+                    pyautogui.click(center)
+                    self.log("INFO", f"[RPA] 이미지  발견됨: {location}")
+
                     return location
             except Exception as e:
                 self.log("ERROR", f"[RPA] 이미지 검색 중 오류 발생: {e}")
 
             time.sleep(0.5)
 
-        self.log("WARN", f"[RPA] 이미지 '{image_path}'를 {timeout}초 내에 찾을 수 없음.")
+        self.log("WARN", f"[RPA] 이미지  {timeout}초 내에 찾을 수 없음.")
         return None
 
     def click_point(self):
@@ -210,40 +211,22 @@ class RpaManager(BaseManager):
 
     def click_image(self):
         """RPA 명령어: click_image - 화면에서 이미지 찾아 클릭"""
+        region = self.options.get("area")
+        timeout = int(self.options.get("timeout", 10))
+        grayscale = self.options.get("grayscale", False)
+        confidence = float(self.options.get("confidence", 0.8))
 
-        # 옵션 추출
-        option_defs = ["area", "from_var", "from_file", "timeout", "grayscale", "confidence"]
-        opts = self.option_map_define(option_defs, *option_defs)
-
-        region = opts.get("area")
-        from_var = opts.get("from_var")
-        from_file = opts.get("from_file")
-        timeout = int(opts.get("timeout", 10))
-        grayscale = opts.get("grayscale", False)
-        confidence = float(opts.get("confidence", 0.8))
-
-        # 이미지 경로 확인
-        image_path = None
-        if from_var:
-            image_path = self.executor.get_variable(from_var)
-            if not isinstance(image_path, str):
-                self.raise_error(f"'{from_var}' 변수는 문자열 경로여야 합니다.")
-        elif from_file:
-            image_path = from_file
-        else:
-            self.raise_error("click_image 명령에는 'from_var' 또는 'from_file' 중 하나가 필요합니다.")
+        target_img = self._load_pilimage()
 
         # region 객체 변환
         if region and hasattr(region, 'left'):
             region = (region.left, region.top, region.width, region.height)
 
-        self.log("INFO", f"[RPA] 이미지 '{image_path}' 클릭 대기 (timeout: {timeout}s, conf: {confidence})")
-
         start_time = time.time()
         while time.time() - start_time < timeout:
             try:
                 location = pyautogui.locateOnScreen(
-                    image_path,
+                    target_img,
                     region=region,
                     grayscale=grayscale,
                     confidence=confidence
@@ -259,7 +242,7 @@ class RpaManager(BaseManager):
 
             time.sleep(0.5)
 
-        self.log("WARN", f"[RPA] 이미지 '{image_path}'를 {timeout}초 내에 찾지 못했습니다.")
+        self.log("WARN", f"[RPA] click_image  이미지를 {timeout}초 내에 찾지 못했습니다.")
         return None
 
 
@@ -451,3 +434,38 @@ class RpaManager(BaseManager):
             self.raise_error(f"[RPA] 화면 캡처 실패: {e}")
 
     
+    def _load_pilimage(self):
+        ''' from_file 또는 from_var에서 이미지를 로드 (PIL.Image 객체 반환) '''
+        from PIL import Image as PILImage
+        import numpy as np
+
+        from_var = self.options.get("from_var")
+        from_file = self.options.get("from_file")
+
+        if from_var:
+            img_token = self.executor.get_variable(from_var)
+            if not img_token:
+                self.raise_error(f"'{from_var}' 변수에서 이미지를 찾을 수 없습니다.")
+            if img_token.type != TokenType.IMAGE:
+                self.raise_error(f"'{from_var}'는 이미지 객체가 아닙니다.")
+
+            # numpy 배열 → PIL 이미지로 변환
+            img_np = img_token.data
+            if not isinstance(img_np.data, np.ndarray):
+                self.raise_error(f"'{from_var}'는 유효한 numpy 이미지가 아닙니다.")
+            try:
+                return PILImage.fromarray(img_np.data)
+            except Exception as e:
+                self.raise_error(f"이미지 변환 실패: {str(e)}")
+
+        elif from_file:
+            if not isinstance(from_file, str):
+                self.raise_error(f"'{from_file}'는 문자열 경로여야 합니다.")
+            try:
+                return PILImage.open(from_file)
+            except Exception as e:
+                self.raise_error(f"이미지 파일 열기 실패: {from_file} -> {e}")
+        else:
+            self.raise_error("'from_file' 또는 'from_var' 중 하나는 반드시 필요합니다.")
+
+            

@@ -11,8 +11,19 @@ MAIN
     SET image_base_path = "C:\\Users\\PC\\Pictures\\SophiaCapture\\esafe"
     SET esafe = Application(esafe_path)
     
+    // 이름 이미지 저장
+    SET cert_name = f"{image_base_path}\\cert_name.png"
+    IMAGE create_text_image text="한국펀드" to_file=cert_name
+
+    SET login_file = f"{image_base_path}\\로그인.png"
+
     RPA APP_OPEN from_var="esafe", maximize=False, process_name=process_name
     RPA WAIT seconds = 5
+    RPA wait_image_and_click from_file=login_file
+
+    RPA WAIT seconds=5
+    RPA wait_image_and_click from_file=cert_name
+    RPA WAIT seconds=7
     RPA app_close from_var="esafe" 
 END_MAIN
 """
