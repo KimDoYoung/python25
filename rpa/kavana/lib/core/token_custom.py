@@ -41,6 +41,7 @@ class PointToken(CustomToken):
 
     def __post_init__(self):
         super().__post_init__()
+        self.type = TokenType.POINT
 
     def evaluate(self, evaluator) -> Token:
         if self.status == TokenStatus.EVALUATED:
@@ -98,6 +99,7 @@ class RegionToken(CustomToken):
 
     def __post_init__(self):
         super().__post_init__()
+        self.type = TokenType.REGION
 
     def evaluate(self, evaluator) -> Token:
         if self.status == TokenStatus.EVALUATED:

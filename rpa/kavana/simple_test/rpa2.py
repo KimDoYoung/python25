@@ -62,13 +62,40 @@ function do_500068(image_base_path)
     if file_exists(save_file_name) == True
         just file_delete(save_file_name)
         print f"기존 파일 삭제 {save_file_name}"
+    else
+        print f"기존 파일 없음 {save_file_name}"
     end_if
     RPA put_text text=save_file_name
     rpa key_in keys=["enter"] after="wait:10s"
     rpa key_in keys=["space","space"] after="wait:3s"
+    just close_all_tabs(image_base_path)
+end_function
+
+function close_all_tabs(image_base_path)
+    set tab_area = Region(392, 79, 857, 30) //탭영역
+    set count = 1
+    while True
+        RPA find_image to_var="found_point" area=tab_area, from_file=f"{image_base_path}\\탭닫기.png", grayscale=True, confidence=0.8
+        if found_point != None
+            //LOG_INFO f"탭닫기 이미지 발견 {found_point}"
+            RPA CLICK_POINT location=found_point, after="wait:1s"
+        else
+            LOG_INFO "탭닫기 이미지 발견 못함"
+            RPA WAIT seconds=1
+            break
+        end_if
+        set count = count + 1
+        if count > 10
+            break
+        end_if
+    end_while
 end_function
 
 MAIN
+    LOG_INFO "=========================================================="
+    LOG_INFO "KSD SAFE 프로그램 시작"
+    LOG_INFO "=========================================================="
+
     // 애플리케이션 실행
     SET esafe_path = "C:\\Users\\PC\\AppData\\Roaming\\KSD SAFE\\LauncherKSD\\eSAFE2019.exe"
     SET process_name = "KSD.ApplicationBrowser.Shell.exe"
@@ -79,10 +106,6 @@ MAIN
     SET cert_name = f"{image_base_path}\\cert_name.png"
     IMAGE create_text_image text="한국펀드" to_file=cert_name
 
-    LOG_INFO "=========================================================="
-    LOG_INFO "KSD SAFE 프로그램 시작"
-    LOG_INFO "=========================================================="
-    
     RPA APP_OPEN from_var="esafe", maximize=False, process_name=process_name
 
     LOG_INFO "-------로그인 시작"

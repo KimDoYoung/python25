@@ -5,9 +5,12 @@ from typing import Any, List
 from lib.core.datatypes.hash_map import HashMap
 from lib.core.datatypes.kavana_datatype import Boolean, Float, Integer, KavanaDataType, NoneType, String
 from lib.core.datatypes.array import Array
+from lib.core.datatypes.point import Point
+from lib.core.datatypes.region import Region
 from lib.core.datatypes.ymd_time import Ymd, YmdTime
 from lib.core.exceptions.kavana_exception import DataTypeError, KavanaSyntaxError
-from lib.core.token import ArrayToken, HashMapToken, StringToken, Token
+from lib.core.token import ArrayToken, HashMapToken, StringToken, Token, TokenStatus
+from lib.core.token_custom import PointToken, RegionToken
 from lib.core.token_type import TokenType
 
 
@@ -221,3 +224,31 @@ class TokenUtil:
 
         str_token = StringToken(data=String(data), type=TokenType.STRING)
         return str_token
+    
+    @staticmethod
+    def region_to_token(region: tuple[int, int, int, int]) -> RegionToken:
+        """Region을 RegionToken으로 변환"""
+        from lib.core.datatypes.kavana_datatype import KavanaDataType
+        from lib.core.exceptions.kavana_exception import KavanaTypeError
+
+        if not isinstance(region, tuple) or len(region) != 4:
+            raise KavanaTypeError("region_to_token은 (x, y, width, height) 형태의 튜플만 허용됩니다.")
+
+        x, y, width, height = region
+        region_obj = Region(x, y, width, height)
+        result = RegionToken(data=region_obj)
+        result.status = TokenStatus.EVALUATED
+        return result
+    
+    @staticmethod
+    def xy_to_point_token(x,y) -> PointToken:
+        """Region을 PointToken으로 변환"""
+        from lib.core.datatypes.kavana_datatype import KavanaDataType
+        from lib.core.exceptions.kavana_exception import KavanaTypeError
+
+
+        p = Point(x,y)
+
+        result =  PointToken(data=p)
+        result.status = TokenStatus.EVALUATED
+        return result

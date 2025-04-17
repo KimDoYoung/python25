@@ -344,8 +344,9 @@ class ExprEvaluator:
                     elif a.type == TokenType.STRING and b.type == TokenType.STRING and token.data.value == "+":
                         result = String(a.data.value + b.data.value)
                         result_type = TokenType.STRING
-                    elif (a.type == TokenType.NONE or b.type == TokenType.NONE) and token.data in {"==", "!="}:
-                        result = self.OPERATORS[token.data][1](a.data.value, b.data.value)
+                    elif (a.type == TokenType.NONE or b.type == TokenType.NONE) and token.data.value in {"==", "!="}:
+                        b = self.OPERATORS[token.data.value][1](a.data.value, b.data.value)
+                        result = Boolean(b)
                         result_type = TokenType.BOOLEAN
 
                     elif a.type in {TokenType.INTEGER, TokenType.FLOAT, TokenType.BOOLEAN, TokenType.STRING} and b.type in {TokenType.INTEGER, TokenType.FLOAT, TokenType.BOOLEAN, TokenType.STRING}:

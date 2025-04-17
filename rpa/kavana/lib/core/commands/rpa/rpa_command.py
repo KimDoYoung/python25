@@ -14,6 +14,7 @@ class RpaCommand(BaseCommand):
         "maximize": {"required": False, "allowed_types": [TokenType.BOOLEAN]},
         "process_name": {"required": False, "allowed_types": [TokenType.STRING]},
         "seconds": {"required": False, "allowed_types": [TokenType.INTEGER]},
+        "minutes": {"required": False, "allowed_types": [TokenType.INTEGER]},
         "from_file": {"required": False, "allowed_types": [TokenType.STRING]},
         "grayscale": {"default": True, "allowed_types": [TokenType.BOOLEAN]},
         "confidence": {"default": 0.8, "allowed_types": [TokenType.FLOAT], "min": 0.0, "max": 1.0},
@@ -32,6 +33,8 @@ class RpaCommand(BaseCommand):
         "text": {"required": False, "allowed_types": [TokenType.STRING]},
         "to_var": {"required": False, "allowed_types": [TokenType.STRING]},
         "to_file": {"required": False, "allowed_types": [TokenType.STRING]},
+        "after": {"required": False, "allowed_types": [TokenType.STRING]},
+        "location": {"required": False, "allowed_types": [TokenType.POINT]},
     }
 
 
@@ -49,41 +52,56 @@ class RpaCommand(BaseCommand):
             "rules": {}
         },
         "wait": {
-            "keys": ["seconds"],
+            "keys": ["seconds","minutes"],
             "overrides": {
-                "seconds": {"required": True}
             },
             "rules": {
-                "mutually_exclusive": [["select", "seconds"]],
-                "required_together": []
+                "mutually_exclusive": [["seconds", "minutes"]],
+                "required_together": [],
+                "at_least_one": [["seconds", "minutes"]]
             }
         },
         # "wait_for_image": {
-        "wait_image_and_click": {
-            "keys": ["area", "from_var", "from_file", "timeout", "grayscale", "confidence"],
+        "wait_image": {
+            "keys": ["area", "from_var", "from_file", "to_var", "after", "timeout", "grayscale", "confidence"],
             "overrides": {},
             "rules": {}
         },
         "click_point": {
-            "keys": ["x", "y", "click_type", "click_count", "duration"],
+            "keys": ["x", "y", "location","after", "click_type", "click_count", "duration"],
             "overrides": {
-                "x": {"required": True},
-                "y": {"required": True}
+            },
+            "rules": {
+                "mutually_exclusive": [
+                    ["location", "x"],["location", "y"]
+                ],
+                "required_together": [["x", "y"]]
+            }
+        },
+        "click_image": {
+            "keys": ["area", "after", "from_var", "from_file", "grayscale", "confidence"],
+            "overrides": {},
+            "rules": {}
+        },
+        "find_image": {
+            "keys": ["area", "after", "from_var", "from_file", "to_var", "grayscale", "confidence"],
+            "overrides": {
+                "to_var": {"required": True}
             },
             "rules": {}
         },
-        "click_image": {
-            "keys": ["area", "from_var", "from_file", "timeout", "grayscale", "confidence"],
-            "overrides": {},
-            "rules": {}
-        },
         "mouse_move": {
-            "keys": ["x", "y", "duration", "relative"],
+            "keys": ["x", "y", "location", "duration", "relative","after"],
             "overrides": {},
-            "rules": {}
+            "rules": {
+                "mutually_exclusive": [
+                    ["location", "x"],["location", "y"],["location", "relative"]
+                ],
+                "required_together": [["x", "y"]]
+            }
         },
         "key_in": {
-            "keys": ["keys", "speed"],
+            "keys": ["keys","after", "speed"],
             "overrides": {
                 "keys": {"required": True}
             },
