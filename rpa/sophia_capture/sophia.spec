@@ -35,5 +35,5 @@ exe = EXE(
     target_arch=None,
     codesign_identity=None,
     entitlements_file=None,
-    icon=['C:\\Users\\KOREA\\python25\\rpa\\sophia_capture\\src\\sophia_capture.ico'],
+    icon=['C:\\Users\\PC\\Work\\python25\\rpa\\sophia_capture\\src\\sophia_capture.ico'],
 )
