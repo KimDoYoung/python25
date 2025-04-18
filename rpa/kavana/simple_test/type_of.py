@@ -5,13 +5,19 @@ from lib.core.command_preprocessor import CommandPreprocessor
 # 대입
 script = """
 MAIN
-    SET i = (10 + 20) * 30
-    PRINT type_of(i)
+    SET i = 1
+    SET s = "hello"
+    SET b = True
+    SET a = [1, 2, 3]
+    SET f = 3.14
+    SET d = {"key": "value"}
+    SET n = None
     if is_type(i, "integer")
-        PRINT "i is integer"
+        SET result = "Integer"
     else
-        PRINT "i is not integer"
+        SET result = "Not Integer"
     END_IF
+    print type_of(i),type_of(s),type_of(b),type_of(a),type_of(f),type_of(d),type_of(n), result
 END_MAIN
 """
 #---------------------------
