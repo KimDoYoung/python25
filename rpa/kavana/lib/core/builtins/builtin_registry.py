@@ -10,6 +10,8 @@ BUILTIN_FUNCTIONS = {
     # ✅ 데이터타입관련 함수 추가
     "TYPE_OF": (DatatypeFunctions.TYPE_OF, 1),
     "IS_TYPE": (DatatypeFunctions.IS_TYPE, 2),
+    "IS_NULL": (DatatypeFunctions.IS_NULL, 1),
+    "IS_NONE": (DatatypeFunctions.IS_NULL, 1), # alias for IS_NULL
     # ✅ 문자열 관련 함수 추가
     "LENGTH": (StringFunctions.LENGTH, 1),
     "SUBSTR": (StringFunctions.SUBSTR, 3),

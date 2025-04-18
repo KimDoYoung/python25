@@ -18,7 +18,7 @@ def test_typeof_and_is_type(monkeypatch, capsys):
         else
             SET result = "Not Integer"
         END_IF
-        print type_of(i),type_of(s),type_of(b),type_of(a),type_of(f),type_of(d),type_of(n), result
+        print type_of(i),type_of(s),type_of(b),type_of(a),type_of(f),type_of(d),type_of(n), result,is_null(n), is_none(f) 
     END_MAIN
     """
 
@@ -38,7 +38,7 @@ def test_typeof_and_is_type(monkeypatch, capsys):
     # 출력 결과 검증
     # ---------------------------
     captured = capsys.readouterr()
-    expected = "Integer String Boolean Array Float HashMap NoneType Integer"
+    expected = "Integer String Boolean Array Float HashMap NoneType Integer True False"
     output_line = [line for line in captured.out.strip().split("\n") if expected in line]
 
     assert output_line, "기대한 출력 라인이 없습니다."

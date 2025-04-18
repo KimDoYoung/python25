@@ -17,7 +17,7 @@ MAIN
     else
         SET result = "Not Integer"
     END_IF
-    print type_of(i),type_of(s),type_of(b),type_of(a),type_of(f),type_of(d),type_of(n), result
+    print type_of(i),type_of(s),type_of(b),type_of(a),type_of(f),type_of(d),type_of(n), result, is_null(n), is_none(f) 
 END_MAIN
 """
 #---------------------------

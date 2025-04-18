@@ -23,20 +23,6 @@ class Token:
         """디버깅을 위한 문자열 표현"""
         return f"Token(data={self.data}, type={self.type}, line={self.line}, column={self.column})"
 
-# @dataclass
-# class NoneToken(Token):
-#     data: KavanaDataType = field(default=None, init=False)
-#     type: TokenType = field(default=TokenType.NONE, init=False)
-    
-#     def __post_init__(self):
-#         object.__setattr__(self, "data", None)  # 명시적으로 None
-#         data = NoneType()  # NoneType 객체로 설정
-# @dataclass
-# class NoneToken(Token):
-#     def __post_init__(self):
-#         object.__setattr__(self, "data", NoneType())  # NoneType 객체로 설정
-#         object.__setattr__(self, "type", TokenType.NONE)
-
 @dataclass
 class NoneToken(Token):
     def __init__(self):
@@ -134,7 +120,6 @@ class HashMapToken(Token):
         if not isinstance(self.data, HashMap):
             raise TypeError("HashMapToken must contain a HashMap instance")
 
-
 @dataclass
 class AccessIndexToken(Token):
     """✅ 리스트에 접근하기 위한 인덱스 토큰"""
@@ -142,7 +127,6 @@ class AccessIndexToken(Token):
     column_express: List[Token] = field(default_factory=list)
     key_express: List[Token] = field(default_factory=list) # HashMap에서 사용
     data: String  # ✅ `data`는 String 타입 (생성 시 반드시 입력해야 함)
-    #type: TokenType = field(default=TokenType.LIST_INDEX, init=False)  # ✅ `type`을 LIST_INDEX 고정
     type: TokenType = TokenType.ACCESS_INDEX  # ✅ 기본값은 LIST_INDEX지만 변경 가능
 
     def __post_init__(self):
