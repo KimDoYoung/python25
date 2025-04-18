@@ -5,7 +5,7 @@ from lib.core.command_preprocessor import CommandPreprocessor
 # 대입
 script = """
 MAIN
-    SET s = "ABC"
+    SET s = "A" + "B" + "C"
     SET b = s == "ABC"
     PRINT f"{b}"
 END_MAIN

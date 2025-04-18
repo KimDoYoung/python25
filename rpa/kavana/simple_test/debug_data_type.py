@@ -23,5 +23,7 @@ print(hm.primitive)
 
 nt = NoneToken()
 assert nt.data == NoneType()
+assert nt.data.value == None
 assert nt.type == TokenType.NONE
 print(nt)
+
