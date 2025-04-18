@@ -1,3 +1,4 @@
+from lib.core.builtins.datatype_functions import DatatypeFunctions
 from lib.core.builtins.dir_functions import DirFunctions
 from lib.core.builtins.file_functions import FileFunctions
 from lib.core.builtins.path_functions import PathFunctions
@@ -6,6 +7,10 @@ from .string_functions import StringFunctions
 from .numeric_functions import NumericFunctions
 
 BUILTIN_FUNCTIONS = {
+    # ✅ 데이터타입관련 함수 추가
+    "TYPE_OF": (DatatypeFunctions.TYPE_OF, 1),
+    "IS_TYPE": (DatatypeFunctions.IS_TYPE, 2),
+    # ✅ 문자열 관련 함수 추가
     "LENGTH": (StringFunctions.LENGTH, 1),
     "SUBSTR": (StringFunctions.SUBSTR, 3),
     "UPPER": (StringFunctions.UPPER, 1),

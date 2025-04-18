@@ -10,6 +10,9 @@ class KavanaDataType:
     def __eq__(self, other: Any) -> bool:
         return isinstance(other, self.__class__) and self.__dict__ == other.__dict__
 
+    def type_name(self) -> str:
+        return self.__class__.__name__
+    
     @property
     def primitive(self):
         """Python 기본 타입(int, float, str, list 등)으로 변환"""

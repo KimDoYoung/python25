@@ -251,3 +251,16 @@ class TokenUtil:
         result =  PointToken(data=p)
         result.status = TokenStatus.EVALUATED
         return result
+    
+    @staticmethod
+    def boolean_to_boolean_token(data: bool) -> Token:
+        """Boolean을 BooleanToken으로 변환"""
+        from lib.core.datatypes.kavana_datatype import KavanaDataType
+        from lib.core.exceptions.kavana_exception import KavanaTypeError
+
+        if not isinstance(data, bool):
+            raise KavanaTypeError("boolean_to_boolean_token은 bool 타입만 허용됩니다.")
+
+        boolean_obj = Boolean(data)
+        result = Token(data=boolean_obj, type=TokenType.BOOLEAN)
+        return result
