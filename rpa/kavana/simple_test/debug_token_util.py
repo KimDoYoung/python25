@@ -28,7 +28,19 @@ def debug_dict_to_hashmap_token():
     print(f"  status: {hash_map_token.status}")
     print()
 
+def debug_xy_to_point_token():
+    print("=== xy_to_point_token 디버그 ===")
+    point_token = TokenUtil.xy_to_point_token(1,2)
+    print("▶ PointToken:")
+    print(f"  type: {type(point_token)}")
+    print(f"  data: {point_token.data}")
+    print(f"  primitive: {point_token.data.primitive}")
+    print(f"  string: {point_token.data.string}")
+    print(f"  status: {point_token.status}")
+    print()
+
 if __name__ == "__main__":
     debug_list_to_array_token([1,2,3])
     debug_list_to_array_token([])
     debug_dict_to_hashmap_token()
+    debug_xy_to_point_token()

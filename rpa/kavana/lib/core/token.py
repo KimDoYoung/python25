@@ -2,7 +2,7 @@ from dataclasses import dataclass, field
 from enum import Enum
 from typing import Dict, List, Literal, Optional
 from lib.core.datatypes.hash_map import HashMap
-from lib.core.datatypes.kavana_datatype import Integer, KavanaDataType, String
+from lib.core.datatypes.kavana_datatype import Integer, KavanaDataType, NoneType, String
 from lib.core.datatypes.array import Array
 from lib.core.datatypes.ymd_time import Ymd, YmdTime
 from lib.core.token_type import TokenType
@@ -23,13 +23,24 @@ class Token:
         """디버깅을 위한 문자열 표현"""
         return f"Token(data={self.data}, type={self.type}, line={self.line}, column={self.column})"
 
+# @dataclass
+# class NoneToken(Token):
+#     data: KavanaDataType = field(default=None, init=False)
+#     type: TokenType = field(default=TokenType.NONE, init=False)
+    
+#     def __post_init__(self):
+#         object.__setattr__(self, "data", None)  # 명시적으로 None
+#         data = NoneType()  # NoneType 객체로 설정
+# @dataclass
+# class NoneToken(Token):
+#     def __post_init__(self):
+#         object.__setattr__(self, "data", NoneType())  # NoneType 객체로 설정
+#         object.__setattr__(self, "type", TokenType.NONE)
+
 @dataclass
 class NoneToken(Token):
-    data: KavanaDataType = field(default=None, init=False)
-    type: TokenType = field(default=TokenType.NONE, init=False)
-    
-    def __post_init__(self):
-        object.__setattr__(self, "data", None)  # 명시적으로 None
+    def __init__(self):
+        super().__init__(data=NoneType(), type=TokenType.NONE)
 
 @dataclass
 class StringToken(Token):

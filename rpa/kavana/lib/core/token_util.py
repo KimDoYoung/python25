@@ -242,10 +242,9 @@ class TokenUtil:
     
     @staticmethod
     def xy_to_point_token(x,y) -> PointToken:
-        """Region을 PointToken으로 변환"""
+        """x,y를 PointToken으로 변환"""
         from lib.core.datatypes.kavana_datatype import KavanaDataType
         from lib.core.exceptions.kavana_exception import KavanaTypeError
-
 
         p = Point(x,y)
 
