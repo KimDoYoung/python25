@@ -151,7 +151,7 @@ class RpaManager(BaseManager):
                     return location
                     
             except Exception as e:
-                self.log("WARN", f"[RPA:wait_image] 이미지 {target_image.filename} 검색 중 오류 발생:  {type(e).__name__} - {str(e)}")
+                self.log("WARN", f"[RPA:wait_image] 이미지 {target_image.filename} 검색 중... 아직 발견하지 못함:  {type(e).__name__} - {str(e)}")
 
             time.sleep(0.5)
         if to_var:
@@ -290,7 +290,7 @@ class RpaManager(BaseManager):
                     self._after_action(found_region, after)
                 return found_region
         except pyautogui.ImageNotFoundException:
-            super().log("ERROR", f"[RPA:find_image] 이미지 {target_img.filename} 찾기 실패")
+            super().log("WARN", f"[RPA:find_image] 이미지 {target_img.filename} 찾기 실패")
             result_token = NoneToken()
             if to_var:
                 self.executor.set_variable(to_var, result_token)

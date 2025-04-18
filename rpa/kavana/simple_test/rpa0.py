@@ -16,6 +16,16 @@ MAIN
     else
         LOG_INFO "탭닫기 이미지 발견 못함"
     end_if
+    SET save_folder = r"c:\\tmp"
+    SET ymd = YMD(2024, 4, 17)
+    SET save_file_name = f"{save_folder}\\{ymd}_500068.csv"
+    if file_exists(save_file_name) == True
+        just file_delete(save_file_name)
+        print f"기존 파일 삭제 {save_file_name}"
+    else
+        print f"기존 파일 없음 {save_file_name}"
+    end_if
+
 
     ON_EXCEPTION
         PRINT "예외 발생"
