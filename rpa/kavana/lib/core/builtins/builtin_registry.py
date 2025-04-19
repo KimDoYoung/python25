@@ -12,6 +12,7 @@ BUILTIN_FUNCTIONS = {
     "IS_TYPE": (DatatypeFunctions.IS_TYPE, 2),
     "IS_NULL": (DatatypeFunctions.IS_NULL, 1),
     "IS_NONE": (DatatypeFunctions.IS_NULL, 1), # alias for IS_NULL
+    "JSON_STR_PARSE": (DatatypeFunctions.JSON_STR_PARSE, 1),
     # ✅ 문자열 관련 함수 추가
     "LENGTH": (StringFunctions.LENGTH, 1),
     "SUBSTR": (StringFunctions.SUBSTR, 3),

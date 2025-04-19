@@ -32,7 +32,7 @@ class DatatypeFunctions:
         return token
     
     @staticmethod
-    def JSON_STR_TO_(json_str: String) -> HashMapToken:
+    def JSON_STR_PARSE(json_str: String) -> HashMapToken:
         """JSON 문자열을 HashMap으로 변환"""
         from lib.core.token_util import TokenUtil
         import json
