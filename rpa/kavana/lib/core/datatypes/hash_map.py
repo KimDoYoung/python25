@@ -21,10 +21,10 @@ class HashMap(KavanaDataType):
             raise KavanaKeyError(f"키 '{key}'를 발견할 수 없습니다.")
         return self.value[key]
 
-    def set(self, key: Union[str, int], val: Token) -> None:
+    def set(self, key: Union[str, int], val: KavanaDataType) -> None:
         """키에 값 설정. 값은 반드시 KavanaDataType이어야 함."""
-        if not isinstance(val, Token):
-            raise KavanaTypeError("HashMap의 값은  Token 인스턴스여야 합니다.")
+        if not isinstance(val, KavanaDataType):
+            raise KavanaTypeError("HashMap의 값은  KavanaDataType 인스턴스여야 합니다.")
         self.value[key] = val
 
     def remove(self, key: Union[str, int]) -> None:

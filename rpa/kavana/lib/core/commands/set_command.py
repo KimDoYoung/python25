@@ -49,7 +49,7 @@ class SetCommand(BaseCommand):
 
             # 최종 set
             if current_token.type in (TokenType.ARRAY, TokenType.HASH_MAP):
-                current_token.data.set(last_key, value_token)
+                current_token.data.set(last_key, value_token.data)
             else:
                 raise KavanaTypeError("마지막 인덱싱 대상은 ARRAY 또는 HASH_MAP이어야 합니다.",target_token.line_number, target_token.column_number)
         else:
