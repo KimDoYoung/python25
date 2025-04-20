@@ -34,22 +34,26 @@ class SetCommand(BaseCommand):
 
             container_token = executor.variable_manager.get_variable(var_name)
             current_token = container_token
+
             evaluator = ExprEvaluator(executor)
+            if current_token.type == TokenType.HASH_MAP:
+                # 마지막 인덱스 전까지 순회
+                for expr in index_expresses[:-1]:
+                    index_token = evaluator.evaluate(expr)
+                    key = index_token.data.value
+                    current_token = current_token.data.get(key)
 
-            # 마지막 인덱스 전까지 순회
-            for expr in index_expresses[:-1]:
-                index_token = evaluator.evaluate(expr)
-                key = index_token.data.value
-                current_token = current_token.data.get(key)
-
-            # 마지막 인덱스
-            last_expr = index_expresses[-1]
-            last_index_token = evaluator.evaluate(last_expr)
-            last_key = last_index_token.data.value
-
-            # 최종 set
-            if current_token.type in (TokenType.ARRAY, TokenType.HASH_MAP):
+                # 마지막 인덱스
+                last_expr = index_expresses[-1]
+                last_index_token = evaluator.evaluate(last_expr)
+                last_key = last_index_token.data.value
                 current_token.data.set(last_key, value_token.data)
+            elif current_token.type == TokenType.ARRAY:
+                row_expr = index_expresses[0]
+                col_expr = index_expresses[1] if len(index_expresses) > 1 else None
+                row = evaluator.evaluate(row_expr).data.value
+                col = evaluator.evaluate(col_expr).data.value if col_expr else None
+                current_token.data.set(row,col, value_token)
             else:
                 raise KavanaTypeError("마지막 인덱싱 대상은 ARRAY 또는 HASH_MAP이어야 합니다.",target_token.line_number, target_token.column_number)
         else:
