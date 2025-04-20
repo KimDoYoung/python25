@@ -10,12 +10,12 @@ from lib.core.datatypes.point import Point
 from lib.core.datatypes.ymd_time import YmdTime
 from lib.core.exception_registry import ExceptionRegistry
 from lib.core.exceptions.kavana_exception import CommandParserError, DataTypeError, KavanaSyntaxError
-from lib.core.token import ArrayToken, AccessIndexToken, Express, HashMapToken, StringToken,  Token
+from lib.core.token import ArrayToken, AccessIndexToken, HashMapToken, StringToken,  Token
 from lib.core.token_type import TokenType
 from lib.core.function_registry import FunctionRegistry
 from lib.core.token_util import TokenUtil
 
-class CommandParser:
+class CommandParser0:
     """
     Kavana 스크립트의 명령어를 분석하는 파서.
     - `main ... end_main` 블록 안에서 실행
@@ -503,27 +503,16 @@ class CommandParser:
             is_formatted=is_formatted,
             expressions=expressions if expressions else None
         )
-    @staticmethod
-    def _is_exists_token_type(tokens: List[Token], token_types: set) -> bool:
-        """
-        주어진 토큰 리스트에서 특정 토큰 타입이 존재하는지 확인하는 함수.
-        :param tokens: Token 객체 리스트
-        :param token_types: 확인할 TokenType 집합
-        :return: 존재하면 True, 아니면 False
-        """
-        return any(token.type in token_types for token in tokens)
+
     @staticmethod
     def post_process_tokens(tokens: List[Token]) -> List[Token]:
-        ''' ArrayToken, HashMapToken, AccessIndexToken을 판별하고 생성해서 대체한다'''
+        ''' Array, AccessIndexToken을 생성해서 대체한다'''
         if not tokens:
             return []
 
         processed_tokens = []
         i = 0
-        # LeftBracket이 
-        if not CommandParser._is_exists_token_type(tokens, {TokenType.LEFT_BRACE, TokenType.LEFT_BRACKET}):
-            return tokens
-        
+        # TODO : '[' 찾아서 없으면 그냥리턴
         while i < len(tokens):
             token = tokens[i]
 
@@ -599,7 +588,6 @@ class CommandParser:
 
     @staticmethod
     def find_matching_brace(tokens: List[Token], start_idx: int) -> int:
-        ''' 짝을 이루는 `}`의 위치를 찾는 함수 '''
         count = 1
         i = start_idx + 1
         while i < len(tokens):
@@ -615,19 +603,21 @@ class CommandParser:
 
     @staticmethod
     def make_access_index_token(tokens: List[Token], start_index: int) -> Tuple[AccessIndexToken, int]:
-        ''' AccessIndexToken을 생성하는 함수 '''
         var_name = tokens[start_index].data.value
         i = start_index + 1  # '[' 시작 위치
-        end_idx = CommandParser._find_matching_bracket_index_for_access_token(tokens, i)
-        expresses, pos = CommandParser._extract_index_expresses(tokens, i, end_idx)
+        end_idx = CommandParser.find_matching_bracket_for_access_index_token(tokens, i)
+        row_sub, col_sub, pos = CommandParser.extract_row_column_expresses2(tokens, i, end_idx)
 
-        return AccessIndexToken(data=String(var_name), index_expresses = expresses), pos 
+        row_expr = CommandParser.post_process_tokens(row_sub)
+        col_expr = CommandParser.post_process_tokens(col_sub) if col_sub else []
+
+        return AccessIndexToken(data=String(var_name), row_express=row_expr, column_express=col_expr), pos 
 
     @staticmethod
     def make_array_token(tokens: List[Token], start_index: int) -> Tuple[ArrayToken, int]:
         list_elements = []
         current_element = []
-        end_idx = CommandParser._find_matching_bracket_index(tokens, start_index)
+        end_idx = CommandParser.find_matching_bracket(tokens, start_index)
         i = start_index + 1
 
         while i <= end_idx:
@@ -663,7 +653,7 @@ class CommandParser:
 
 
     @staticmethod
-    def _find_matching_bracket_index(tokens: List[Token], start_idx: int) -> int:
+    def find_matching_bracket(tokens: List[Token], start_idx: int) -> int:
         """
         주어진 `start_idx` 위치의 `[`와 짝을 이루는 `]`의 위치를 찾는 함수.
         - 중첩된 (), [], {} 안에서도 정확하게 괄호 짝을 맞춤
@@ -704,7 +694,7 @@ class CommandParser:
 
 
     @staticmethod
-    def _find_matching_bracket_index_for_access_token(tokens: List[Token], start_idx: int) -> int:
+    def find_matching_bracket_for_access_index_token(tokens: List[Token], start_idx: int) -> int:
         """
         중첩된 리스트, 딕셔너리, 튜플 인덱싱 등을 처리할 수 있도록
         괄호 종류를 모두 고려하여 짝이 맞는 `]`의 위치를 반환
@@ -749,63 +739,39 @@ class CommandParser:
 
         raise CommandParserError("리스트 인덱싱의 괄호가 올바르게 닫히지 않았습니다.", tokens[start_idx].line, tokens[start_idx].column)
 
+
     @staticmethod
-    def _extract_index_expresses(tokens: List[Token], start_idx: int, end_idx: int) -> Tuple[List[Express], int]:
+    def extract_row_column_expresses2(tokens: List[Token], start_idx: int, end_idx: int) -> Tuple[List[Token], List[Token], int]:
+        """
+        list[row_expr] 또는 list[row_expr][col_expr] 형태에서
+        row, col 표현식을 분리하여 반환
+
+        - tokens[start_idx]는 '['
+        - tokens[end_idx]는 가장 마지막 ']' (row 또는 col의 끝)
+        """
         if tokens[start_idx].type != TokenType.LEFT_BRACKET:
             raise CommandParserError("리스트 인덱싱은 반드시 '['로 시작해야 합니다.", tokens[start_idx].line, tokens[start_idx].column)
 
-        expresses: List[Express] = []
-        i = start_idx
+        # 첫 번째 [row_expr]의 범위 계산
+        row_start = start_idx
+        row_end = CommandParser.find_matching_bracket(tokens, row_start)
+        row_tokens = tokens[row_start + 1 : row_end]
 
-        while i <= end_idx:
-            if tokens[i].type != TokenType.LEFT_BRACKET:
-                raise CommandParserError("인덱스는 '['로 시작해야 합니다.", tokens[i].line, tokens[i].column)
+        if not row_tokens:
+            raise CommandParserError("row 인덱스가 비어 있습니다.", tokens[row_start].line, tokens[row_start].column)
 
-            close_idx = CommandParser._find_matching_bracket_index(tokens, i)
-            if close_idx > end_idx:
-                raise CommandParserError("']'의 위치가 잘못되었습니다.", tokens[i].line, tokens[i].column)
+        i = row_end + 1
+        col_tokens = []
 
-            sub_expr = tokens[i + 1 : close_idx]
-            if not sub_expr:
-                raise CommandParserError("인덱스 안의 표현식이 비어 있습니다.", tokens[i].line, tokens[i].column)
+        # 두 번째 [col_expr]가 존재할 경우 처리
+        if i < end_idx and tokens[i].type == TokenType.LEFT_BRACKET:
+            col_end = CommandParser.find_matching_bracket(tokens, i)
+            if col_end != end_idx:
+                raise CommandParserError("인덱싱 범위가 end_idx와 일치하지 않습니다.", tokens[end_idx].line, tokens[end_idx].column)
+            col_tokens = tokens[i + 1 : col_end]
+            i = col_end + 1
+        elif i != end_idx + 1:
+            raise CommandParserError("인덱싱이 예상보다 길거나 잘못되었습니다.", tokens[end_idx].line, tokens[end_idx].column)
 
-            expresses.append(sub_expr)
-            i = close_idx + 1
-
-        return expresses, i
-
-    # @staticmethod
-    # def extract_row_column_expresses2(tokens: List[Token], start_idx: int, end_idx: int) -> Tuple[List[Token], List[Token], int]:
-    #     """
-    #     list[row_expr] 또는 list[row_expr][col_expr] 형태에서
-    #     row, col 표현식을 분리하여 반환
-
-    #     - tokens[start_idx]는 '['
-    #     - tokens[end_idx]는 가장 마지막 ']' (row 또는 col의 끝)
-    #     """
-    #     if tokens[start_idx].type != TokenType.LEFT_BRACKET:
-    #         raise CommandParserError("리스트 인덱싱은 반드시 '['로 시작해야 합니다.", tokens[start_idx].line, tokens[start_idx].column)
-
-    #     # 첫 번째 [row_expr]의 범위 계산
-    #     row_start = start_idx
-    #     row_end = CommandParser._find_matching_bracket_index(tokens, row_start)
-    #     row_tokens = tokens[row_start + 1 : row_end]
-
-    #     if not row_tokens:
-    #         raise CommandParserError("row 인덱스가 비어 있습니다.", tokens[row_start].line, tokens[row_start].column)
-
-    #     i = row_end + 1
-    #     col_tokens = []
-
-    #     # 두 번째 [col_expr]가 존재할 경우 처리
-    #     if i < end_idx and tokens[i].type == TokenType.LEFT_BRACKET:
-    #         col_end = CommandParser._find_matching_bracket_index(tokens, i)
-    #         if col_end != end_idx:
-    #             raise CommandParserError("인덱싱 범위가 end_idx와 일치하지 않습니다.", tokens[end_idx].line, tokens[end_idx].column)
-    #         col_tokens = tokens[i + 1 : col_end]
-    #         i = col_end + 1
-    #     elif i != end_idx + 1:
-    #         raise CommandParserError("인덱싱이 예상보다 길거나 잘못되었습니다.", tokens[end_idx].line, tokens[end_idx].column)
-
-    #     return row_tokens, col_tokens, i
+        return row_tokens, col_tokens, i
 

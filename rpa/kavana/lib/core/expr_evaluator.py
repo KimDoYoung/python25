@@ -391,33 +391,38 @@ class ExprEvaluator:
             elif token.type == TokenType.ACCESS_INDEX: 
                 var_name = token.data.value
 
-                # row, col 평가
-                expr_evaluator = ExprEvaluator(self.executor)
-                row = expr_evaluator.evaluate(token.row_express).data.value
-                col = None
-                if token.column_express:
-                    col_eval = expr_evaluator.evaluate(token.column_express)
-                    col = col_eval.data.value
-
                 # 변수 조회
                 container_token = self.variable_manager.get_variable(var_name)
                 if container_token.type not in (TokenType.ARRAY, TokenType.HASH_MAP):
-                    raise ExprEvaluationError(f"지원하지 않는 타입입니다. 인덱스는 배열 또는 맵에서만 지원합니다.: {var_name}", token.line, token.column)
+                    raise ExprEvaluationError(
+                        f"지원하지 않는 타입입니다. 인덱스는 배열 또는 맵에서만 지원합니다.: {var_name}",
+                        token.line, token.column
+                    )
 
-                # 1차 인덱싱
-                element_token = container_token.data.get(row)
+                evaluator = ExprEvaluator(self.executor)
+                current_token = container_token
 
-                # 2차 인덱싱이 존재할 경우
-                if col is not None:
-                    if  element_token.type == TokenType.ARRAY:
-                        element_token = element_token.data.get(col)
-                    elif element_token.type == TokenType.HASH_MAP:
-                        element_token = element_token.data.get(col)
+                for expr in token.index_expresses:
+                    # 인덱스 표현식 평가 (예: "key1" or 3)
+                    index_token = evaluator.evaluate(expr)
+                    index_value = index_token.data.value
+
+                    # 현재 토큰이 배열 또는 맵인지 검사
+                    if current_token.type in (TokenType.ARRAY, TokenType.HASH_MAP):
+                        current_token = current_token.data.get(index_value)
+                        if current_token is None:
+                            raise ExprEvaluationError(
+                                f"인덱스 {index_value}에 해당하는 값을 찾을 수 없습니다.",
+                                token.line, token.column
+                            )
                     else:
-                        raise KavanaTypeError("두 번째 인덱싱은 ARRAY 또는 HASH_MAP에서만 가능합니다.")
-                stack.append(element_token)
-            else:
-                raise ExprEvaluationError(f"지원하지 않는 Token타입입니다.: {token.data.value} {token.type}", token.line, token.column)  
+                        raise KavanaTypeError(
+                            "인덱싱은 ARRAY 또는 HASH_MAP 타입에서만 가능합니다.",
+                            token.line, token.column
+                        )
+
+                # 최종 결과를 스택에 추가
+                stack.append(current_token)
 
         return stack[0]
 

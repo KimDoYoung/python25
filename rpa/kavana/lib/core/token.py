@@ -120,26 +120,65 @@ class HashMapToken(Token):
         if not isinstance(self.data, HashMap):
             raise TypeError("HashMapToken must contain a HashMap instance")
 
+# @dataclass
+# class AccessIndexToken(Token):
+#     """✅ 리스트에 접근하기 위한 인덱스 토큰"""
+#     row_express: List[Token] = field(default_factory=list)  
+#     column_express: List[Token] = field(default_factory=list)
+#     key_express: List[Token] = field(default_factory=list) # HashMap에서 사용
+#     data: String  # ✅ `data`는 String 타입 (생성 시 반드시 입력해야 함)
+#     type: TokenType = TokenType.ACCESS_INDEX  # ✅ 기본값은 LIST_INDEX지만 변경 가능
+
+#     def __post_init__(self):
+#         """추가적인 유효성 검사"""
+#         if not isinstance(self.data, String):
+#             raise TypeError(f"data 필드는 String 타입이어야 합니다. (현재 타입: {type(self.data)})")
+
+#     def __repr__(self) -> str:
+#         row_expr_str = ", ".join(repr(e) for e in self.row_express) if self.row_express else "None"
+#         col_expr_str = ", ".join(repr(e) for e in self.column_express) if self.column_express else "None"
+        
+#         return (f"AccessIndexToken("
+#                 f"row_express=[{row_expr_str}], "
+#                 f"column_express=[{col_expr_str}], "
+#                 f"data={repr(self.data)}, "
+#                 f"type={self.type})")
+
+
+
+# 타입 정의
+Express = List[Token]
+
 @dataclass
 class AccessIndexToken(Token):
-    """✅ 리스트에 접근하기 위한 인덱스 토큰"""
-    row_express: List[Token] = field(default_factory=list)  
-    column_express: List[Token] = field(default_factory=list)
-    key_express: List[Token] = field(default_factory=list) # HashMap에서 사용
-    data: String  # ✅ `data`는 String 타입 (생성 시 반드시 입력해야 함)
-    type: TokenType = TokenType.ACCESS_INDEX  # ✅ 기본값은 LIST_INDEX지만 변경 가능
+    """✅ 리스트나 해시맵에 접근하기 위한 인덱스 토큰"""
+    index_expresses: List[Express] = field(default_factory=list)  # ✅ 중첩 인덱스 표현
+    data: String  # ✅ `data`는 String 타입 (필수)
+    type: TokenType = TokenType.ACCESS_INDEX  # ✅ 기본값 설정
 
     def __post_init__(self):
-        """추가적인 유효성 검사"""
         if not isinstance(self.data, String):
             raise TypeError(f"data 필드는 String 타입이어야 합니다. (현재 타입: {type(self.data)})")
 
     def __repr__(self) -> str:
-        row_expr_str = ", ".join(repr(e) for e in self.row_express) if self.row_express else "None"
-        col_expr_str = ", ".join(repr(e) for e in self.column_express) if self.column_express else "None"
-        
+        express_str = " -> ".join(
+            "[" + ", ".join(repr(tok) for tok in expr) + "]"
+            for expr in self.index_expresses
+        ) if self.index_expresses else "None"
+
         return (f"AccessIndexToken("
-                f"row_express=[{row_expr_str}], "
-                f"column_express=[{col_expr_str}], "
+                f"index_expresses={express_str}, "
                 f"data={repr(self.data)}, "
                 f"type={self.type})")
+    
+    def count_of_expresses(self) -> int:
+        """표현식의 개수를 반환"""
+        return len(self.index_expresses)
+    
+    def get_row_express(self) -> Express:
+        """리스트 또는 첫 번째 인덱스 접근 표현"""
+        return self.index_expresses[0] if len(self.index_expresses) >= 1 else []
+
+    def get_column_express(self) -> Express:
+        """두 번째 인덱스 접근 표현 (예: 2차원 배열 또는 딕셔너리 내부 접근)"""
+        return self.index_expresses[1] if len(self.index_expresses) >= 2 else []

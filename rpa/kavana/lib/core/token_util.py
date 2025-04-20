@@ -23,10 +23,13 @@ class TokenUtil:
             if isinstance(token, list):
                 TokenUtil.tokens_to_string(token)
             elif token.type == TokenType.ACCESS_INDEX:
-                row_express = TokenUtil.tokens_to_string(token.row_express)
-                col_express = TokenUtil.tokens_to_string(token.column_express)
+                string_array = []
+                for express in token.element_expresses:
+                    s = TokenUtil.tokens_to_string(express)
+                    string_array.append(f"[{s}]")
                 var_name = token.data.value
-                strs.append(f"name={var_name}, row_express:{row_express}, col_express:{col_express}")
+                index_express = string_array.join(",")
+                strs.append(f"name={var_name}, index express={index_express}")
             elif token.type == TokenType.ARRAY:
                 expresses = []
                 for express in token.element_expresses:

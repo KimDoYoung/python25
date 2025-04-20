@@ -1,9 +1,9 @@
 from typing import List
 from lib.core.commands.base_command import BaseCommand
-from lib.core.exceptions.kavana_exception import KavanaSyntaxError
+from lib.core.exceptions.kavana_exception import KavanaSyntaxError, KavanaTypeError
 from lib.core.token_type import TokenType
 from lib.core.expr_evaluator import ExprEvaluator
-from lib.core.token import Token
+from lib.core.token import AccessIndexToken, Token
 
 class SetCommand(BaseCommand):
     def execute(self, args:List[Token], executor):
@@ -27,15 +27,30 @@ class SetCommand(BaseCommand):
         value_token = exprEvaluator.evaluate(expression)
         # 변수 저장
         if args[0].type == TokenType.ACCESS_INDEX: # SET list[0] = 10
-            # 리스트 요소 대입
-            var_name = args[0].data.value
-            list_index_token = executor.variable_manager.get_variable(var_name)
-            row_express = args[0].row_express
-            col_express = args[0].column_express
-            row = ExprEvaluator(executor).evaluate(row_express).data.value
-            col = None
-            if col_express:
-                col = ExprEvaluator(executor).evaluate(col_express).data.value
-            list_index_token.data.set(row,col, value_token)
+            target_token = args[0]
+            access_token: AccessIndexToken = target_token
+            var_name = access_token.data.value
+            index_expresses = access_token.index_expresses
+
+            container_token = executor.variable_manager.get_variable(var_name)
+            current_token = container_token
+            evaluator = ExprEvaluator(executor)
+
+            # 마지막 인덱스 전까지 순회
+            for expr in index_expresses[:-1]:
+                index_token = evaluator.evaluate(expr)
+                key = index_token.data.value
+                current_token = current_token.data.get(key)
+
+            # 마지막 인덱스
+            last_expr = index_expresses[-1]
+            last_index_token = evaluator.evaluate(last_expr)
+            last_key = last_index_token.data.value
+
+            # 최종 set
+            if current_token.type in (TokenType.ARRAY, TokenType.HASH_MAP):
+                current_token.data.set(last_key, value_token)
+            else:
+                raise KavanaTypeError("마지막 인덱싱 대상은 ARRAY 또는 HASH_MAP이어야 합니다.",target_token.line_number, target_token.column_number)
         else:
             executor.variable_manager.set_variable(var_name, value_token, local=local_flag)
