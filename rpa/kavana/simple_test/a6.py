@@ -12,7 +12,7 @@ MAIN
     print hashmap1["response"]["header"]["resultCode"]
     set s = hashmap1["response"]["header"]["resultCode"] + "test"
     print s
-END_MAIN
+END_MAIN 
 """
 #---------------------------
 # 기본적인 사용
