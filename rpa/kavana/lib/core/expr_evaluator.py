@@ -23,7 +23,7 @@ from lib.core.token_type import TokenType
 from lib.core.function_executor import FunctionExecutor
 from lib.core.function_parser import FunctionParser
 from lib.core.function_registry import FunctionRegistry
-from lib.core.token import ArrayToken, AccessIndexToken, StringToken, Token
+from lib.core.token import ArrayToken, AccessIndexToken, StringToken, Token, TokenStatus
 from lib.core.token_util import TokenUtil
 from lib.core.variable_manager import VariableManager
 
@@ -206,7 +206,7 @@ class ExprEvaluator:
                 continue
 
             if token.type == TokenType.ARRAY:
-                if token.status == 'Parsed':
+                if token.status == TokenStatus.PARSED:
                     # ArrayToken의 expresses를 평가해서 Array에 넣는다.
                     exprEval = ExprEvaluator(self.executor)
                     result_values = []
@@ -219,23 +219,23 @@ class ExprEvaluator:
                         else:
                             result_values.append(element_token)
                             token.element_type = element_token.type
-                    token.status = 'Evaluated'
+                    token.status = TokenStatus.EVALUATED
                     token.data = Array(result_values)
                 output.append(token)
                 i += 1
                 continue
             if token.type == TokenType.HASH_MAP:
-                if token.status == 'Parsed':
+                if token.status == TokenStatus.PARSED:
                     # HashMapToken의 expresses를 평가해서 HashMap에 넣는다.
                     exprEval = ExprEvaluator(self.executor)
                     evaluated_map  = {}
                     for key, express in token.key_express_map.items():
                         evaluated_value_token = exprEval.evaluate(express)
                         if not isinstance(evaluated_value_token.data, KavanaDataType):
-                            raise KavanaTypeError(f"HashMap의 값은 KavanaDataType이어야 합니다: {evaluated_value_token.data}")
+                            raise KavanaTypeError(f"HashMap의 값은 KavanaDataType이어야 합니다: {evaluated_value_token.data}", token.line, token.column)
                         evaluated_map[key] = evaluated_value_token
 
-                    token.status = 'Evaluated'
+                    token.status = TokenStatus.EVALUATED
                     token.data = HashMap(value=evaluated_map)
                 output.append(token)
                 i += 1

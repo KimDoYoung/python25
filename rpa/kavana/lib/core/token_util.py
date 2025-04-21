@@ -193,7 +193,7 @@ class TokenUtil:
             return ArrayToken(
                         data=[TokenUtil.primitive_to_kavana(p) for p in primitive],
                         element_expresses=[],
-                        status="Evaled"
+                        status=TokenStatus.EVALUATED
                     )
 
         elif isinstance(primitive, dict):
@@ -250,7 +250,7 @@ class TokenUtil:
         })
 
         result_token = HashMapToken(data=hash_map)
-        result_token.status = "Evaled"
+        result_token.status = TokenStatus.EVALUATED
         return result_token    
 
     @staticmethod
@@ -277,7 +277,7 @@ class TokenUtil:
             data=array_obj,
             element_type=element_token_type,
             element_expresses=[],
-            status="Evaled"
+            status= TokenStatus.EVALUATED, 
         )
 
     @staticmethod

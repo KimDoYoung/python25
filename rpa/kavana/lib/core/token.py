@@ -102,7 +102,7 @@ class ArrayToken(Token):
     type: TokenType = field(default=TokenType.ARRAY, init=False)  # ✅ `type`을 LIST로 고정
     element_type: TokenType = field(default=TokenType.UNKNOWN)  # 요소의 토큰 타입
     element_expresses: List[List[Token]] = field(default_factory=list)  # 각 요소의 표현 리스트
-    status: Literal["Parsed", "Evaled"] = "Parsed"
+    status : TokenStatus = TokenStatus.PARSED  # ✅ 기본값을 "Parsed"로 설정
 
     def __post_init__(self):
         if not isinstance(self.data, Array):
@@ -114,37 +114,11 @@ class HashMapToken(Token):
     data: HashMap  # ✅ 실제 HashMap 데이터
     type: TokenType = field(default=TokenType.HASH_MAP, init=False)  # ✅ 고정 타입
     key_express_map: Dict[str|int, List[Token]] = field(default_factory=dict)  # 각 key에 대응하는 value 표현식
-    status: Literal["Parsed", "Evaled"] = "Parsed"
+    status : TokenStatus = TokenStatus.PARSED  # ✅ 기본값을 "Parsed"로 설정
 
     def __post_init__(self):
         if not isinstance(self.data, HashMap):
             raise TypeError("HashMapToken must contain a HashMap instance")
-
-# @dataclass
-# class AccessIndexToken(Token):
-#     """✅ 리스트에 접근하기 위한 인덱스 토큰"""
-#     row_express: List[Token] = field(default_factory=list)  
-#     column_express: List[Token] = field(default_factory=list)
-#     key_express: List[Token] = field(default_factory=list) # HashMap에서 사용
-#     data: String  # ✅ `data`는 String 타입 (생성 시 반드시 입력해야 함)
-#     type: TokenType = TokenType.ACCESS_INDEX  # ✅ 기본값은 LIST_INDEX지만 변경 가능
-
-#     def __post_init__(self):
-#         """추가적인 유효성 검사"""
-#         if not isinstance(self.data, String):
-#             raise TypeError(f"data 필드는 String 타입이어야 합니다. (현재 타입: {type(self.data)})")
-
-#     def __repr__(self) -> str:
-#         row_expr_str = ", ".join(repr(e) for e in self.row_express) if self.row_express else "None"
-#         col_expr_str = ", ".join(repr(e) for e in self.column_express) if self.column_express else "None"
-        
-#         return (f"AccessIndexToken("
-#                 f"row_express=[{row_expr_str}], "
-#                 f"column_express=[{col_expr_str}], "
-#                 f"data={repr(self.data)}, "
-#                 f"type={self.type})")
-
-
 
 # 타입 정의
 Express = List[Token]

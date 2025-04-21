@@ -6,8 +6,6 @@ from lib.core.datatypes.kavana_datatype import KavanaDataType
 from lib.core.managers.process_manager import ProcessManager
 import win32process  # 추가된 import
 import win32con
-import win32process
-import win32gui  # 추가된 import
 
 class Application(KavanaDataType):
     def __init__(self, path: str):
