@@ -12,6 +12,7 @@ class RpaCommand(BaseCommand):
     OPTION_DEFINITIONS = {
         "from_var": {"required": False, "allowed_types": [TokenType.STRING]},
         "maximize": {"required": False, "allowed_types": [TokenType.BOOLEAN]},
+        "focus": {"required": False, "allowed_types": [TokenType.BOOLEAN]},
         "process_name": {"required": False, "allowed_types": [TokenType.STRING]},
         "seconds": {"required": False, "allowed_types": [TokenType.INTEGER]},
         "minutes": {"required": False, "allowed_types": [TokenType.INTEGER]},
@@ -40,12 +41,26 @@ class RpaCommand(BaseCommand):
 
     COMMAND_SPECS = {
         "app_open": {
-            "keys": ["from_var", "maximize", "process_name"],
+            "keys": ["from_var", "maximize", "process_name", "focus"],
             "overrides": {},
             "rules": {}
         },
         "app_close": {
             "keys": ["from_var"],
+            "overrides": {
+                "from_var": {"required": True}
+            },
+            "rules": {}
+        },
+        "close_all_children": {
+            "keys": ["from_var"],
+            "overrides": {
+                "from_var": {"required": True}
+            },
+            "rules": {}
+        },
+        "re_connect" : {
+            "keys": ["from_var", "focus"],
             "overrides": {
                 "from_var": {"required": True}
             },

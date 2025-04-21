@@ -4,6 +4,10 @@ import psutil
 from pywinauto import Application as PywinautoApp
 from lib.core.datatypes.kavana_datatype import KavanaDataType
 from lib.core.managers.process_manager import ProcessManager
+import win32process  # 추가된 import
+import win32con
+import win32process
+import win32gui  # 추가된 import
 
 class Application(KavanaDataType):
     def __init__(self, path: str):
@@ -31,11 +35,9 @@ class Application(KavanaDataType):
             pid = process_manager.get_pid_by_process_name(self.process_name)
             if pid:
                 self.pid = pid
-                self.app = PywinautoApp().connect(process=self.pid)
-                self.title = self.app.top_window().window_text()                    
-
-            if self.app is None:
-                executor.log_command("WARN",f"{process_name} 을 tasklist에서 찾을 수 없습니다!")
+                connected = self.try_connect_app()
+                if not connected:
+                    executor.log_command("WARN", f"{self.process_name}에 연결할 수 없습니다.")
 
             # ✅ 최대화 옵션
             if maximize and self.app:
@@ -52,15 +54,59 @@ class Application(KavanaDataType):
             if executor:
                 executor.raise_command(f"애플리케이션 실행 실패: {e} : {self.string}")
 
+    def try_connect_app(self, max_retries=5, delay=1.0):
+        for i in range(max_retries):
+            try:
+                self.app = PywinautoApp().connect(process=self.pid)
+                self.title = self.app.top_window().window_text()
+                return True
+            except Exception as e:
+                time.sleep(delay)
+        return False
+    
+    def force_close_windows_by_pid(pid):
+        def callback(hwnd, extra):
+            _, found_pid = win32process.GetWindowThreadProcessId(hwnd)
+            if found_pid == pid:
+                try:
+                    win32gui.PostMessage(hwnd, win32con.WM_CLOSE, 0, 0)
+                except Exception as e:
+                    print(f"❌ 창 닫기 실패: {e}")
+        win32gui.EnumWindows(callback, None)
+    
+    def reconnect(self, executor=None, focus=False):
+        """애플리케이션 재연결"""
+        try:
+            process_manager = ProcessManager(executor)
+            pid = process_manager.get_pid_by_process_name(self.process_name)
+            if not pid:
+                raise RuntimeError(f"PID를 찾을 수 없습니다. {self.process_name}")
+            self.pid = pid
+            self.app = PywinautoApp().connect(process=self.pid)
+            self.title = self.app.top_window().window_text()
+            if focus and self.app:  
+                try:
+                    self.app.top_window().set_focus()
+                    if executor:
+                        executor.log_command("INFO", "포커스 설정 완료")
+                except Exception as e:
+                    if executor:
+                        executor.log_command("WARN", f"포커스 설정 실패: {e}")                            
+            if executor:
+                executor.log_command("INFO", f"애플리케이션 '{self.title}'에 재연결됨.")
+        except Exception as e:
+            if executor:
+                executor.raise_command(f"애플리케이션 재연결 실패: {e}")
 
     def close_child_windows(self, executor=None):
         """모든 자식 윈도우 닫기"""
         try:
-            closed_count = 0
-            for window in self.app.windows():
-                if window != self.app.top_window():
-                    window.close()
-                    closed_count += 1
+            if self.app:                
+                for window in self.app.windows():
+                    if window != self.app.top_window():
+                        window.close()
+            else:
+                self.force_close_windows_by_pid(self.pid)
 
             # ✅ 성공 로그 기록
             if executor:
