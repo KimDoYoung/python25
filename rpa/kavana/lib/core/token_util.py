@@ -262,7 +262,8 @@ class TokenUtil:
         if not isinstance(data, list):
             raise KavanaTypeError("list_to_array_token은 리스트만 허용됩니다.")
 
-        kavana_items = [TokenUtil.primitive_to_kavana(item) for item in data]
+        # kavana_items = [TokenUtil.primitive_to_kavana(item) for item in data]
+        kavana_items = [TokenUtil.primitive_to_token(item) for item in data]
 
         array_obj = Array(kavana_items)
 
