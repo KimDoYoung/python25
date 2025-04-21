@@ -8,8 +8,8 @@ from lib.core.datatypes.array import Array
 from lib.core.datatypes.point import Point
 from lib.core.datatypes.region import Region
 from lib.core.datatypes.ymd_time import Ymd, YmdTime
-from lib.core.exceptions.kavana_exception import DataTypeError, KavanaSyntaxError
-from lib.core.token import ArrayToken, HashMapToken, StringToken, Token, TokenStatus
+from lib.core.exceptions.kavana_exception import DataTypeError, KavanaSyntaxError, KavanaValueError
+from lib.core.token import ArrayToken, HashMapToken, NoneToken, StringToken, Token, TokenStatus
 from lib.core.token_custom import PointToken, RegionToken
 from lib.core.token_type import TokenType
 
@@ -172,7 +172,7 @@ class TokenUtil:
         while i < len(s):
             if s[i] == "\\":
                 if i + 1 >= len(s):
-                    raise ValueError("잘못된 문자열: 단독 백슬래시(`\\`)가 포함될 수 없습니다.")
+                    raise KavanaValueError("잘못된 문자열: 단독 백슬래시(`\\`)가 포함될 수 없습니다.")
 
                 escape_seq = s[i + 1]
                 result.append(ESCAPE_MAP.get(escape_seq, "\\" + escape_seq))
@@ -182,17 +182,77 @@ class TokenUtil:
                 i += 1
         return "".join(result)
     
+
+    @staticmethod
+    def primitive_to_token(primitive: Any) -> Token | None:
+        """
+        파이썬 기본값을 KavanaDataType으로 변환
+        """
+        result: Token = None
+        if isinstance(primitive, list):
+            return ArrayToken(
+                        data=[TokenUtil.primitive_to_kavana(p) for p in primitive],
+                        element_expresses=[],
+                        status="Evaled"
+                    )
+
+        elif isinstance(primitive, dict):
+            hash_map =  HashMap({
+                k: TokenUtil.primitive_to_kavana(v)
+                for k, v in primitive.items()
+            })
+            return HashMapToken(data=hash_map)
+
+        elif isinstance(primitive, int):
+            return Token(data=Integer(primitive), type=TokenType.INTEGER)
+        elif isinstance(primitive, float):
+            return Token(data=Float(primitive), type=TokenType.FLOAT)
+        elif isinstance(primitive, bool):
+            return Token(data=Boolean(primitive), type=TokenType.BOOLEAN)
+        elif isinstance(primitive, str):
+            return StringToken(data=String(primitive), type=TokenType.STRING)
+        elif primitive is None:
+            return NoneToken()
+        elif isinstance(primitive, datetime):
+            year = primitive.year
+            month = primitive.month
+            day = primitive.day
+            hour = primitive.hour
+            minute = primitive.minute
+            second = primitive.second
+            return YmdTime(year, month, day, hour, minute, second)
+        elif isinstance(primitive, date):
+            year = primitive.year
+            month = primitive.month
+            day = primitive.day
+            return Ymd(year, month, day)
+
+        return None
+
+
+
     @staticmethod
     def dict_to_hashmap_token(data: dict) -> HashMapToken:
-        """dict → HashMapToken 변환"""
+        """dict → HashMapToken 변환 (재귀적으로 처리)"""
+        from lib.core.token import HashMapToken  # 필요 시 내부 import
+
+        def convert_value(v):
+            if isinstance(v, dict):
+                return TokenUtil.dict_to_hashmap_token(v)  # 재귀적으로 HashMapToken 생성
+            elif isinstance(v, list):
+                return TokenUtil.list_to_array_token(v)
+            else:
+                return TokenUtil.primitive_to_token(v)
+
         hash_map = HashMap({
-            k: TokenUtil.primitive_to_kavana(v)
+            k: convert_value(v)
             for k, v in data.items()
         })
+
         result_token = HashMapToken(data=hash_map)
         result_token.status = "Evaled"
         return result_token    
-    
+
     @staticmethod
     def list_to_array_token(data: list) -> ArrayToken:
         """list → ArrayToken 변환"""
