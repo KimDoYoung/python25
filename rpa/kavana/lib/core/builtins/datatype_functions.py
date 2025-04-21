@@ -32,20 +32,21 @@ class DatatypeFunctions:
         return token
     
     @staticmethod
-    def JSON_STR_PARSE(json_str: String) -> HashMapToken:
+    def JSON_STR_PARSE(json_str: String) -> Token:
         """JSON 문자열을 HashMap으로 변환"""
         from lib.core.token_util import TokenUtil
         import json
 
         try:
             # 문자열을 Python dict/list 등으로 파싱
+            json_str = json_str.replace("'", '"')
             parsed = json.loads(json_str)
             if isinstance(parsed, dict):
-                return TokenUtil.dict_to_hashmap(parsed)
+                return TokenUtil.dict_to_hashmap_token(parsed)
             elif isinstance(parsed, list):
-                return TokenUtil.list_to_array(parsed)
+                return TokenUtil.list_to_array_token(parsed)
             else:
-                raise ValueError("지원하지 않는 JSON 최상위 구조입니다.")            
+                raise KavanaValueError("지원하지 않는 JSON 최상위 구조입니다.")            
             
         except json.JSONDecodeError as e:
             raise KavanaValueError(f"json_str_to_hashmap 함수 내, JSON 파싱 오류: {e}")

@@ -408,7 +408,9 @@ class ExprEvaluator:
                     index_value = index_token.data.value
 
                     # 현재 토큰이 배열 또는 맵인지 검사
-                    if current_token.type in (TokenType.ARRAY, TokenType.HASH_MAP):
+                    if isinstance(current_token,dict):
+                       current_token = current_token.get(index_value)     
+                    elif current_token.type in (TokenType.ARRAY, TokenType.HASH_MAP):
                         current_token = current_token.data.get(index_value)
                         if current_token is None:
                             raise ExprEvaluationError(

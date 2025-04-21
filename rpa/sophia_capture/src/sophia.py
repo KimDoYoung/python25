@@ -373,8 +373,8 @@ class SophiaCapture(QMainWindow):
 
         elif self.rect_capture_mode:
             self.info_text.append("-----> ")
-            self.info_text.append(f"rect: ({rect.left()}, {rect.top()}) - ({rect.right()}, {rect.bottom()})")
-            self.info_text.append(f"region: ({x}, {y}, {w}, {h})")
+            self.info_text.append(f"Retangle({rect.left()}, {rect.top()}, {rect.right()}, {rect.bottom()})")
+            self.info_text.append(f"Region({x}, {y}, {w}, {h})")
 
     def open_image(self):
         """ 이미지 파일 열기 (원본 보관 & 복제본 생성) """

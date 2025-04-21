@@ -37,6 +37,8 @@ class RpaManager(BaseManager):
             "put_text": self.put_text,
             "get_text": self.get_text,
             "capture": self.capture,
+            "close_all_children": self.close_all_children,
+            "re_connect": self.re_connect,
         }
 
         func = method_map.get(self.command.lower())
@@ -52,6 +54,7 @@ class RpaManager(BaseManager):
         from_var = self.options.get("from_var")
         maximize = self.options.get("maximize", False)
         process_name = self.options.get("process_name")
+        focus = self.options.get("focus")
 
         if not from_var:
             self.raise_error("app_open 명령에는 'from_var' 옵션이 필요합니다.")
@@ -67,7 +70,8 @@ class RpaManager(BaseManager):
             app.launch(
                 executor=self.executor,
                 maximize=maximize,
-                process_name=process_name
+                process_name=process_name,
+                focus = focus
             )
         except Exception as e:
             self.raise_error(f"Application 실행 실패: {e}")
@@ -91,6 +95,40 @@ class RpaManager(BaseManager):
         except Exception as e:
             self.raise_error(f"Application 종료 실패: {e}")
 
+    def close_all_children(self):
+        '''' 자식 윈도우 모두 닫기 '''
+        from_var = self.options.get("from_var")
+        if not from_var:
+            self.raise_error("close_all_children 명령에는 'from_var' 옵션이 필요합니다.")
+
+        app_token = self.executor.get_variable(from_var)
+
+        if app_token.type != TokenType.APPLICATION:
+            self.raise_error(f"'{from_var}'는 Application 인스턴스가 아닙니다.")
+        app = app_token.data
+        try:
+            app.close_child_windows(executor=self.executor)
+            self.log("INFO", f"close all childredn window  완료: {app.path}")
+        except Exception as e:
+            self.raise_error(f"close all childredn window 실패: {e}")
+
+    def re_connect(self):
+        """RPA 명령어: reconnect - 연결된 애플리케이션을 재연결"""
+        from_var = self.options.get("from_var")
+        focus = self.options.get("focus", False)
+        if not from_var:
+            self.raise_error("reconnect 명령에는 'from_var' 옵션이 필요합니다.")
+
+        app_token = self.executor.get_variable(from_var)
+        if app_token.type != TokenType.APPLICATION:
+            self.raise_error(f"'{from_var}'는 Application 인스턴스가 아닙니다.")
+
+        app = app_token.data
+        try:
+            app.reconnect(executor=self.executor, focus=focus)
+            self.log("INFO", f"Application 재연결 완료: {app.path}")
+        except Exception as e:
+            self.raise_error(f"Application 재연결 실패: {e}")
 
     def wait(self):
         """ WAIT 명령어 실행 (일반 대기)"""

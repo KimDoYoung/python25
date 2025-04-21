@@ -26,3 +26,11 @@ class ProcessManager(BaseManager):
             return psutil.pid_exists(pid)
         return bool(self.get_pid_by_process_name(name))
 
+
+    def kill_process_by_name(self, name: str):
+        """프로세스 강제 종료"""
+        name = name.lower()
+        for proc in psutil.process_iter(['pid', 'name']):
+            if proc.info['name'] and proc.info['name'].lower() == name:
+                proc.terminate()
+                proc.wait(timeout=3)
