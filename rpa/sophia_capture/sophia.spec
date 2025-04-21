@@ -2,7 +2,7 @@
 
 
 a = Analysis(
-    ['src\\sophia.py'],
+    ['src/sophia.py'],
     pathex=[],
     binaries=[],
     datas=[],
@@ -35,5 +35,5 @@ exe = EXE(
     target_arch=None,
     codesign_identity=None,
     entitlements_file=None,
-    icon=['C:\\Users\\PC\\Work\\python25\\rpa\\sophia_capture\\src\\sophia_capture.ico'],
+    icon=['/home/kdy987/work/python25/rpa/sophia_capture/src/sophia_capture.ico'],
 )

@@ -14,11 +14,24 @@ ICON_PATH=$(realpath src/sophia_capture.ico)
 echo "🚀 PyInstaller 실행..."
 pyinstaller --noconsole --onefile --icon="$ICON_PATH" src/sophia.py
 
+# 실행 파일 이름 설정
+TARGET_NAME="sophia"
+EXT=""
+
+# OS에 따라 확장자 설정
+case "$OSTYPE" in
+  msys*|cygwin*|win32*)
+    EXT=".exe"
+    ;;
+esac
+
+OUTPUT_PATH="dist/${TARGET_NAME}${EXT}"
+
 # 빌드 완료 메시지
-if [ -f "dist/sophia.exe" ]; then
-    echo "✅ 빌드 완료: dist/sophia.exe"
-    cp dist/sophia.exe $HOME/bin/sophia.exe
-    
+if [ -f "$OUTPUT_PATH" ]; then
+    echo "✅ 빌드 완료: $OUTPUT_PATH"
+    mkdir -p "$HOME/bin"
+    cp "$OUTPUT_PATH" "$HOME/bin/${TARGET_NAME}${EXT}"
 else
     echo "❌ 빌드 실패!"
 fi
