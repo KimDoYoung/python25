@@ -5,9 +5,19 @@ from lib.core.command_preprocessor import CommandPreprocessor
 # 대입
 script = """
 main
-	
+    print "----------------------"
+    SET ymd1 = Ymd(2025, 3, 5)
+    SET ymdtime1 = YmdTime(2025, 3, 5, 10, 20, 30)
+    print "ymd:", ymd1, "ymdtime:", ymdtime1
+	print "ymd:", ymd
+    SET now1 = Now()
+    print now1
+    SET today1 = Today()
+    print today1
+
 	SET d1 = YmdTime(2025, 3, 5)
     Set d2 = YmdTime(2025, 3, 4, 10, 20, 30)
+    print d1+1, d2
     Set d3 = d1 + 3
     set diff = d3 - d2
 	print f"{d1}, {d2}, {d3}, {diff}"

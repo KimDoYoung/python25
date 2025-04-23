@@ -13,14 +13,10 @@ MAIN
     //------------------------------------------
     SET json_str = "{'response': {'header': {'resultCode': '00'}}}"
     SET hm = json_str_parse(json_str)
-<<<<<<< HEAD
     print type_of(hm)
     print hashmap1["response"]["header"]["resultCode"]
     set s = hashmap1["response"]["header"]["resultCode"] + "test"
     print s
-END_MAIN 
-=======
-    set s = hm["response"]["header"]["resultCode"] + "test"
     //------------------------------------------
     
     //------------------------------------------
@@ -31,7 +27,7 @@ END_MAIN
     //------------------------------------------
     print a, y, s
 END_MAIN
->>>>>>> 43af9f5f0761d59876dba6a5d2f1e54262bb2c7c
+
 """
 #---------------------------
 # 기본적인 사용

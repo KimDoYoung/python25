@@ -24,7 +24,7 @@ class YmdTimeFunctions:
             # 유효한 날짜인지 검증
             ymd = datetime(y, m, d, hh, mm, ss)  
         except ValueError as e:
-            raise KavanaValueError(f"잘못된 날짜 형식입니다: {e}")
+            raise KavanaValueError(f"YMDTIME: 잘못된 날짜 형식입니다: {e}")
 
         args = [y, m, d, hh, mm, ss]
         return YmdTimeToken(arguments=args)
@@ -44,7 +44,7 @@ class YmdTimeFunctions:
             # 유효한 날짜인지 검증
             ymd = date(y, m, d)
         except ValueError as e:
-            raise KavanaValueError(f"잘못된 날짜 형식입니다: {e}")
+            raise KavanaValueError(f"YMD:잘못된 날짜 형식입니다: {e}")
 
         args = [y, m, d]
         return YmdToken(arguments=args)
