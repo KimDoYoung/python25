@@ -90,7 +90,7 @@ class CustomLabel(QLabel):
 
             self.parent_window.mark_list.append((mark, x, y))              
             print(f"✅ Mark added at: {x}, {y}")  # ✅ 마크 추가 로그 출력
-            self.parent_window.info_text.append("----->mark: ({}, {})".format(x, y))  # ✅ 정보창에 마크 추가
+            self.parent_window.info_text.append("-----> Point({}, {})".format(x, y))  # ✅ 정보창에 마크 추가
 
     def mouseReleaseEvent(self, event):
         """ 마우스 드래그 후 선택된 영역 처리 (Rubber Band 위치 보정) """
@@ -130,7 +130,7 @@ class CustomLabel(QLabel):
 class SophiaCapture(QMainWindow):
     def __init__(self):
         super().__init__()
-        self.VERSION = "0.2"  # 버전 정보 추가
+        self.VERSION = "0.3"  # 버전 정보 추가
         # 이미지 관련 변수
         self.original_image = None  # 원본 이미지
         self.displayed_image = None  # 확대/축소용 이미지
@@ -265,7 +265,7 @@ class SophiaCapture(QMainWindow):
         # (요구사항 6, 7) 정보 표시 영역 (사용자 입력 가능)
         self.info_text = QTextEdit()
         self.info_text.setFixedWidth(600)  
-        self.info_text.setFont(QFont("Arial", 16))  
+        self.info_text.setFont(QFont("Arial", 14))  
 
         # (요구사항 2) 가변적인 7:3 비율 유지
         self.splitter = QSplitter(Qt.Horizontal)
@@ -372,9 +372,10 @@ class SophiaCapture(QMainWindow):
 
 
         elif self.rect_capture_mode:
+            # 화면 좌표 기준 (정확한 값 출력)
             self.info_text.append("-----> ")
-            self.info_text.append(f"Retangle({rect.left()}, {rect.top()}, {rect.right()}, {rect.bottom()})")
-            self.info_text.append(f"Region({x}, {y}, {w}, {h})")
+            self.info_text.append(f"Retangle({x}, {y}, {x+w}, {y + h})")  # 오른쪽/아래쪽 좌표를 포함하도록
+            self.info_text.append(f"Region({x}, {y}, {w}, {h})")  # 원본 이미지 기준
 
     def open_image(self):
         """ 이미지 파일 열기 (원본 보관 & 복제본 생성) """
