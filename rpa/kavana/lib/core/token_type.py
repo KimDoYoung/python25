@@ -22,10 +22,10 @@ class TokenType(Enum):
     LOGICAL_OPERATOR = "LOGICAL_OPERATOR" # AND, OR, NOT
     COMMA = "," # ,
     ASSIGN = "=" # =
-    LEFT_PAREN = "LEFT_PAREN" # (
-    RIGHT_PAREN = "RIGHT_PAREN" # )
-    LEFT_BRACKET = "LEFT_BRACKET"    # [ 
-    RIGHT_BRACKET = "RIGHT_BRACKET"  # ]
+    LEFT_PAREN = "(" # (
+    RIGHT_PAREN = ")" # )
+    LEFT_BRACKET = "["    # [ 
+    RIGHT_BRACKET = "]"  # ]
     LEFT_BRACE = "{" # {
     RIGHT_BRACE = "}" # }
     ARRAY = "ARRAY" # ARRAY
