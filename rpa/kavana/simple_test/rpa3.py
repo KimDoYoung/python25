@@ -12,7 +12,10 @@ MAIN
     SET pt_login = Point(2329, 1105)
     SET pt_user = Point(1640, 1062)
     SET pt_pass = Point(2060, 1335)
-
+    SET image_base_path = "C:\\Users\\PC\\Pictures\\kavana"
+    SET close_button = f"{image_base_path}\\닫기버튼.png"
+    SET confirm_button = f"{image_base_path}\\확인버튼.png"
+    //efplusmain.exe
 
     // 애플리케이션 실행
     SET app_path = "C:\\eFriend Plus\\efriendplus\\efriendplus.exe"
@@ -20,7 +23,7 @@ MAIN
     SET image_base_path = "C:\\Users\\PC\\Pictures\\SophiaCap1ture\\efriend"
     SET efriend = Application(app_path)
     RPA app_open from_var="efriend", process_name=process_name, focus=True
-    RPA wait seconds=5
+    RPA wait seconds=30
     //로그인->사용자->비밀번호 <enter>
     RPA click_point location=pt_login, after="wait:10s"
     RPA click_point location=pt_user, after="wait:2s"
@@ -28,16 +31,35 @@ MAIN
     RPA put_text text=$HTS_PASSWORD
     RPA key_in keys=["enter"], after="wait:2s" 
 
-    RPA wait seconds=(60)
+    RPA wait seconds=(20)
     RPA re_connect from_var="efriend", focus=True
-    RPA wait seconds=(30)
-    RPA close_all_children from_var="efriend"
-    //
-    RPA app_close from_var="efriend"
+    RPA wait seconds=(5)
+    while True
+        RPA find_image area=Region(828, 373, 2138, 1399), from_file=close_button, to_var="found_close"
+        IF found_close != None
+            RPA click_point location=found_close, after="wait:2s"
+        END_IF
+        RPA find_image area=Region(828, 373, 2138, 1399), from_file=confirm_button, to_var="found_confirm"
+        if found_confirm != None
+            RPA click_point location=found_confirm, after="wait:2s"
+        end_if
+        if found_close == None and found_confirm == None
+            break
+        end_if
+        RPA wait seconds=(3)
+    end_while
     
-    //LOG_INFO "=========================================================="
-    //LOG_INFO ">>> eFriend HTS 종료"
-    //LOG_INFO "=========================================================="
+    //RPA wait seconds=(30)
+    //RPA close_all_children from_var="efriend"
+    //
+    RPA wait seconds=(10)
+
+    RPA wait seconds=(60*10)
+    //RPA app_close from_var="efriend"
+    
+    LOG_INFO "=========================================================="
+    LOG_INFO ">>> eFriend HTS 종료"
+    LOG_INFO "=========================================================="
     
     ON_EXCEPTION
         RPA app_close from_var="efriend" 

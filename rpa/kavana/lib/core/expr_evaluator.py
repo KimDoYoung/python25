@@ -189,11 +189,11 @@ class ExprEvaluator:
             if token.type == TokenType.OPERATOR or token.type == TokenType.LOGICAL_OPERATOR:
                 if token.data.value.upper() == "NOT":
                     # NOT은 오른쪽 결합, 우선순위가 더 높은 연산자만 pop
-                    while stack and stack[-1].type == TokenType.OPERATOR and self.OPERATORS[token.data.value][0] < self.OPERATORS[stack[-1].data.value][0]:
+                    while stack and stack[-1].type == TokenType.OPERATOR and self.OPERATORS[token.data.value.upper()][0] < self.OPERATORS[stack[-1].data.value.upper()][0]:
                         output.append(stack.pop())
                 else:
                     # 일반 이항 연산자는 왼쪽 결합, 우선순위가 같거나 높은 연산자 pop
-                    while stack and stack[-1].type == TokenType.OPERATOR and self.OPERATORS[token.data.value][0] <= self.OPERATORS[stack[-1].data.value][0]:
+                    while stack and stack[-1].type == TokenType.OPERATOR and self.OPERATORS[token.data.value.upper()][0] <= self.OPERATORS[stack[-1].data.value.upper()][0]:
                         output.append(stack.pop())
                 stack.append(token)
                 i += 1
@@ -350,7 +350,7 @@ class ExprEvaluator:
                         result_type = TokenType.BOOLEAN
 
                     elif a.type in {TokenType.INTEGER, TokenType.FLOAT, TokenType.BOOLEAN, TokenType.STRING} and b.type in {TokenType.INTEGER, TokenType.FLOAT, TokenType.BOOLEAN, TokenType.STRING}:
-                        result = self.OPERATORS[token.data.value][1](a.data.value, b.data.value)
+                        result = self.OPERATORS[token.data.value.upper()][1](a.data.value, b.data.value)
                         # ✅ 비교 연산자일 경우 결과는 항상 BOOLEAN
                         if token.data.value in {"==", "!=", ">", "<", ">=", "<="}:
                             result = Boolean(result)
@@ -364,6 +364,9 @@ class ExprEvaluator:
                             else:
                                 result = Integer(result)  # ✅ Integer로 변환
                                 result_type = TokenType.INTEGER
+                        elif token.data.value.upper() in {"AND", "OR"}:
+                            result = Boolean(result)
+                            result_type = TokenType.BOOLEAN
                         else:
                             raise ExprEvaluationError(f"지원하지 않는 연산자 입니다: {token.data.value}", token.line, token.column)
                     else:

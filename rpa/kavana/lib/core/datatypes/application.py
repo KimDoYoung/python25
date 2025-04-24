@@ -6,6 +6,7 @@ from lib.core.datatypes.kavana_datatype import KavanaDataType
 from lib.core.managers.process_manager import ProcessManager
 import win32process  # 추가된 import
 import win32con
+import win32gui  # 추가된 import
 
 class Application(KavanaDataType):
     def __init__(self, path: str):
@@ -19,7 +20,7 @@ class Application(KavanaDataType):
     def launch(self, executor = None, maximize=False, focus=True, process_name=None):
         """애플리케이션 실행"""
         try:
-            self.process = subprocess.Popen(self.path)
+            self.process = subprocess.Popen(self.path, creationflags=subprocess.DETACHED_PROCESS | subprocess.CREATE_NEW_PROCESS_GROUP)
             time.sleep(1)  # ✅ 프로세스가 실행되기까지 잠시 대기
             # 현재 실행 중인 프로세스에서 'notepad.exe'의 PID 찾기
             if process_name is None:
@@ -97,16 +98,34 @@ class Application(KavanaDataType):
                 executor.raise_command(f"애플리케이션 재연결 실패: {e}")
 
     def close_child_windows(self, executor=None):
-        """모든 자식 윈도우 닫기"""
+        """모든 자식 윈도우 닫기 (MDI용 광고창 등 포함)"""
         try:
-            if self.app:                
-                for window in self.app.windows():
-                    if window != self.app.top_window():
-                        window.close()
-            else:
-                self.force_close_windows_by_pid(self.pid)
+            #-----------------------------------------------
+            executor.log_command("INFO", "child windows---->>>")
+            for w in self.app.windows():
+                executor.log_command("INFO", w.window_text())
+            executor.log_command("INFO", "child windows<<<----")
+            #-----------------------------------------------
+            
+            closed_count = 0
 
-            # ✅ 성공 로그 기록
+            if self.app:
+                top = self.app.top_window()
+                executor.log_command("INFO", f"top window: {top.window_text()}")
+                for window in self.app.windows():
+                    title = window.window_text()
+                    if window != top:
+                        try:
+                            if "안내" in title or "알람" in title:
+                                window.close()
+                                executor.log_command("INFO", f"윈도우 닫기 성공: {title}")
+                                closed_count += 1
+                        except Exception as close_err:
+                            if executor:
+                                executor.log_command("WARN", f"{window.window_text()} 닫기 실패: {str(close_err)}")
+            else:
+                self.force_close_windows_by_pid(self.pid)  # 별도 강제종료 로직
+
             if executor:
                 executor.log_command("INFO", f"애플리케이션 {self.path}의 자식 윈도우 {closed_count}개 닫기 완료.")
 
