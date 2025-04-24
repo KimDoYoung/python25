@@ -7,11 +7,10 @@ script = """
 MAIN
     SET ap = [Point(1+1,2), Point(3+2,4), Point(5,6), Point(7,8)]
     print ap[1]
-    SET r = [Region(1,2,3,4)]
-    //SET p1 = [Point(1,2), Point(3,4)]
-    //SET p2 = [Point(5,6), Point(7,8)]
-    //SET p3 = p1 + p2
-    //print p3
+    SET p1 = [Point(1,2), Point(3,4)]
+    SET p2 = [Point(5,6), Point(7,8)]
+    SET p3 = p1 + p2
+    print length(p3)
 END_MAIN
 """
 #---------------------------

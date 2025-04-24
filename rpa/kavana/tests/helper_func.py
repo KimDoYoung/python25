@@ -18,3 +18,11 @@ def get_tokens(s:str):
             start_idx = i +1
             break
     return tokens,start_idx
+
+def get_tokens_of_line(s:str):
+    s = "MAIN\n" + s + "\nEND_MAIN"
+    lines = [s.strip() for s in s.split("\n") if s.strip()]
+    command_preprocssed_lines = CommandPreprocessor().preprocess(lines)
+    parsed_commands = CommandParser().parse(command_preprocssed_lines)
+    tokens = parsed_commands[0]["args"]
+    return tokens

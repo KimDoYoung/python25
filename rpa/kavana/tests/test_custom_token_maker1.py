@@ -1,7 +1,7 @@
 import pytest
 from lib.core.custom_token_maker import CustomTokenMaker
 from lib.core.token_type import TokenType
-from tests.test_helper import get_tokens  # 앞서 만든 get_tokens를 임포트하세요
+from tests.helper_func import get_tokens  # 앞서 만든 get_tokens를 임포트하세요
 
 
 @pytest.mark.parametrize("source, expected_count", [
