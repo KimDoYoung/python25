@@ -328,3 +328,15 @@ class TokenUtil:
         boolean_obj = Boolean(data)
         result = Token(data=boolean_obj, type=TokenType.BOOLEAN)
         return result
+    
+    @staticmethod
+    def array_to_array_token(items: list) -> ArrayToken:
+        """ Token 리스트를 ArrayToken으로 변환"""
+        from lib.core.datatypes.kavana_datatype import KavanaDataType
+        from lib.core.exceptions.kavana_exception import KavanaTypeError
+
+        array_obj = Array([])
+        for item in items:
+            array_obj.append(item)
+        result = ArrayToken(data=array_obj, element_expresses=[], status=TokenStatus.EVALUATED)
+        return result

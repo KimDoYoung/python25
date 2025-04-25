@@ -23,7 +23,7 @@ MAIN
     SET image_base_path = "C:\\Users\\PC\\Pictures\\SophiaCap1ture\\efriend"
     SET efriend = Application(app_path)
     RPA app_open from_var="efriend", process_name=process_name, focus=True
-    RPA wait seconds=30
+    RPA wait seconds=10
     //로그인->사용자->비밀번호 <enter>
     RPA click_point location=pt_login, after="wait:10s"
     RPA click_point location=pt_user, after="wait:2s"
@@ -35,15 +35,21 @@ MAIN
     RPA re_connect from_var="efriend", focus=True
     RPA wait seconds=(5)
     while True
-        RPA find_image area=Region(828, 373, 2138, 1399), from_file=close_button, to_var="found_close"
-        IF found_close != None
-            RPA click_point location=found_close, after="wait:2s"
-        END_IF
-        RPA find_image area=Region(828, 373, 2138, 1399), from_file=confirm_button, to_var="found_confirm"
-        if found_confirm != None
-            RPA click_point location=found_confirm, after="wait:2s"
-        end_if
-        if found_close == None and found_confirm == None
+        LOG_INFO "1111"
+        RPA find_image area=Region(828, 373, 2138, 1399), from_file=close_button, to_var="found_close" multi=True
+        LOG_INFO "2222"
+        RPA find_image area=Region(828, 373, 2138, 1399), from_file=confirm_button, to_var="found_confirm" multi=True
+        LOG_INFO "33333"
+        SET points = found_close + found_confirm
+        LOG_INFO "44444"
+        if length(points) > 0
+            LOG_INFO "55555"
+            for point in points
+            LOG_INFO "66666"
+                RPA click_point location=point, after="wait:1s", click_type="left", click_count=1, duration=0.5
+            LOG_INFO "7777"
+            end_for
+        else
             break
         end_if
         RPA wait seconds=(3)

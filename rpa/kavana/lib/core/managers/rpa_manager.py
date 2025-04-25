@@ -1,6 +1,6 @@
 import re
 import time
-from typing import List
+from typing import List, Tuple
 import pyautogui
 import pyperclip
 
@@ -305,32 +305,52 @@ class RpaManager(BaseManager):
     def find_image(self):
         """ 이미지를 찾아서 center point를 to_var에 넣는다. 못찾았으면 None을 넣는다."""
         search_region = self.options.get("area")
-        grayscale = self.options.get("grayscale", False)
+        grayscale = self.options.get("grayscale", True)
         confidence = float(self.options.get("confidence", 0.8))
         after = self.options.get("after", None)
         to_var = self.options.get("to_var", None)
+        multi = self.options.get("multi", False)
 
         target_img = self._load_pilimage()
 
         try:
             super().log("INFO", f"[RPA:find_image] 이미지 {target_img.filename} 찾기 시도...")
-            found_region =  pyautogui.locateOnScreen(target_img,
-                                                     region=search_region,
-                                                     confidence=confidence, 
-                                                     grayscale=grayscale)
-            if  found_region:
-                center = pyautogui.center(found_region)
-                result_token = TokenUtil.xy_to_point_token(center.x, center.y)
-                if to_var:
-                    self.executor.set_variable(to_var, result_token)
-                super().log("INFO", f"[RPA:find_image] 이미지 {target_img.filename} 찾기 완료: {center.x}, {center.y}")
-                if after:
-                    self._after_action(found_region, after)
-                return found_region
+            if multi:
+                found_regions = list(pyautogui.locateAllOnScreen(
+                    target_img, region = search_region, confidence=confidence, grayscale=grayscale
+                ))
+            else:
+                found_region =  pyautogui.locateOnScreen(target_img,
+                                                        region=search_region,
+                                                        confidence=confidence, 
+                                                        grayscale=grayscale)
+                found_regions = [found_region] if found_region else []
+            result_list = []
+            for region in found_regions:
+                if  region:
+                    center = pyautogui.center(region)
+                    token = TokenUtil.xy_to_point_token(center.x, center.y)
+                    result_list.append(token)
+            if result_list:
+                if multi:
+                    result_token = TokenUtil.array_to_array_token(result_list)
+                else:
+                    x = result_token[0].x
+                    y = result_token[0].y
+                    result_token = TokenUtil.xy_to_point_token(x,y)
+            else:
+                result_token = TokenUtil.array_to_array_token(result_list) # 비어 있는 list
+            if to_var:
+                self.executor.set_variable(to_var, result_token)
+            super().log("INFO", f"[RPA:find_image] 이미지 {target_img.filename} 찾기 완료: {center.x}, {center.y}")
+            if after:
+                region = found_regions[0] if found_regions else None
+                self._after_action(region, after)
+            return found_regions
         except pyautogui.ImageNotFoundException:
             super().log("WARN", f"[RPA:find_image] 이미지 {target_img.filename} 찾기 실패")
-            result_token = NoneToken()
             if to_var:
+                result_token = TokenUtil.array_to_array_token([]) # 비어 있는 list                
                 self.executor.set_variable(to_var, result_token)
             return None
 
@@ -552,16 +572,16 @@ class RpaManager(BaseManager):
         else:
             raise KavanaSyntaxError(f"Region에서 지원하지 않는 PointName: {point_name}")
 
-    def _after_action(self, location, after):
+    def _after_action(self, location: Tuple[int,int,int,int], after):
         """ 추가 작업 수행 """
         if not after:
             return
         action = after.lower()
-        if action == "click" :
+        if action == "click"  and location:
                 center = pyautogui.center(location)
                 pyautogui.moveTo(center)
                 pyautogui.click(center)
-        elif action == "move":
+        elif action == "move" and location:
                 center = pyautogui.center(location)
                 pyautogui.moveTo(center)
         elif action.startswith("wait"): # wait:3ㄴㄴ

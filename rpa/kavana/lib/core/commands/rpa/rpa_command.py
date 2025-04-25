@@ -36,6 +36,7 @@ class RpaCommand(BaseCommand):
         "to_file": {"required": False, "allowed_types": [TokenType.STRING]},
         "after": {"required": False, "allowed_types": [TokenType.STRING]},
         "location": {"required": False, "allowed_types": [TokenType.POINT]},
+        "multi" :{"default": False, "allowed_types": [TokenType.BOOLEAN]}
     }
 
 
@@ -99,11 +100,15 @@ class RpaCommand(BaseCommand):
             "rules": {}
         },
         "find_image": {
-            "keys": ["area", "after", "from_var", "from_file", "to_var", "grayscale", "confidence"],
+            "keys": ["area", "after", "from_var", "from_file", "to_var", "grayscale", "confidence", "multi"],
             "overrides": {
                 "to_var": {"required": True}
             },
-            "rules": {}
+            "rules": {
+                "mutually_exclusive": [
+                    ["from_var", "from_file"]
+                ],
+            }
         },
         "mouse_move": {
             "keys": ["x", "y", "location", "duration", "relative","after"],
