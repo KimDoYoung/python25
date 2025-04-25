@@ -5,10 +5,43 @@ from lib.core.command_preprocessor import CommandPreprocessor
 # 대입
 script = """
 ENV_LOAD ".env"
+function Remove_popups()
+    LOG_INFO "=====================[ 팝업제거 시작]===================================="
+    RPA wait seconds=(5)
+    while True
+        //RPA find_image area=Region(828, 373, 2138, 1399), from_file=close_button, to_var="found_close" multi=True
+        RPA find_image area=Region(828, 373, 2138, 1399), from_file=confirm_button, to_var="found_confirm" multi=True
+        //SET points = found_close + found_confirm
+        SET points = found_confirm
+        if length(points) > 0
+            for p in points
+                RPA click_point location=p, after="wait:1s", click_type="left", click_count=1, duration=0.5
+            end_for
+        else
+            break
+        end_if
+        RPA wait seconds=(3)
+    end_while
+    LOG_INFO "=====================[ 팝업제거 종료]===================================="
+end_function
+function Close_efriend_hts()
+    LOG_INFO "=====================[ eFriend HTS 종료 시작]===================================="
+    RPA key_in keys=["alt+f4"], after="wait:2s"
+    RPA click_point location=Point(1475, 1241)
+    LOG_INFO "=====================[ eFriend HTS 종료]===================================="
+end_function
+function Close_all_virtual_screens()
+    LOG_INFO "=====================[ 가상화면 종료 시작]===================================="
+    RPA click_point location=Point(3523, 1956) after="wait:1s"
+    RPA click_point location=Point(1854, 1083) after="wait:1s"
+
+    LOG_INFO "=====================[ 가상화면 종료]===================================="
+end_function    
 MAIN
     LOG_INFO "=========================================================="
     LOG_INFO "eFriend HTS 프로그램 시작"
     LOG_INFO "=========================================================="
+    
     SET pt_login = Point(2329, 1105)
     SET pt_user = Point(1640, 1062)
     SET pt_pass = Point(2060, 1335)
@@ -33,43 +66,33 @@ MAIN
 
     RPA wait seconds=(20)
     RPA re_connect from_var="efriend", focus=True
-    RPA wait seconds=(5)
-    while True
-        LOG_INFO "1111"
-        RPA find_image area=Region(828, 373, 2138, 1399), from_file=close_button, to_var="found_close" multi=True
-        LOG_INFO "2222"
-        RPA find_image area=Region(828, 373, 2138, 1399), from_file=confirm_button, to_var="found_confirm" multi=True
-        LOG_INFO "33333"
-        SET points = found_close + found_confirm
-        LOG_INFO "44444"
-        if length(points) > 0
-            LOG_INFO "55555"
-            for point in points
-            LOG_INFO "66666"
-                RPA click_point location=point, after="wait:1s", click_type="left", click_count=1, duration=0.5
-            LOG_INFO "7777"
-            end_for
-        else
-            break
-        end_if
-        RPA wait seconds=(3)
-    end_while
-    
-    //RPA wait seconds=(30)
-    //RPA close_all_children from_var="efriend"
-    //
-    RPA wait seconds=(10)
 
-    RPA wait seconds=(60*10)
-    //RPA app_close from_var="efriend"
+    //팝업제거 
+    JUST Remove_popups()
+    //가상화면 닫기
+    JUST close_all_virtual_screens()
+
+    LOG_INFO "==================[ 0808 화면] ===================================="
+    RPA wait seconds=(10)
+    RPA click_point location=Point(104, 107)
+    RPA key_in keys=["ctrl+a", "delete"], after="wait:2s"
+    RPA put_text text="0808" clipboard=False
+    JUST remove_popups()
+
+    RPA wait seconds=(5)
+    RPA put_text text="4114" clipboard=False
+    RPA key_in keys=["enter"], after="wait:2s"
+    RPA wait seconds=(30)
+    //HTS의 종료를 수행해 줘야 안전하게 종료됨    
+    JUST Close_efriend_hts()
     
     LOG_INFO "=========================================================="
     LOG_INFO ">>> eFriend HTS 종료"
     LOG_INFO "=========================================================="
     
     ON_EXCEPTION
-        RPA app_close from_var="efriend" 
         PRINT "예외 발생"
+        JUST Close_efriend_hts()
         LOG_ERROR f">>> {$exception_message} exit code: {$exit_code}"
     END_EXCEPTION
 END_MAIN

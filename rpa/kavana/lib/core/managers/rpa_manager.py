@@ -315,42 +315,53 @@ class RpaManager(BaseManager):
 
         try:
             super().log("INFO", f"[RPA:find_image] 이미지 {target_img.filename} 찾기 시도...")
+            found_regions = []
+            
             if multi:
                 found_regions = list(pyautogui.locateAllOnScreen(
-                    target_img, region = search_region, confidence=confidence, grayscale=grayscale
+                    target_img, region=search_region, confidence=confidence, grayscale=grayscale
                 ))
             else:
-                found_region =  pyautogui.locateOnScreen(target_img,
-                                                        region=search_region,
-                                                        confidence=confidence, 
-                                                        grayscale=grayscale)
-                found_regions = [found_region] if found_region else []
+                found_region = pyautogui.locateOnScreen(
+                    target_img, region=search_region, confidence=confidence, grayscale=grayscale
+                )
+                if found_region:
+                    found_regions = [found_region]
+            
             result_list = []
+            last_center = None
+            
             for region in found_regions:
-                if  region:
-                    center = pyautogui.center(region)
-                    token = TokenUtil.xy_to_point_token(center.x, center.y)
-                    result_list.append(token)
+                center = pyautogui.center(region)
+                last_center = center  # 마지막 center 저장
+                token = TokenUtil.xy_to_point_token(center.x, center.y)
+                result_list.append(token)
+            
             if result_list:
                 if multi:
                     result_token = TokenUtil.array_to_array_token(result_list)
                 else:
-                    x = result_token[0].x
-                    y = result_token[0].y
-                    result_token = TokenUtil.xy_to_point_token(x,y)
+                    result_token = result_list[0]  # 첫 번째 결과만 사용
             else:
-                result_token = TokenUtil.array_to_array_token(result_list) # 비어 있는 list
+                result_token = TokenUtil.array_to_array_token([])  # 비어 있는 list
+            
             if to_var:
                 self.executor.set_variable(to_var, result_token)
-            super().log("INFO", f"[RPA:find_image] 이미지 {target_img.filename} 찾기 완료: {center.x}, {center.y}")
-            if after:
-                region = found_regions[0] if found_regions else None
-                self._after_action(region, after)
+            
+            if last_center:
+                super().log("INFO", f"[RPA:find_image] 이미지 {target_img.filename} 찾기 완료: {last_center.x}, {last_center.y}")
+            else:
+                super().log("INFO", f"[RPA:find_image] 이미지 {target_img.filename} 찾기 결과 없음")
+            
+            if after and found_regions:
+                self._after_action(found_regions[0], after)
+            
             return found_regions
-        except pyautogui.ImageNotFoundException:
-            super().log("WARN", f"[RPA:find_image] 이미지 {target_img.filename} 찾기 실패")
+
+        except Exception as e:
+            super().log("WARN", f"[RPA:find_image] 이미지 {target_img.filename} 찾기 실패: {str(e)}")
             if to_var:
-                result_token = TokenUtil.array_to_array_token([]) # 비어 있는 list                
+                result_token = TokenUtil.array_to_array_token([])
                 self.executor.set_variable(to_var, result_token)
             return None
 
@@ -361,7 +372,7 @@ class RpaManager(BaseManager):
         x = self.options.get("x")
         y = self.options.get("y")
         location = self.options.get("location")
-        duration = float(self.options.get("duration", 0))
+        duration = float(self.options.get("duration", 0.5))
         relative = self.options.get("relative", False)
         after = self.options.get("after", None)
 
@@ -421,18 +432,22 @@ class RpaManager(BaseManager):
         """RPA 명령어: put_text - 텍스트를 클립보드로 복사해 붙여넣기"""
 
         text = self.options.get("text")
+        clipboard = self.options.get("clipboard")
         if not text:
             self.raise_error("put_text 명령에는 'text' 옵션이 필요합니다.")
 
         self.log("INFO", f"[RPA:put_text] 텍스트 입력 시작: {text}")
 
         try:
-            # 클립보드에 텍스트 복사
-            pyperclip.copy(text)
+            if clipboard:
+                # 클립보드에 텍스트 복사
+                pyperclip.copy(text)
+                # 붙여넣기
+                pyautogui.hotkey("ctrl", "v")
+            else:
+                pyautogui.write(text, interval=0.05)  # 사람처럼 입력 (0.05초 간격)
             time.sleep(0.2)  # 클립보드 안정화 대기
 
-            # 붙여넣기
-            pyautogui.hotkey("ctrl", "v")
             self.log("INFO", "[RPA:put_text] 텍스트 입력 완료 (Ctrl+V)")
         except Exception as e:
             self.raise_error(f"[RPA:put_text] 텍스트 입력 중 오류 발생: {e}")

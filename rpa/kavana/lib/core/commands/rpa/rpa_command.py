@@ -36,7 +36,8 @@ class RpaCommand(BaseCommand):
         "to_file": {"required": False, "allowed_types": [TokenType.STRING]},
         "after": {"required": False, "allowed_types": [TokenType.STRING]},
         "location": {"required": False, "allowed_types": [TokenType.POINT]},
-        "multi" :{"default": False, "allowed_types": [TokenType.BOOLEAN]}
+        "multi" :{"default": False, "allowed_types": [TokenType.BOOLEAN]},
+        "clipboard":{"default": False, "allowed_types": [TokenType.BOOLEAN]},
     }
 
 
@@ -115,7 +116,7 @@ class RpaCommand(BaseCommand):
             "overrides": {},
             "rules": {
                 "mutually_exclusive": [
-                    ["location", "x"],["location", "y"],["location", "relative"]
+                    ["location", "x"],["location", "y"]
                 ],
                 "required_together": [["x", "y"]]
             }
@@ -128,7 +129,7 @@ class RpaCommand(BaseCommand):
             "rules": {}
         },
         "put_text": {
-            "keys": ["text"],
+            "keys": ["text","clipboard"],
             "overrides": {
                 "text": {"required": True}
             },
