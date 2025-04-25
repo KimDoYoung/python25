@@ -337,132 +337,6 @@ class CommandParser:
                     "args": [key_token, equals_token, value_token]
                 })
 
-    # @staticmethod
-    # def tokenize(ppLine: PreprocessedLine) -> list:
-    #     """한 줄을 `Token` 또는 `StringToken` 객체 리스트로 변환"""
-
-    #     import re
-
-    #     line = ppLine.text.strip()
-    #     tokens = []
-
-    #     string_pattern = r'(?i)(r?f?|fr?)("((?:\\.|[^"\\])*)")'  # 접두어 포함 문자열
-
-    #     token_patterns = [
-
-    #         # ✅ 논리 값
-    #         (r'\bTrue\b', TokenType.BOOLEAN),
-    #         (r'\bFalse\b', TokenType.BOOLEAN),
-    #         (r'\bNone\b', TokenType.NONE),
-
-    #         # ✅ 데이터 타입 키워드
-    #         (r'(?i)\bPOINT\b', TokenType.POINT),
-    #         (r'(?i)\bREGION\b', TokenType.REGION),
-    #         (r'(?i)\bRECTANGLE\b', TokenType.RECTANGLE),
-    #         (r'(?i)\bIMAGE\b', TokenType.IMAGE),
-    #         (r'(?i)\bWINDOW\b', TokenType.WINDOW),  
-    #         (r'(?i)\bAPPLICATION\b', TokenType.APPLICATION),
-            
-    #         (r'(?i)\bGLOBAL\b', TokenType.GLOBAL),
-
-    #         # ✅ 제어문 키워드
-    #         (r'(?i)\bEND_FUNCTION\b', TokenType.END_FUNCTION),
-    #         (r'(?i)\bEND_WHILE\b', TokenType.END_WHILE),
-    #         (r'(?i)\bFUNCTION\b', TokenType.FUNCTION),
-    #         (r'(?i)\bENV_LOAD\b', TokenType.ENV_LOAD),
-    #         (r'(?i)\bEND_MAIN\b', TokenType.END_MAIN),
-    #         (r'(?i)\bINCLUDE\b', TokenType.INCLUDE),
-    #         (r'(?i)\bRETURN\b', TokenType.RETURN),
-    #         (r'(?i)\bMAIN\b', TokenType.MAIN),
-    #         (r'(?i)\bEND_FOR\b', TokenType.END_FOR),
-    #         (r'(?i)\bEND_IF\b', TokenType.END_IF),
-    #         (r'(?i)\bWHILE\b', TokenType.WHILE),
-    #         (r'(?i)\bSTEP\b', TokenType.STEP),
-    #         (r'(?i)\bELSE\b', TokenType.ELSE),
-    #         (r'(?i)\bELIF\b', TokenType.ELIF),
-    #         (r'(?i)\bIF\b', TokenType.IF),
-    #         (r'(?i)\bFOR\b', TokenType.FOR),
-    #         (r'(?i)\bTO\b', TokenType.TO),
-    #         (r'(?i)\bIN\b', TokenType.IN),
-
-    #         # ✅ 논리 연산자
-    #         (r'(?i)\bAND\b', TokenType.LOGICAL_OPERATOR),
-    #         (r'(?i)\bOR\b', TokenType.LOGICAL_OPERATOR),
-    #         (r'(?i)\bNOT\b', TokenType.LOGICAL_OPERATOR),
-
-    #         # ✅ 루프 제어
-    #         (r'(?i)\bBREAK\b', TokenType.BREAK),
-    #         (r'(?i)\bCONTINUE\b', TokenType.CONTINUE),
-
-    #         # ✅ YmdTime 키워드
-    #         (r"(?i)\bYmdTime\b", TokenType.IDENTIFIER),
-    #         (r"(?i)\bYmd\b", TokenType.IDENTIFIER),
-
-    #         # ✅ 작은따옴표 오류 감지
-    #         (r"'([^']*)'", None),
-
-    #         # ✅ 연산자 및 구문
-    #         (r'\(', TokenType.LEFT_PAREN),
-    #         (r'\)', TokenType.RIGHT_PAREN),
-    #         (r'\[', TokenType.LEFT_BRACKET),
-    #         (r'\]', TokenType.RIGHT_BRACKET),
-    #         (r'\{', TokenType.LEFT_BRACE),
-    #         (r'\}', TokenType.RIGHT_BRACE),
-    #         (r',', TokenType.COMMA),
-    #         (r':', TokenType.COLON),
-    #         (r'==|!=|>=|<=|[+\-*/%<>]', TokenType.OPERATOR),
-    #         (r'=', TokenType.ASSIGN),
-
-    #         # ✅ 문자열 (접두어 포함 문자열은 따로 처리)
-    #         (string_pattern, TokenType.STRING),
-    #         # ✅ 식별자
-    #         (r'[a-zA-Z_\$][a-zA-Z0-9_]*', TokenType.IDENTIFIER),
-
-    #         # ✅ 숫자
-    #         (r'\b\d+\.\d+|\.\d+|\d+\.\b', TokenType.FLOAT),
-    #         (r'\b\d+\b', TokenType.INTEGER),
-
-    #     ]
-
-    #     column_num = ppLine.original_column
-    #     line_num = ppLine.original_line
-
-    #     while line:
-    #         matched = False
-
-    #         while line and line[0] == " ":
-    #             column_num += 1
-    #             line = line[1:]
-
-    #         for pattern, token_type in token_patterns:
-    #             match = re.match(pattern, line)
-    #             if match:
-    #                 if token_type is None:
-    #                     raise KavanaSyntaxError(
-    #                         f"잘못된 문자열 형식입니다: 쌍따옴표를 사용해 주십시오 (\") 줄번호 {line_num}, 컬럼번호 {column_num}"
-    #                     )
-
-    #                 if token_type == TokenType.STRING:
-    #                     string_token = CommandParser.parse_string_token(match.group(0), line_num, column_num)
-    #                     tokens.append(string_token)
-    #                 else:
-    #                     raw_value = match.group(0)
-    #                     value = raw_value
-    #                     value_datatype_changed = TokenUtil.primitive_to_kavana_by_tokentype(value, token_type)
-    #                     tokens.append(Token(data=value_datatype_changed, type=token_type, line=line_num, column=column_num))
-
-    #                 column_num += len(match.group(0))
-    #                 line = line[len(match.group(0)):]
-    #                 matched = True
-    #                 break
-
-    #         if not matched and line:
-    #             line = line[1:]
-    #             column_num += 1
-
-    #     tokens = CommandParser.post_process_tokens(tokens)
-    #     return tokens
-
     @staticmethod
     def tokenize(ppLine: PreprocessedLine) -> list:
         raw_tokens = CommandParser.pre_process_tokens(ppLine)
@@ -631,6 +505,7 @@ class CommandParser:
             is_formatted=is_formatted,
             expressions=expressions if expressions else None
         )
+    
     @staticmethod
     def _is_exists_token_type(tokens: List[Token], token_types: set) -> bool:
         """
@@ -640,6 +515,7 @@ class CommandParser:
         :return: 존재하면 True, 아니면 False
         """
         return any(token.type in token_types for token in tokens)
+    
     @staticmethod
     def post_process_tokens(tokens: List[Token]) -> List[Token]:
         ''' ArrayToken, HashMapToken, AccessIndexToken을 판별하고 생성해서 대체한다'''
@@ -681,6 +557,7 @@ class CommandParser:
 
     @staticmethod
     def make_hash_map_token(tokens: List[Token], start_index: int) -> Tuple[HashMapToken, int]:
+        ''' tokens의 start_index에서 부터 hashmaptoken을 만들고 token과 마지막 index를 리턴 '''
         assert tokens[start_index].type == TokenType.LEFT_BRACE
 
         i = start_index + 1
@@ -753,6 +630,7 @@ class CommandParser:
 
     @staticmethod
     def make_array_token(tokens: List[Token], start_index: int) -> Tuple[ArrayToken, int]:
+        ''' tokens의 start_index에서 시작해서  Array 토큰을 만든다.'''
         list_elements = []
         current_element = []
         end_idx = CommandParser._find_matching_bracket_index(tokens, start_index)
