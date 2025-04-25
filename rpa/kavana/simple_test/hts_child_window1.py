@@ -1,6 +1,12 @@
 import win32gui
 import win32con
 
+# # 활성화 된 윈도우 찾기
+# hwnd = win32gui.GetForegroundWindow()  # 현재 최상단(활성) 창
+# title = win32gui.GetWindowText(hwnd)
+# cls = win32gui.GetClassName(hwnd)
+
+# print(f"활성 창: HWND={hwnd}, 타이틀={title}, 클래스={cls}")
 # 타이틀 구하기
 def enum_all_windows():
     def callback(hwnd, _):
