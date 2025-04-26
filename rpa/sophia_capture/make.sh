@@ -7,12 +7,16 @@ echo "🛠 Sophia-Capture 빌드 시작..."
 echo "🗑 기존 빌드 파일 삭제..."
 rm -rf build/ dist/ sophia.spec
 
-# 아이콘 경로 (절대 경로 변환)
-ICON_PATH=$(realpath src/sophia_capture.ico)
+
+# 아이콘 경로 (Python으로 절대경로 처리)
+ICON_PATH=$(python -c "import os; print(os.path.abspath('src/sophia_capture.ico'))")
 
 # PyInstaller 실행
 echo "🚀 PyInstaller 실행..."
-pyinstaller --noconsole --onefile --icon="$ICON_PATH" src/sophia.py
+PLUGINS_PATH=$(python -c "import PySide6; import os; print(os.path.join(os.path.dirname(PySide6.__file__), 'plugins'))")
+echo "PLUGINS_PATH: $PLUGINS_PATH"
+
+pyinstaller --noconsole --onefile --icon="$ICON_PATH" --add-data "${PLUGINS_PATH}/platforms;platforms" src/sophia.py
 
 # 실행 파일 이름 설정
 TARGET_NAME="sophia"

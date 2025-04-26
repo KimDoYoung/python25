@@ -9,7 +9,7 @@ from PySide6.QtWidgets import (QApplication, QMainWindow, QLabel, QFileDialog,
                                QTextEdit, QStatusBar, QHBoxLayout, QSplitter, QRubberBand, QSizePolicy, QMessageBox)
 from PySide6.QtGui import QPixmap, QImage, QFont, QIcon, QCursor, QAction
 from PySide6.QtCore import Qt, QRect, QPoint, QSize
-from utils import RegionName, get_region
+from utils import RegionName, get_region, get_save_path
 
 
 VERSION = "0.4"  # Define the version
@@ -33,8 +33,9 @@ class CustomLabel(QLabel):
         if self.parent_window.original_image is None:
             return
 
-        label_x = event.x()
-        label_y = event.y()
+        pos = event.position()
+        label_x = int(pos.x())
+        label_y = int(pos.y())
 
         # ✅ QLabel 내부에서만 마우스 좌표 제한 (초과 방지)
         label_rect = self.rect()
@@ -254,6 +255,7 @@ class SophiaCapture(QMainWindow):
 
         self.image_label = CustomLabel(self)
         self.image_label.setAlignment(Qt.AlignTop | Qt.AlignLeft)  # ✅ 좌측 상단 고정
+        self.image_label.setScaledContents(False) 
         self.image_label.setSizePolicy(QSizePolicy.Fixed, QSizePolicy.Fixed)  # ✅ 크기 자동 변경 방지
 
         self.scroll_area = QScrollArea()
@@ -353,7 +355,7 @@ class SophiaCapture(QMainWindow):
             return
 
         if self.image_capture_mode:
-            save_path = os.path.join(self.save_folder, f"image_{self.captured_images_count}.png")
+            save_path = get_save_path(self.save_folder, base_name= "image", ext="png") #os.path.join(self.save_folder, f"image_{self.captured_images_count}.png")
             cropped = self.original_image[y:y+h, x:x+w]
             # ✅ 비어있는 이미지 방지
             if cropped is None or cropped.size == 0:
@@ -421,7 +423,7 @@ class SophiaCapture(QMainWindow):
         # ✅ 상태바(StatusBar) 마지막 레이블을 저장 폴더로 업데이트
         self.message_label.setText(self.save_folder)
 
-        self.display_image()
+        # self.display_image()
 
     def show_image_regions(self):
         """ Info 버튼 클릭 시 info_text에 Region 정보 출력 """
@@ -475,7 +477,7 @@ class SophiaCapture(QMainWindow):
             mark.move(scaled_x, scaled_y)
 
     def display_image(self):
-        """ 확대/축소 적용하여 이미지 표시 (QPixmap 변환 오류 수정) """
+        """ 확대/축소 적용하여 이미지 표시 (QPixmap 변환 오류 및 품질 완전 개선) """
         if self.original_image is None:
             print("Error: display_image() called but original_image is None")
             return
@@ -484,7 +486,6 @@ class SophiaCapture(QMainWindow):
         new_w = int(w * self.scale_factor)
         new_h = int(h * self.scale_factor)
 
-        # ✅ 새로운 크기가 0이 되지 않도록 보정
         if new_w < 1:
             new_w = 1
         if new_h < 1:
@@ -492,22 +493,231 @@ class SophiaCapture(QMainWindow):
 
         print(f"Resizing Image to: {new_w}x{new_h}")
 
-        # ✅ cv2.resize() 수행 (INTER_LANCZOS4 사용)
-        resized = cv2.resize(self.original_image, (new_w, new_h), interpolation=cv2.INTER_LANCZOS4)
-        self.displayed_image = resized  # 화면 표시용 이미지 업데이트
+        if self.scale_factor == 1.0:
+            # 1:1 비율이면 원본 그대로 사용
+            display_img = self.original_image
+        else:
+            # 확대/축소할 때만 resize
+            display_img = cv2.resize(self.original_image, (new_w, new_h), interpolation=cv2.INTER_LANCZOS4)
 
-        bytes_per_line = ch * new_w
-        qt_image = QImage(resized.data, new_w, new_h, bytes_per_line, QImage.Format_RGB888).rgbSwapped()
+        self.displayed_image = display_img
+
+        # BGR -> RGB 명시적 변환
+        rgb_image = cv2.cvtColor(display_img, cv2.COLOR_BGR2RGB)
+
+        # QImage 생성 후 .copy() 호출로 메모리 완전 복사
+        qt_image = QImage(rgb_image.data, rgb_image.shape[1], rgb_image.shape[0], rgb_image.strides[0], QImage.Format_RGB888).copy()
+
+        # QPixmap 생성
         self.pixmap = QPixmap.fromImage(qt_image)
 
-        # ✅ QPixmap 변환이 실패한 경우 로그 출력
         if self.pixmap.isNull():
             print("Error: QPixmap conversion failed!")
-            return  # 변환 실패 시 함수 종료
+            return
 
         print(f"Pixmap Created: {self.pixmap.width()}x{self.pixmap.height()}")
 
+        # QLabel에 이미지 적용
+        # self.image_label.setPixmap(self.pixmap)
+        # self.image_label.setScaledContents(False)  # 스케일 금지
+        # self.image_label.resize(self.pixmap.size())
+        # 화면 스케일 비율 감지
+        scale_factor = self.devicePixelRatioF()
+
+        # Pixmap에 스케일 적용
+        self.pixmap.setDevicePixelRatio(scale_factor)
+
         self.image_label.setPixmap(self.pixmap)
+        self.image_label.setScaledContents(False)
+        self.image_label.resize(self.pixmap.size() / scale_factor)        
+
+    # def display_image(self):
+    #     """ 확대/축소 적용하여 이미지 표시 (QPixmap 변환 오류 및 품질 완전 개선) """
+    #     if self.original_image is None:
+    #         print("Error: display_image() called but original_image is None")
+    #         return
+
+    #     h, w, ch = self.original_image.shape
+    #     new_w = int(w * self.scale_factor)
+    #     new_h = int(h * self.scale_factor)
+
+    #     if new_w < 1:
+    #         new_w = 1
+    #     if new_h < 1:
+    #         new_h = 1
+
+    #     print(f"Resizing Image to: {new_w}x{new_h}")
+
+    #     if self.scale_factor == 1.0:
+    #         # 1:1 비율이면 원본 그대로 사용
+    #         display_img = self.original_image
+    #     else:
+    #         # 확대/축소할 때만 resize
+    #         display_img = cv2.resize(self.original_image, (new_w, new_h), interpolation=cv2.INTER_LANCZOS4)
+
+    #     self.displayed_image = display_img
+
+    #     # ✅ BGR -> RGB 명시적 변환
+    #     rgb_image = cv2.cvtColor(display_img, cv2.COLOR_BGR2RGB)
+
+    #     # ✅ QImage 생성 후 .copy() 호출로 메모리 완전 복사
+    #     qt_image = QImage(rgb_image.data, rgb_image.shape[1], rgb_image.shape[0], rgb_image.strides[0], QImage.Format_RGB888).copy()
+
+    #     # ✅ QPixmap 생성
+    #     self.pixmap = QPixmap.fromImage(qt_image)
+
+    #     if self.pixmap.isNull():
+    #         print("Error: QPixmap conversion failed!")
+    #         return
+
+    #     print(f"Pixmap Created: {self.pixmap.width()}x{self.pixmap.height()}")
+
+    #     # ✅ QLabel에 이미지 적용
+    #     self.image_label.setPixmap(self.pixmap)
+    #     self.image_label.setScaledContents(False)  # 스케일 금지
+    #     self.image_label.resize(self.pixmap.size())
+
+
+    # def display_image(self):
+    #     """ 확대/축소 적용하여 이미지 표시 (QPixmap 변환 오류 및 품질 개선) """
+    #     if self.original_image is None:
+    #         print("Error: display_image() called but original_image is None")
+    #         return
+
+    #     h, w, ch = self.original_image.shape
+    #     new_w = int(w * self.scale_factor)
+    #     new_h = int(h * self.scale_factor)
+
+    #     if new_w < 1:
+    #         new_w = 1
+    #     if new_h < 1:
+    #         new_h = 1
+
+    #     print(f"Resizing Image to: {new_w}x{new_h}")
+
+    #     if self.scale_factor == 1.0:
+    #         # 1:1 비율이면 원본 그대로 사용
+    #         display_img = self.original_image
+    #     else:
+    #         # 확대/축소할 때만 resize
+    #         display_img = cv2.resize(self.original_image, (new_w, new_h), interpolation=cv2.INTER_LANCZOS4)
+
+    #     self.displayed_image = display_img  # 화면 표시용 이미지 업데이트
+
+    #     # ✅ BGR -> RGB 명시적으로 변환
+    #     rgb_image = cv2.cvtColor(display_img, cv2.COLOR_BGR2RGB)
+
+    #     # ✅ QImage로 변환 (RGB888 포맷)
+    #     qt_image = QImage(rgb_image.data, rgb_image.shape[1], rgb_image.shape[0], rgb_image.strides[0], QImage.Format_RGB888)
+
+    #     # ✅ QPixmap 생성
+    #     self.pixmap = QPixmap.fromImage(qt_image)
+
+    #     if self.pixmap.isNull():
+    #         print("Error: QPixmap conversion failed!")
+    #         return
+
+    #     print(f"Pixmap Created: {self.pixmap.width()}x{self.pixmap.height()}")
+
+    #     # ✅ QLabel에 이미지 적용
+    #     self.image_label.setPixmap(self.pixmap)
+    #     self.image_label.setScaledContents(False)
+    #     self.image_label.resize(self.pixmap.size())
+
+
+    # def display_image(self):
+    #     """ 확대/축소 적용하여 이미지 표시 (QPixmap 변환 오류 수정) """
+    #     if self.original_image is None:
+    #         print("Error: display_image() called but original_image is None")
+    #         return
+
+    #     h, w, ch = self.original_image.shape
+    #     new_w = int(w * self.scale_factor)
+    #     new_h = int(h * self.scale_factor)
+
+    #     if new_w < 1:
+    #         new_w = 1
+    #     if new_h < 1:
+    #         new_h = 1
+
+    #     print(f"Resizing Image to: {new_w}x{new_h}")
+
+    #     if self.scale_factor == 1.0:
+    #         # 1:1 비율이면 원본 그대로 사용
+    #         display_img = self.original_image
+    #     else:
+    #         # 확대/축소일 때만 resize
+    #         display_img = cv2.resize(self.original_image, (new_w, new_h), interpolation=cv2.INTER_LANCZOS4)
+
+    #     self.displayed_image = display_img  # 화면 표시용 이미지 업데이트
+
+    #     bytes_per_line = ch * display_img.shape[1]
+    #     qt_image = QImage(display_img.data, display_img.shape[1], display_img.shape[0], bytes_per_line, QImage.Format_RGB888).rgbSwapped()
+    #     self.pixmap = QPixmap.fromImage(qt_image)
+
+    #     if self.pixmap.isNull():
+    #         print("Error: QPixmap conversion failed!")
+    #         return
+
+    #     print(f"Pixmap Created: {self.pixmap.width()}x{self.pixmap.height()}")
+
+    #     # Pixmap 설정
+    #     self.image_label.setPixmap(self.pixmap)
+    #     self.image_label.resize(self.pixmap.size())
+
+
+    # def display_image(self):
+    #     """ 확대/축소 적용하여 이미지 표시 (QPixmap 변환 오류 수정) """
+    #     if self.original_image is None:
+    #         print("Error: display_image() called but original_image is None")
+    #         return
+
+    #     h, w, ch = self.original_image.shape
+    #     new_w = int(w * self.scale_factor)
+    #     new_h = int(h * self.scale_factor)
+
+    #     # ✅ 새로운 크기가 0이 되지 않도록 보정
+    #     if new_w < 1:
+    #         new_w = 1
+    #     if new_h < 1:
+    #         new_h = 1
+
+    #     print(f"Resizing Image to: {new_w}x{new_h}")
+
+    #     # ✅ cv2.resize() 수행 (INTER_LANCZOS4 사용)
+    #     resized = cv2.resize(self.original_image, (new_w, new_h), interpolation=cv2.INTER_LANCZOS4)
+    #     self.displayed_image = resized  # 화면 표시용 이미지 업데이트
+
+    #     bytes_per_line = ch * new_w
+    #     qt_image = QImage(resized.data, new_w, new_h, bytes_per_line, QImage.Format_RGB888).rgbSwapped()
+    #     self.pixmap = QPixmap.fromImage(qt_image)
+
+    #     # ✅ QPixmap 변환이 실패한 경우 로그 출력
+    #     if self.pixmap.isNull():
+    #         print("Error: QPixmap conversion failed!")
+    #         return  # 변환 실패 시 함수 종료
+
+    #     print(f"Pixmap Created: {self.pixmap.width()}x{self.pixmap.height()}")
+
+    #     # self.image_label.setPixmap(self.pixmap)
+    #     self.image_label.setPixmap(self.pixmap.scaled(
+    #         self.pixmap.size(),
+    #         Qt.KeepAspectRatio,
+    #         Qt.FastTransformation
+    #     ))
+
+#---
+# qt_image = QImage(resized.data, new_w, new_h, bytes_per_line, QImage.Format_RGB888).rgbSwapped()
+# self.pixmap = QPixmap.fromImage(qt_image)
+
+# # 픽스: 품질 손실 없이 QLabel에 넣기
+# self.image_label.setPixmap(self.pixmap.scaled(
+#     self.pixmap.size(),
+#     Qt.KeepAspectRatio,
+#     Qt.FastTransformation
+# ))
+#---
+
 
         # ✅ QLabel 크기를 Pixmap 크기로 설정
         self.image_label.resize(self.pixmap.size())

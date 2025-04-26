@@ -1,4 +1,5 @@
 from enum import Enum
+import os
 from typing import Optional, Tuple
 
 
@@ -49,3 +50,22 @@ def get_region(region_name: RegionName, base_region: Optional[Tuple[int, int, in
         return (left, top + height // 2, width, height // 2)
     else:
         raise ValueError("잘못된 RegionName 값입니다.")
+    
+def get_save_path(folder_path, base_name="image", ext=".png"):
+    """중복되지 않는 저장 경로를 반환한다.
+    
+    Args:
+        folder_path (str): 저장할 폴더 경로
+        base_name (str): 파일 이름 기본값 (예: "image")
+        ext (str): 확장자 (예: ".png")
+
+    Returns:
+        str: 저장할 파일 전체 경로
+    """
+    count = 0
+    while True:
+        filename = f"{base_name}_{count}.{ext}"
+        save_path = os.path.join(folder_path, filename)
+        if not os.path.exists(save_path):
+            return save_path
+        count += 1    
