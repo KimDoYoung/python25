@@ -114,3 +114,4 @@ File
 
 0.2 : 2025-04-16 한글이미지 파일명 저장 안되는 것 수정, Action 메뉴추가
 0.3 : kavana code 스타일로 point, region등 출력
+0.4 : PySide6로 변경함.

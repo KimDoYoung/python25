@@ -4,16 +4,15 @@ import os
 import traceback
 import cv2
 import numpy as np
-from PyQt5.QtWidgets import (QApplication, QMainWindow, QLabel, QFileDialog, 
-                             QScrollArea, QVBoxLayout, QWidget, QToolBar, QPushButton, 
-                             QTextEdit, QAction, QStatusBar, QHBoxLayout, QSplitter, QRubberBand, QSizePolicy, QMessageBox)
-from PyQt5.QtGui import QPixmap, QImage, QFont, QIcon, QCursor
-from PyQt5.QtCore import Qt, QRect, QPoint
-from PyQt5.QtCore import QSize
-
+from PySide6.QtWidgets import (QApplication, QMainWindow, QLabel, QFileDialog, 
+                               QScrollArea, QVBoxLayout, QWidget, QToolBar, QPushButton, 
+                               QTextEdit, QStatusBar, QHBoxLayout, QSplitter, QRubberBand, QSizePolicy, QMessageBox)
+from PySide6.QtGui import QPixmap, QImage, QFont, QIcon, QCursor, QAction
+from PySide6.QtCore import Qt, QRect, QPoint, QSize
 from utils import RegionName, get_region
 
 
+VERSION = "0.4"  # Define the version
 class CustomLabel(QLabel):
     """ (요구사항 3) Rubber Band (점선 사각형) 구현 """
     def __init__(self, parent=None):
@@ -130,7 +129,8 @@ class CustomLabel(QLabel):
 class SophiaCapture(QMainWindow):
     def __init__(self):
         super().__init__()
-        self.VERSION = "0.3"  # 버전 정보 추가
+
+        self.VERSION = VERSION  # 버전 정보 추가
         # 이미지 관련 변수
         self.original_image = None  # 원본 이미지
         self.displayed_image = None  # 확대/축소용 이미지
@@ -626,7 +626,7 @@ if __name__ == "__main__":
         editor.show()
         print("SophiaCapture window shown.")  # SophiaCapture UI 표시 확인
 
-        sys.exit(app.exec_())  # 이벤트 루프 실행
+        sys.exit(app.exec())  # 이벤트 루프 실행
     except Exception as e:
         # 현재 시간 기준 로그 파일명 생성
         now = datetime.now()
