@@ -1,7 +1,7 @@
 from enum import Enum
 import os
 from typing import Optional, Tuple
-
+from PySide6.QtWidgets import QApplication
 
 class RegionName(Enum):
     LEFT_ONE_THIRD = 1
@@ -69,3 +69,37 @@ def get_save_path(folder_path, base_name="image", ext=".png"):
         if not os.path.exists(save_path):
             return save_path
         count += 1    
+
+class PosUtil:
+    @staticmethod
+    def display_pos(pos):
+        """화면 표시용 좌표 반환 (UI 좌표 그대로)"""
+        return int(pos.x()), int(pos.y())
+
+    @staticmethod
+    def image_pos(pos, scale_factor):
+        """원본 이미지 좌표 반환 (DPI 보정 + 배율 보정)"""
+        device_scale = QApplication.primaryScreen().devicePixelRatio()
+        phys_x = pos.x() * device_scale
+        phys_y = pos.y() * device_scale
+        image_x = int(phys_x / scale_factor)
+        image_y = int(phys_y / scale_factor)
+        return image_x, image_y
+
+    @staticmethod
+    def disp_to_image_pos(disp_x, disp_y, scale_factor):
+        """화면 표시용 좌표 -> 원본 이미지 좌표 변환"""
+        device_scale = QApplication.primaryScreen().devicePixelRatio()
+        phys_x = disp_x * device_scale
+        phys_y = disp_y * device_scale
+        image_x = int(phys_x / scale_factor)
+        image_y = int(phys_y / scale_factor)
+        return image_x, image_y
+
+    @staticmethod
+    def image_to_disp_pos(image_x, image_y, scale_factor):
+        """원본 이미지 좌표 -> 화면 표시용 좌표 변환"""
+        device_scale = QApplication.primaryScreen().devicePixelRatio()
+        disp_x = int(image_x * scale_factor / device_scale)
+        disp_y = int(image_y * scale_factor / device_scale)
+        return disp_x, disp_y
