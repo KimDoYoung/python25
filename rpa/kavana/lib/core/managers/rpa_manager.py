@@ -289,7 +289,7 @@ class RpaManager(BaseManager):
             )
             if location:
                 center = pyautogui.center(location)
-                result_token = TokenUtil.region_to_token(center.x, center.y)
+                result_token = TokenUtil.region_to_token(location)
                 if to_var:
                     self.set_variable(to_var, result_token)
                 self.log("INFO", f"[RPA:click_image] {target_img.filename} 이미지 클릭 완료: {center}")
@@ -298,6 +298,8 @@ class RpaManager(BaseManager):
                 return center
         except Exception as e:
             self.log("ERROR", f"[RPA:click_image] 이미지 {target_img.filename} 검색 중 오류 발생: {e}")
+            if to_var:
+                self.set_variable(to_var, NoneToken())
 
         self.log("WARN", f"[RPA:click_image] click_image  이미지를 {target_img.filename}초 내에 찾지 못했습니다.")
         return None

@@ -1,0 +1,9 @@
+CONST image_base_dir="C:\\Users\\USER\\Pictures\\efriend_plus_qhd125"
+CONST program_path="C:\\eFriend Plus x64\\efriendplus\\efriendplus.exe"
+CONST process_name="efplusmain.exe"
+CONST cert_mark=f"{image_base_dir}\\인증서마크.png"
+CONST center_area=Region(953, 343, 658, 684)
+CONST name_image=f"{image_base_dir}\\김도영.png"
+CONST password_point=Point(1368, 908)
+CONST logo=f"{image_base_dir}\\한국투자증권로고.png"
+CONST area_right_bottom=Region(2195, 1141, 363, 237)

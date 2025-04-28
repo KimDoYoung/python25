@@ -6,7 +6,7 @@ from lib.core.command_preprocessor import CommandPreprocessor
 script = """
 ENV_LOAD ".env"
 INCLUDE "simple_test/qhd_120.kvs"
-MAIN`
+MAIN
 
     LOG_INFO "=========================================================="
     LOG_INFO "eFriend HTS 64bit 프로그램 시작 (OCR)"
@@ -16,23 +16,18 @@ MAIN`
     SET efriend64 = Application(program_path)
     RPA app_open from_var="efriend64", process_name=process_name, focus=True
     RPA wait_image from_file=cert_mark  area=center_area timeout=(5*10) 
-    
-    RPA find_window title="인증서 선택" to_var="cert_window" 
-    # child_of=
-    # RPA find_top_window  child_of= to_var=
-    # RPA all_windows child_of= to_var=
+    RPA wait seconds=5
+    RPA click_image from_file=name_image area=center_area, after="wait:3s" to_var="result"
+    if result == None
+        raise "사용자명을 찾을 수 없습니다"
+    end_if
+    RPA click_point location=password_point after="wait:3s" 
+    RPA put_text text=$HTS_PASSWORD clipboard=False after="wait:3s"
+    RPA key_in keys=["enter"]
 
-    SET cert_window_area = window_area(cert_window)
-    IMAGE clip area=cert_window_area to_var="cert_window_image"
-    OCR find text="김도영" from_var="cert_window_image" area=center_area to_var="name" 
-    if name == None
-        LOG_INFO ">>> OCR에서 이름을 찾지 못했습니다."
-    else
-        LOG_INFO ">>> OCR에서 이름을 찾았습니다."
-        LOG_INFO name
-        //SET pt_name = point_center(name)
-    END_IF
-    RPA wait seconds= 30
+    RPA wait_image from_file=logo area=area_right_bottom timeout=3*60
+    
+    RPA wait seconds=5*60
 
     LOG_INFO ">>> 끝내기"
     RPA key_in keys=["alt+f4", "enter"]

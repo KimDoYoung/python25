@@ -7,6 +7,8 @@ from .string_functions import StringFunctions
 from .numeric_functions import NumericFunctions
 
 BUILTIN_FUNCTIONS = {
+    # ✅ RPA 관련 함수 추가
+    "WINDOW_LIST":(RpaFunctions.WINDOW_LIST, 1),
     # ✅ 데이터타입관련 함수 추가
     "TYPE_OF": (DatatypeFunctions.TYPE_OF, 1),
     "IS_TYPE": (DatatypeFunctions.IS_TYPE, 2),
