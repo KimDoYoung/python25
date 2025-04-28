@@ -26,52 +26,50 @@ class CustomLabel(QLabel):
     def __init__(self, parent=None):
         print("SophiaCapture Initialized")  # 프로그램이 실행되었는지 확인
         super().__init__(parent)
-        self.setMouseTracking(True)
+        self.setMouseTracking(True)  # (요구사항 1) 마우스 이동 감지
         self.rubber_band = QRubberBand(QRubberBand.Rectangle, self)  
-        self.rubber_band.setStyleSheet("border: 2px dashed red; background: rgba(255, 0, 0, 50);")
+        self.rubber_band.setStyleSheet("border: 2px dashed red; background: rgba(255, 0, 0, 50);")  #  반투명 효과 추가
         self.start_pos = None
         self.parent_window = parent  
 
+        #  디버깅 추가 (parent_window가 SophiaCapture인지 확인)
         if not hasattr(self.parent_window, "original_image"):
             print("Error: parent_window does not have 'original_image'")
 
     def mouseMoveEvent(self, event):
-        """ 마우스 이동 시 Rubber Band 크기 조정 및 십자선 갱신 """
+        """ 마우스 이동 시 Rubber Band 크기 조정 (Zoom Factor 반영) """
         if self.parent_window.original_image is None:
             return
 
-        phys_x, phys_y = apply_monitor_scale(event.position())
-        disp_x = phys_x / self.parent_window.scale_factor
-        disp_y = phys_y / self.parent_window.scale_factor
-        label_x = int(disp_x)
-        label_y = int(disp_y)
+        x,y = apply_monitor_scale(event.position())
+        x = x / self.parent_window.scale_factor
+        y = y / self.parent_window.scale_factor
+        label_x = int(x)
+        label_y = int(y)
 
+        #  QLabel 내부에서만 마우스 좌표 제한 (초과 방지)
         label_rect = self.rect()
         label_x = max(0, min(label_x, label_rect.width() - 1))
         label_y = max(0, min(label_y, label_rect.height() - 1))
 
-        # 원본 이미지 기준 마우스 위치 업데이트
         image_x = int(label_x / self.parent_window.scale_factor)
         image_y = int(label_y / self.parent_window.scale_factor)
 
         if 0 <= image_x < self.parent_window.original_image.shape[1] and 0 <= image_y < self.parent_window.original_image.shape[0]:
             self.parent_window.update_mouse_position(image_x, image_y)
 
-        # Rubber Band 업데이트
+        #  Rubber Band 크기 조정
         if self.rubber_band.isVisible():
             self.rubber_band.setGeometry(QRect(self.start_pos, QPoint(label_x, label_y)).normalized())
 
-        # 십자선 표시
+        #  십자선 그리기
         if self.parent_window.cross_cursor_mode:
-            # self.update_cross_cursor(label_x, label_y)
-            self.update_mark_positions()
+            self.update_cross_cursor(label_x, label_y)            
 
     def mousePressEvent(self, event):
         if event.button() == Qt.LeftButton and (self.parent_window.rect_capture_mode or self.parent_window.image_capture_mode):
-            phys_x, phys_y = apply_monitor_scale(event.position())
-            disp_x = phys_x / self.parent_window.scale_factor
-            disp_y = phys_y / self.parent_window.scale_factor
-            self.start_pos = QPoint(int(disp_x), int(disp_y))
+            sx1, sy1 = apply_monitor_scale(event.position())
+            self.start_pos = QPoint(int(sx1), int(sy1))
 
             label_rect = self.rect()
             self.start_pos.setX(max(0, min(self.start_pos.x(), label_rect.width() - 1)))
@@ -82,35 +80,38 @@ class CustomLabel(QLabel):
             self.rubber_band.update()
 
         if event.button() == Qt.LeftButton and self.parent_window.mark_mode:
-            # 원본 이미지 좌표 계산
+            # 1. 물리 좌표 얻기 (DPI 보정)
             phys_x, phys_y = apply_monitor_scale(event.position())
-            image_x = int(phys_x / self.parent_window.scale_factor)
-            image_y = int(phys_y / self.parent_window.scale_factor)
-            
-            # 마크 생성
+
+            # 2. 화면 표시용 좌표 (scale_factor 보정)
+            disp_x = phys_x / self.parent_window.scale_factor
+            disp_y = phys_y / self.parent_window.scale_factor
+
+            disp_x = int(disp_x)
+            disp_y = int(disp_y)
+
+            # 3. 마크(+) 생성
             mark = QLabel("+", self)
             mark.setStyleSheet("color: red; font-size: 16px; font-weight: bold; text-align: center;")
             mark.setAttribute(Qt.WA_TransparentForMouseEvents)
             mark.setFixedSize(20, 20)
-            
-            # 마크의 UI 좌표 계산 (현재 스케일 적용)
-            ui_x = int(image_x * self.parent_window.scale_factor)
-            ui_y = int(image_y * self.parent_window.scale_factor)
-            
-            # 마크 위치 설정 (중앙 정렬을 위해 10픽셀 보정)
-            mark.move(ui_x - 10, ui_y - 10)
+            mark.move(disp_x - 10, disp_y - 10)  # 마크 중앙 정렬
             mark.show()
-            
-            # 원본 이미지 좌표와 마크 객체를 함께 저장
+
+            # 4. 원본 이미지 좌표 저장 (RPA용)
+            image_x = int(phys_x / self.parent_window.scale_factor)
+            image_y = int(phys_y / self.parent_window.scale_factor)
+
             self.parent_window.mark_list.append((mark, image_x, image_y))
             self.parent_window.info_text.append(f"-----> Point({image_x}, {image_y})")
 
+
     def mouseReleaseEvent(self, event):
         if event.button() == Qt.LeftButton and self.start_pos and (self.parent_window.rect_capture_mode or self.parent_window.image_capture_mode):
-            phys_x, phys_y = apply_monitor_scale(event.position())
-            disp_x = phys_x / self.parent_window.scale_factor
-            disp_y = phys_y / self.parent_window.scale_factor
-            end_pos = QPoint(int(disp_x), int(disp_y))
+            x_pos, y_pos = apply_monitor_scale(event.position())
+            x_pos = x_pos / self.parent_window.scale_factor
+            y_pos = y_pos / self.parent_window.scale_factor            
+            end_pos = QPoint(int(x_pos), int(y_pos))
 
             label_rect = self.rect()
             end_pos.setX(max(0, min(end_pos.x(), label_rect.width() - 1)))
@@ -122,32 +123,25 @@ class CustomLabel(QLabel):
             self.rubber_band.hide()
             self.rubber_band.update()
 
-    # def update_cross_cursor(self, x, y):
-    #     """ 마우스 이동 시 십자선 다시 그리기 """
-    #     if self.parent_window.cross_cursor_mode:
-    #         self.parent_window.remove_cross_cursor()
 
-    #         self.h_line = QLabel(self)
-    #         self.h_line.setStyleSheet("background-color: rgba(255, 0, 0, 0.5);")
-    #         self.h_line.setGeometry(0, y, self.width(), 2)
-    #         self.h_line.show()
+    def update_cross_cursor(self, x, y):
+        """ 마우스 이동 시 십자선 다시 그리기 """
+        if self.parent_window.cross_cursor_mode:
+            print(f"info: Updating cross cursor at ({x}, {y})")
 
-    #         self.v_line = QLabel(self)
-    #         self.v_line.setStyleSheet("background-color: rgba(255, 0, 0, 0.5);")
-    #         self.v_line.setGeometry(x, 0, 2, self.height())
-    #         self.v_line.show()
+            self.parent_window.remove_cross_cursor()  # 🔹 기존 선 삭제
 
-    def update_mark_positions(self):
-        """확대/축소 시 마크 위치 업데이트"""
-        for mark_tuple in self.mark_list:
-            mark, image_x, image_y = mark_tuple
-            
-            # 원본 이미지 좌표에서 현재 스케일로 UI 좌표 계산
-            ui_x = int(image_x * self.scale_factor)
-            ui_y = int(image_y * self.scale_factor)
-            
-            # 마크 위치 업데이트
-            mark.move(ui_x - 10, ui_y - 10)
+            self.h_line = QLabel(self)
+            self.h_line.setStyleSheet("background-color: rgba(255, 0, 0, 0.5);")
+            self.h_line.setGeometry(0, y, self.width(), 2)
+            self.h_line.show()
+
+            self.v_line = QLabel(self)
+            self.v_line.setStyleSheet("background-color: rgba(255, 0, 0, 0.5);")
+            self.v_line.setGeometry(x, 0, 2, self.height())
+            self.v_line.show()
+
+            print("info: Cross Cursor updated successfully")
 
 class SophiaCapture(QMainWindow):
     def __init__(self):
@@ -596,8 +590,7 @@ class SophiaCapture(QMainWindow):
             cursor_pos = self.image_label.mapFromGlobal(QCursor.pos())  
             x = cursor_pos.x()
             y = cursor_pos.y()            
-            self.image_label.update_mark_positions()  # 🔹 다시 그리기
-            self.update_mouse_position()
+            self.image_label.update_cross_cursor(x,y)  # 🔹 다시 그리기
         else:
             print(" Cross Cursor OFF: Removing lines")  
             self.remove_cross_cursor()  # 🔹 기존 수직/수평 라인 제거
