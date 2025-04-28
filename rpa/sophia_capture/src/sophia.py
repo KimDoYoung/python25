@@ -58,9 +58,9 @@ class CustomLabel(QLabel):
 
     def mousePressEvent(self, event):
         """ Rectangle Capture / Image Capture 시 마우스 클릭 시작 (Rubber Band 위치 보정) """
-        print(f"🛠 mousePressEvent triggered at: {event.x()}, {event.y()}")  # ✅ 클릭 이벤트 확인
+        print(f"info: mousePressEvent triggered at: {event.position().x()}, {event.position().y()}")  # ✅ 클릭 이벤트 확인
         if event.button() == Qt.LeftButton and (self.parent_window.rect_capture_mode or self.parent_window.image_capture_mode):
-            self.start_pos = event.pos()
+            self.start_pos = event.position().toPoint()
 
             # ✅ QLabel 내부에서 Rubber Band가 생성되도록 위치 보정
             label_rect = self.rect()  # QLabel의 크기 가져오기
@@ -72,24 +72,24 @@ class CustomLabel(QLabel):
             self.rubber_band.update()  # ✅ 즉시 갱신
 
         if event.button() == Qt.LeftButton and self.parent_window.mark_mode:
-            print("✅ Mark mode is ON")  
+            print("info: Mark mode is ON")  
 
-            # 🔹 현재 이미지의 확대 비율을 고려하여 원본 이미지 좌표 저장
-            x = int(event.x() / self.parent_window.scale_factor)
-            y = int(event.y() / self.parent_window.scale_factor)
+            # 현재 이미지의 확대 비율을 고려하여 원본 이미지 좌표 저장
+            x = int(event.position().x() / self.parent_window.scale_factor)
+            y = int(event.position().y() / self.parent_window.scale_factor)
 
-            print(f"🔹 Original Mark Position (Saved): {x}, {y}")  
-            x1,y1 = event.x(), event.y()
-            # 🔹 + 마크 생성 (크기 지정 및 중앙 정렬)
+            print(f"info: Original Mark Position (Saved): {x}, {y}")  
+            x1,y1 = event.position().x(), event.position().y()
+            #  + 마크 생성 (크기 지정 및 중앙 정렬)
             mark = QLabel("+", self)
             mark.setStyleSheet("color: red; font-size: 16px; font-weight: bold; text-align: center;")
             mark.setAttribute(Qt.WA_TransparentForMouseEvents)  # ✅ 마우스 이벤트 무시
-            mark.setFixedSize(20, 20)  # 🔹 크기 고정
-            mark.move(x1 - 10, y1 - 10)  # 🔹 중앙 정렬 (좌상단 기준에서 반 크기만큼 이동)
+            mark.setFixedSize(20, 20)  
+            mark.move(x1 - 10, y1 - 10)  
             mark.show()
 
             self.parent_window.mark_list.append((mark, x, y))              
-            print(f"✅ Mark added at: {x}, {y}")  # ✅ 마크 추가 로그 출력
+            print(f"info: Mark added at: {x}, {y}")  # ✅ 마크 추가 로그 출력
             self.parent_window.info_text.append("-----> Point({}, {})".format(x, y))  # ✅ 정보창에 마크 추가
 
     def mouseReleaseEvent(self, event):
@@ -111,7 +111,7 @@ class CustomLabel(QLabel):
     def update_cross_cursor(self, x, y):
         """ 마우스 이동 시 십자선 다시 그리기 """
         if self.parent_window.cross_cursor_mode:
-            print(f"🛠 Updating cross cursor at ({x}, {y})")
+            print(f"info: Updating cross cursor at ({x}, {y})")
 
             self.parent_window.remove_cross_cursor()  # 🔹 기존 선 삭제
 
@@ -125,7 +125,7 @@ class CustomLabel(QLabel):
             self.v_line.setGeometry(x, 0, 2, self.height())
             self.v_line.show()
 
-            print("✅ Cross Cursor updated successfully")
+            print("info: Cross Cursor updated successfully")
 
 class SophiaCapture(QMainWindow):
     def __init__(self):
@@ -345,7 +345,7 @@ class SophiaCapture(QMainWindow):
 
         # ✅ 잘못된 크기 방지
         if w <= 0 or h <= 0:
-            print(f"⚠️ 잘못된 선택 영역: width={w}, height={h}")
+            print(f"warning: 잘못된 선택 영역: width={w}, height={h}")
             return
 
         # 원본 이미지 기준으로 좌표 확인
@@ -359,7 +359,7 @@ class SophiaCapture(QMainWindow):
             cropped = self.original_image[y:y+h, x:x+w]
             # ✅ 비어있는 이미지 방지
             if cropped is None or cropped.size == 0:
-                print("⚠️ 잘라낸 이미지가 비어있습니다.")
+                print("warning: 잘라낸 이미지가 비어있습니다.")
                 return
 
             ext = ".png"
@@ -370,7 +370,7 @@ class SophiaCapture(QMainWindow):
                 self.info_text.append(f"{save_path} saved")
                 self.captured_images_count += 1
             else:
-                print("⚠️ 이미지 인코딩 실패")
+                print("warning: 이미지 인코딩 실패")
 
 
         elif self.rect_capture_mode:
