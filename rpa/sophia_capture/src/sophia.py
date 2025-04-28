@@ -238,6 +238,11 @@ class SophiaCapture(QMainWindow):
         clear_info_action.triggered.connect(self.clear_info_text)
         action_menu.addAction(clear_info_action)
 
+        # set save folder
+        set_save_folder_action = QAction("Set Save Folder...", self)
+        set_save_folder_action.setShortcut("F4")
+        set_save_folder_action.triggered.connect(self.set_save_folder_dialog)
+        action_menu.addAction(set_save_folder_action)  # ✅ 최하단에 추가        
 
         # (요구사항 2) 툴바 설정
         self.toolbar = QToolBar("Toolbar")
@@ -372,10 +377,6 @@ class SophiaCapture(QMainWindow):
             return  
 
         # 화면 좌표 → 원본 좌표 변환
-        # x = int(rect.left() / self.scale_factor)
-        # y = int(rect.top() / self.scale_factor)
-        # w = int(rect.width() / self.scale_factor)
-        # h = int(rect.height() / self.scale_factor)
         x = int(rect.left())
         y = int(rect.top())
         w = int(rect.width())
@@ -670,6 +671,13 @@ class SophiaCapture(QMainWindow):
     def clear_info_text(self):
         """ info_text 내용 지우기 """
         self.info_text.clear()
+
+    def set_save_folder_dialog(self):
+        """ 폴더 선택 다이얼로그를 띄우고, 선택된 폴더를 저장 폴더로 설정 """
+        folder = QFileDialog.getExistingDirectory(self, "Select Save Folder", self.save_folder or "")
+        if folder:
+            self.save_folder = folder
+            self.info_text.append(f"Save folder set to: {self.save_folder}")
 
 
 
