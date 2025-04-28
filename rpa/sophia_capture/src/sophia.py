@@ -95,8 +95,8 @@ class CustomLabel(QLabel):
     def mouseReleaseEvent(self, event):
         """ 마우스 드래그 후 선택된 영역 처리 (Rubber Band 위치 보정) """
         if event.button() == Qt.LeftButton and self.start_pos and (self.parent_window.rect_capture_mode or self.parent_window.image_capture_mode):
-            end_pos = event.pos()
-
+            # end_pos = event.pos()
+            end_pos = event.position().toPoint()
             # ✅ QLabel 내부에서만 마우스 좌표 제한 (초과 방지)
             label_rect = self.rect()
             end_pos.setX(max(0, min(end_pos.x(), label_rect.width() - 1)))
@@ -345,7 +345,7 @@ class SophiaCapture(QMainWindow):
 
         # ✅ 잘못된 크기 방지
         if w <= 0 or h <= 0:
-            print(f"❌ 잘못된 선택 영역: width={w}, height={h}")
+            print(f"⚠️ 잘못된 선택 영역: width={w}, height={h}")
             return
 
         # 원본 이미지 기준으로 좌표 확인
@@ -359,7 +359,7 @@ class SophiaCapture(QMainWindow):
             cropped = self.original_image[y:y+h, x:x+w]
             # ✅ 비어있는 이미지 방지
             if cropped is None or cropped.size == 0:
-                print("❌ 잘라낸 이미지가 비어있습니다.")
+                print("⚠️ 잘라낸 이미지가 비어있습니다.")
                 return
 
             ext = ".png"
