@@ -82,10 +82,10 @@ class ProcessManager(BaseManager):
         if hwnd:
             title = win32gui.GetWindowText(hwnd)
             class_name = win32gui.GetClassName(hwnd)
-            self.executor.executor.log_command("INFO",f"현재 포커스된 윈도우 → HWND: {hwnd}, Title: {title}, Class: {class_name}")
+            self.executor.log_command("INFO",f"현재 포커스된 윈도우 → HWND: {hwnd}, Title: {title}, Class: {class_name}")
             return WindowInfo(hwnd=hwnd, title=title, class_name=class_name)
         else:
-            self.executor.executor.log_command("WARN",f"현재 포커스된 윈도우가 없습니다.")
+            self.executor.log_command("WARN",f"현재 포커스된 윈도우가 없습니다.")
             return None
 
     def find_mdi_top_window_info(self, main_hwnd) -> Optional[WindowInfo]:
@@ -100,14 +100,14 @@ class ProcessManager(BaseManager):
         win32gui.EnumChildWindows(main_hwnd, child_callback, children)
 
         if not children:
-            self.executor.executor.log_command("WARN", "자식 창이 없습니다.")
+            self.executor.log_command("WARN", "자식 창이 없습니다.")
             return None
 
         # 보통 가장 마지막에 추가된 것이 최상단
         top_child = children[-1]
         title = win32gui.GetWindowText(top_child)
         class_name = win32gui.GetClassName(top_child)
-        self.executor.executor.log_command("INFO", f"최상단 MDI Child HWND: {top_child}, Title: {title}, Class: {class_name}")
+        self.executor.log_command("INFO", f"최상단 MDI Child HWND: {top_child}, Title: {title}, Class: {class_name}")
         return WindowInfo(top_child, title, class_name)
 
     def get_window_region(self, hwnd: int) -> tuple:

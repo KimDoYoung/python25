@@ -20,11 +20,11 @@ class CustomLabel(QLabel):
         super().__init__(parent)
         self.setMouseTracking(True)  # (요구사항 1) 마우스 이동 감지
         self.rubber_band = QRubberBand(QRubberBand.Rectangle, self)  
-        self.rubber_band.setStyleSheet("border: 2px dashed red; background: rgba(255, 0, 0, 50);")  # ✅ 반투명 효과 추가
+        self.rubber_band.setStyleSheet("border: 2px dashed red; background: rgba(255, 0, 0, 50);")  #  반투명 효과 추가
         self.start_pos = None
         self.parent_window = parent  
 
-        # ✅ 디버깅 추가 (parent_window가 SophiaCapture인지 확인)
+        #  디버깅 추가 (parent_window가 SophiaCapture인지 확인)
         if not hasattr(self.parent_window, "original_image"):
             print("Error: parent_window does not have 'original_image'")
 
@@ -37,7 +37,7 @@ class CustomLabel(QLabel):
         label_x = int(pos.x())
         label_y = int(pos.y())
 
-        # ✅ QLabel 내부에서만 마우스 좌표 제한 (초과 방지)
+        #  QLabel 내부에서만 마우스 좌표 제한 (초과 방지)
         label_rect = self.rect()
         label_x = max(0, min(label_x, label_rect.width() - 1))
         label_y = max(0, min(label_y, label_rect.height() - 1))
@@ -48,28 +48,28 @@ class CustomLabel(QLabel):
         if 0 <= image_x < self.parent_window.original_image.shape[1] and 0 <= image_y < self.parent_window.original_image.shape[0]:
             self.parent_window.update_mouse_position(image_x, image_y)
 
-        # ✅ Rubber Band 크기 조정
+        #  Rubber Band 크기 조정
         if self.rubber_band.isVisible():
             self.rubber_band.setGeometry(QRect(self.start_pos, QPoint(label_x, label_y)).normalized())
 
-        # ✅ 십자선 그리기
+        #  십자선 그리기
         if self.parent_window.cross_cursor_mode:
             self.update_cross_cursor(label_x, label_y)            
 
     def mousePressEvent(self, event):
         """ Rectangle Capture / Image Capture 시 마우스 클릭 시작 (Rubber Band 위치 보정) """
-        print(f"info: mousePressEvent triggered at: {event.position().x()}, {event.position().y()}")  # ✅ 클릭 이벤트 확인
+        print(f"info: mousePressEvent triggered at: {event.position().x()}, {event.position().y()}")  #  클릭 이벤트 확인
         if event.button() == Qt.LeftButton and (self.parent_window.rect_capture_mode or self.parent_window.image_capture_mode):
             self.start_pos = event.position().toPoint()
 
-            # ✅ QLabel 내부에서 Rubber Band가 생성되도록 위치 보정
+            #  QLabel 내부에서 Rubber Band가 생성되도록 위치 보정
             label_rect = self.rect()  # QLabel의 크기 가져오기
             self.start_pos.setX(max(0, min(self.start_pos.x(), label_rect.width() - 1)))
             self.start_pos.setY(max(0, min(self.start_pos.y(), label_rect.height() - 1)))
 
-            self.rubber_band.setGeometry(QRect(self.start_pos, QSize(1, 1)))  # ✅ 초기 크기 설정
+            self.rubber_band.setGeometry(QRect(self.start_pos, QSize(1, 1)))  #  초기 크기 설정
             self.rubber_band.show()
-            self.rubber_band.update()  # ✅ 즉시 갱신
+            self.rubber_band.update()  #  즉시 갱신
 
         if event.button() == Qt.LeftButton and self.parent_window.mark_mode:
             print("info: Mark mode is ON")  
@@ -83,21 +83,21 @@ class CustomLabel(QLabel):
             #  + 마크 생성 (크기 지정 및 중앙 정렬)
             mark = QLabel("+", self)
             mark.setStyleSheet("color: red; font-size: 16px; font-weight: bold; text-align: center;")
-            mark.setAttribute(Qt.WA_TransparentForMouseEvents)  # ✅ 마우스 이벤트 무시
+            mark.setAttribute(Qt.WA_TransparentForMouseEvents)  #  마우스 이벤트 무시
             mark.setFixedSize(20, 20)  
             mark.move(x1 - 10, y1 - 10)  
             mark.show()
 
             self.parent_window.mark_list.append((mark, x, y))              
-            print(f"info: Mark added at: {x}, {y}")  # ✅ 마크 추가 로그 출력
-            self.parent_window.info_text.append("-----> Point({}, {})".format(x, y))  # ✅ 정보창에 마크 추가
+            print(f"info: Mark added at: {x}, {y}")  #  마크 추가 로그 출력
+            self.parent_window.info_text.append("-----> Point({}, {})".format(x, y))  #  정보창에 마크 추가
 
     def mouseReleaseEvent(self, event):
         """ 마우스 드래그 후 선택된 영역 처리 (Rubber Band 위치 보정) """
         if event.button() == Qt.LeftButton and self.start_pos and (self.parent_window.rect_capture_mode or self.parent_window.image_capture_mode):
             # end_pos = event.pos()
             end_pos = event.position().toPoint()
-            # ✅ QLabel 내부에서만 마우스 좌표 제한 (초과 방지)
+            #  QLabel 내부에서만 마우스 좌표 제한 (초과 방지)
             label_rect = self.rect()
             end_pos.setX(max(0, min(end_pos.x(), label_rect.width() - 1)))
             end_pos.setY(max(0, min(end_pos.y(), label_rect.height() - 1)))
@@ -106,7 +106,7 @@ class CustomLabel(QLabel):
             self.parent_window.process_selection(selected_rect)
 
             self.rubber_band.hide()
-            self.rubber_band.update()  # ✅ 즉시 갱신
+            self.rubber_band.update()  #  즉시 갱신
 
     def update_cross_cursor(self, x, y):
         """ 마우스 이동 시 십자선 다시 그리기 """
@@ -147,7 +147,7 @@ class SophiaCapture(QMainWindow):
         base_dir = os.path.dirname(os.path.abspath(__file__))  # 현재 파일(sophia.py)의 절대 경로
         icon_path = os.path.join(base_dir, "sophia_capture.ico")  # 절대 경로로 변경        
         
-        # ✅ 아이콘 파일이 존재하는지 확인
+        #  아이콘 파일이 존재하는지 확인
         if not os.path.exists(icon_path):
             print(f"Error: Icon file not found: {icon_path}")
         else:
@@ -158,31 +158,31 @@ class SophiaCapture(QMainWindow):
         self.is_first_show = True
 
         
-        # ✅ 메뉴바 설정
+        #  메뉴바 설정
         self.menu = self.menuBar()
         file_menu = self.menu.addMenu("File")
         
-        # ✅ Open 메뉴 (Ctrl+O 핫키 추가)
+        #  Open 메뉴 (Ctrl+O 핫키 추가)
         open_action = QAction("Open", self)
-        open_action.setShortcut("Ctrl+O")  # ✅ Ctrl+O 단축키 추가
+        open_action.setShortcut("Ctrl+O")  #  Ctrl+O 단축키 추가
         open_action.triggered.connect(self.open_image)
         file_menu.addAction(open_action)
 
-        # ✅ About 메뉴 추가
+        #  About 메뉴 추가
         about_action = QAction("About", self)
         about_action.triggered.connect(self.show_about_popup)
         file_menu.addAction(about_action)
 
-        # ✅ Separator(구분선) 추가
+        #  Separator(구분선) 추가
         file_menu.addSeparator()
 
-        # ✅ Quit 메뉴 추가 (Alt+F4 그대로 유지)
+        #  Quit 메뉴 추가 (Alt+F4 그대로 유지)
         quit_action = QAction("Quit", self)
         quit_action.setShortcut("Alt+F4")
         quit_action.triggered.connect(self.close)
         file_menu.addAction(quit_action)
 
-        # ✅ Action 메뉴 추가
+        #  Action 메뉴 추가
         action_menu = self.menu.addMenu("Action")
 
         # Save info...
@@ -254,13 +254,13 @@ class SophiaCapture(QMainWindow):
         main_layout = QHBoxLayout(self.central_widget)  # 좌우 배치
 
         self.image_label = CustomLabel(self)
-        self.image_label.setAlignment(Qt.AlignTop | Qt.AlignLeft)  # ✅ 좌측 상단 고정
+        self.image_label.setAlignment(Qt.AlignTop | Qt.AlignLeft)  #  좌측 상단 고정
         self.image_label.setScaledContents(False) 
-        self.image_label.setSizePolicy(QSizePolicy.Fixed, QSizePolicy.Fixed)  # ✅ 크기 자동 변경 방지
+        self.image_label.setSizePolicy(QSizePolicy.Fixed, QSizePolicy.Fixed)  #  크기 자동 변경 방지
 
         self.scroll_area = QScrollArea()
         self.scroll_area.setWidget(self.image_label)
-        self.scroll_area.setWidgetResizable(False)  # ✅ QLabel 크기가 자동 변경되지 않도록 설정
+        self.scroll_area.setWidgetResizable(False)  #  QLabel 크기가 자동 변경되지 않도록 설정
 
 
 
@@ -343,7 +343,7 @@ class SophiaCapture(QMainWindow):
         w = int(rect.width() / self.scale_factor)
         h = int(rect.height() / self.scale_factor)
 
-        # ✅ 잘못된 크기 방지
+        #  잘못된 크기 방지
         if w <= 0 or h <= 0:
             print(f"warning: 잘못된 선택 영역: width={w}, height={h}")
             return
@@ -357,7 +357,7 @@ class SophiaCapture(QMainWindow):
         if self.image_capture_mode:
             save_path = get_save_path(self.save_folder, base_name= "image", ext="png") #os.path.join(self.save_folder, f"image_{self.captured_images_count}.png")
             cropped = self.original_image[y:y+h, x:x+w]
-            # ✅ 비어있는 이미지 방지
+            #  비어있는 이미지 방지
             if cropped is None or cropped.size == 0:
                 print("warning: 잘라낸 이미지가 비어있습니다.")
                 return
@@ -365,7 +365,7 @@ class SophiaCapture(QMainWindow):
             ext = ".png"
             ret, buffer = cv2.imencode(ext, cropped)
             if ret:
-                buffer.tofile(save_path)  # ✅ 한글 경로 지원
+                buffer.tofile(save_path)  #  한글 경로 지원
                 self.info_text.append("-----> ")
                 self.info_text.append(f"{save_path} saved")
                 self.captured_images_count += 1
@@ -382,14 +382,14 @@ class SophiaCapture(QMainWindow):
     def open_image(self):
         """ 이미지 파일 열기 (원본 보관 & 복제본 생성) """
         """ 파일 열기 대화상자 (기본 폴더: $HOME\사진) """
-        home_path = os.path.expanduser("~")  # ✅ 사용자 홈 디렉터리
-        default_folder = os.path.join(home_path, "사진")  # ✅ $HOME\사진 폴더 설정        
-        # ✅ 만약 "사진" 폴더가 없으면 "Pictures" 폴더 사용
+        home_path = os.path.expanduser("~")  #  사용자 홈 디렉터리
+        default_folder = os.path.join(home_path, "사진")  #  $HOME\사진 폴더 설정        
+        #  만약 "사진" 폴더가 없으면 "Pictures" 폴더 사용
         if not os.path.exists(default_folder):
             default_folder = os.path.join(home_path, "Pictures")
 
-        base_folder = os.path.join(default_folder, "SophiaCapture")  # ✅ 기본 폴더 설정
-        os.makedirs(base_folder, exist_ok=True)  # ✅ 기본 폴더 생성 (없으면 생성)
+        base_folder = os.path.join(default_folder, "SophiaCapture")  #  기본 폴더 설정
+        os.makedirs(base_folder, exist_ok=True)  #  기본 폴더 생성 (없으면 생성)
         # 파일 열기 대화상자 실행 (기본 폴더 설정)
         file_name, _ = QFileDialog.getOpenFileName(self, "Open Image", default_folder, "Images (*.png *.jpg *.bmp)")    
     
@@ -408,19 +408,19 @@ class SophiaCapture(QMainWindow):
         self.scale_factor = 1.0  # 화면 표시용 이미지 크기 비율 초기화
         self.display_image()
 
-        # ✅ 창 제목 업데이트 (Full Path 표시)
+        #  창 제목 업데이트 (Full Path 표시)
         self.setWindowTitle(f"Sophia Capture v{self.VERSION} - {file_name}")
 
-        # ✅ 이미지 파일명 추출 후 폴더 생성
+        #  이미지 파일명 추출 후 폴더 생성
         image_basename = os.path.basename(file_name)  # 파일명 (abc.png)
         image_name, _ = os.path.splitext(image_basename)  # 확장자 제거 (abc)
         self.save_folder = os.path.join(base_folder, image_name)  # 저장 폴더 경로
-        os.makedirs(self.save_folder, exist_ok=True)  # ✅ 폴더 생성 (있으면 skip)
+        os.makedirs(self.save_folder, exist_ok=True)  #  폴더 생성 (있으면 skip)
 
-        # ✅ 캡처 이미지 번호 초기화 (0번부터 시작)
+        #  캡처 이미지 번호 초기화 (0번부터 시작)
         self.captured_images_count = 0
 
-        # ✅ 상태바(StatusBar) 마지막 레이블을 저장 폴더로 업데이트
+        #  상태바(StatusBar) 마지막 레이블을 저장 폴더로 업데이트
         self.message_label.setText(self.save_folder)
 
         # self.display_image()
@@ -428,7 +428,7 @@ class SophiaCapture(QMainWindow):
     def show_image_regions(self):
         """ Info 버튼 클릭 시 info_text에 Region 정보 출력 """
         if self.original_image is None:
-            self.info_text.append("❌ 이미지가 로드되지 않았습니다.")
+            self.info_text.append(" 이미지가 로드되지 않았습니다.")
             return
 
         h, w, _ = self.original_image.shape
@@ -460,7 +460,7 @@ class SophiaCapture(QMainWindow):
         self.display_image()
         self.update_marks()
 
-        # ✅ QPixmap이 존재할 때만 QLabel 크기 조정
+        #  QPixmap이 존재할 때만 QLabel 크기 조정
         if not self.pixmap.isNull():
             new_size = self.pixmap.size()
             self.image_label.resize(new_size)
@@ -557,13 +557,13 @@ class SophiaCapture(QMainWindow):
 
     #     self.displayed_image = display_img
 
-    #     # ✅ BGR -> RGB 명시적 변환
+    #     #  BGR -> RGB 명시적 변환
     #     rgb_image = cv2.cvtColor(display_img, cv2.COLOR_BGR2RGB)
 
-    #     # ✅ QImage 생성 후 .copy() 호출로 메모리 완전 복사
+    #     #  QImage 생성 후 .copy() 호출로 메모리 완전 복사
     #     qt_image = QImage(rgb_image.data, rgb_image.shape[1], rgb_image.shape[0], rgb_image.strides[0], QImage.Format_RGB888).copy()
 
-    #     # ✅ QPixmap 생성
+    #     #  QPixmap 생성
     #     self.pixmap = QPixmap.fromImage(qt_image)
 
     #     if self.pixmap.isNull():
@@ -572,7 +572,7 @@ class SophiaCapture(QMainWindow):
 
     #     print(f"Pixmap Created: {self.pixmap.width()}x{self.pixmap.height()}")
 
-    #     # ✅ QLabel에 이미지 적용
+    #     #  QLabel에 이미지 적용
     #     self.image_label.setPixmap(self.pixmap)
     #     self.image_label.setScaledContents(False)  # 스케일 금지
     #     self.image_label.resize(self.pixmap.size())
@@ -604,13 +604,13 @@ class SophiaCapture(QMainWindow):
 
     #     self.displayed_image = display_img  # 화면 표시용 이미지 업데이트
 
-    #     # ✅ BGR -> RGB 명시적으로 변환
+    #     #  BGR -> RGB 명시적으로 변환
     #     rgb_image = cv2.cvtColor(display_img, cv2.COLOR_BGR2RGB)
 
-    #     # ✅ QImage로 변환 (RGB888 포맷)
+    #     #  QImage로 변환 (RGB888 포맷)
     #     qt_image = QImage(rgb_image.data, rgb_image.shape[1], rgb_image.shape[0], rgb_image.strides[0], QImage.Format_RGB888)
 
-    #     # ✅ QPixmap 생성
+    #     #  QPixmap 생성
     #     self.pixmap = QPixmap.fromImage(qt_image)
 
     #     if self.pixmap.isNull():
@@ -619,7 +619,7 @@ class SophiaCapture(QMainWindow):
 
     #     print(f"Pixmap Created: {self.pixmap.width()}x{self.pixmap.height()}")
 
-    #     # ✅ QLabel에 이미지 적용
+    #     #  QLabel에 이미지 적용
     #     self.image_label.setPixmap(self.pixmap)
     #     self.image_label.setScaledContents(False)
     #     self.image_label.resize(self.pixmap.size())
@@ -676,7 +676,7 @@ class SophiaCapture(QMainWindow):
     #     new_w = int(w * self.scale_factor)
     #     new_h = int(h * self.scale_factor)
 
-    #     # ✅ 새로운 크기가 0이 되지 않도록 보정
+    #     #  새로운 크기가 0이 되지 않도록 보정
     #     if new_w < 1:
     #         new_w = 1
     #     if new_h < 1:
@@ -684,7 +684,7 @@ class SophiaCapture(QMainWindow):
 
     #     print(f"Resizing Image to: {new_w}x{new_h}")
 
-    #     # ✅ cv2.resize() 수행 (INTER_LANCZOS4 사용)
+    #     #  cv2.resize() 수행 (INTER_LANCZOS4 사용)
     #     resized = cv2.resize(self.original_image, (new_w, new_h), interpolation=cv2.INTER_LANCZOS4)
     #     self.displayed_image = resized  # 화면 표시용 이미지 업데이트
 
@@ -692,7 +692,7 @@ class SophiaCapture(QMainWindow):
     #     qt_image = QImage(resized.data, new_w, new_h, bytes_per_line, QImage.Format_RGB888).rgbSwapped()
     #     self.pixmap = QPixmap.fromImage(qt_image)
 
-    #     # ✅ QPixmap 변환이 실패한 경우 로그 출력
+    #     #  QPixmap 변환이 실패한 경우 로그 출력
     #     if self.pixmap.isNull():
     #         print("Error: QPixmap conversion failed!")
     #         return  # 변환 실패 시 함수 종료
@@ -719,11 +719,11 @@ class SophiaCapture(QMainWindow):
 #---
 
 
-        # ✅ QLabel 크기를 Pixmap 크기로 설정
+        #  QLabel 크기를 Pixmap 크기로 설정
         self.image_label.resize(self.pixmap.size())
         print(f"QLabel New Size: {self.image_label.width()}x{self.image_label.height()}")
 
-        # ✅ QScrollArea 업데이트
+        #  QScrollArea 업데이트
         self.scroll_area.setWidgetResizable(False)
         self.scroll_area.update()
 
@@ -742,7 +742,7 @@ class SophiaCapture(QMainWindow):
         msg.setIcon(QMessageBox.Information)
         msg.setStandardButtons(QMessageBox.Ok)
 
-        # ✅ 중앙 정렬
+        #  중앙 정렬
         msg.setStyleSheet("QLabel{ text-align: center; }")  
         msg.exec_()
 #---------------------------------마크 기능 추가---------------------------------
@@ -758,13 +758,13 @@ class SophiaCapture(QMainWindow):
         self.cross_cursor_btn.setChecked(self.cross_cursor_mode)
 
         if self.cross_cursor_mode:
-            print("✅ Cross Cursor ON")  
+            print("Cross Cursor ON")  
             cursor_pos = self.image_label.mapFromGlobal(QCursor.pos())  
             x = cursor_pos.x()
             y = cursor_pos.y()            
             self.image_label.update_cross_cursor(x,y)  # 🔹 다시 그리기
         else:
-            print("❌ Cross Cursor OFF: Removing lines")  
+            print(" Cross Cursor OFF: Removing lines")  
             self.remove_cross_cursor()  # 🔹 기존 수직/수평 라인 제거
 
     def remove_cross_cursor(self):
@@ -789,7 +789,7 @@ class SophiaCapture(QMainWindow):
         self.mark_btn.setChecked(self.mark_mode)
         print(f"Mark Mode: {self.mark_mode}")
         if self.mark_mode:
-            print("✅ Mark mode ON: Cursor changed to Cross")  
+            print("Mark mode ON: Cursor changed to Cross")  
             self.image_label.setCursor(Qt.CrossCursor)  # 🔹 커서를 십자로 변경
         else:
             print("Mark mode OFF: Cursor reset to Default")  
@@ -851,4 +851,4 @@ if __name__ == "__main__":
             f.write(traceback.format_exc())
 
         # 콘솔에도 출력 (optional)
-        print(f"❌ 오류 발생! 로그 저장됨: {log_path}")
+        print(f" 오류 발생! 로그 저장됨: {log_path}")

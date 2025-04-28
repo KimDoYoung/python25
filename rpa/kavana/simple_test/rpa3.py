@@ -53,7 +53,7 @@ MAIN
     // 애플리케이션 실행
     SET app_path = "C:\\eFriend Plus\\efriendplus\\efriendplus.exe"
     SET process_name = "efplusmain.exe"
-    SET image_base_path = "C:\\Users\\PC\\Pictures\\SophiaCap1ture\\efriend"
+    SET image_base_path = "C:\\Users\\PC\\Pictures\\SophiaCapture\\efriend"
     SET efriend = Application(app_path)
     RPA app_open from_var="efriend", process_name=process_name, focus=True
     RPA wait seconds=10
