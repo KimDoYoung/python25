@@ -6,13 +6,13 @@ from lib.core.command_preprocessor import CommandPreprocessor
 script = """
 MAIN
     set 이름="홍길동"
-    print "이름은 {이름}입니다."
     set 나이=20
-    print "나이는 {나이}세입니다."
     set 성별="남자"
-    print "성별은 {성별}입니다."
-    set target_정보="이름, 나이, 성별"
-    print "대상 정보는 {target_정보}입니다."
+    set Points={
+        "인증서이름": Point(100, 90),
+        "확인버튼": 2,
+    }    
+    print f"이름:{이름}, 나이: {나이}, 성별: {성별}", Points["인증서이름"]
 END_MAIN
 """
 #---------------------------

@@ -421,7 +421,9 @@ class CommandParser:
             # ✅ 문자열 (접두어 포함 문자열은 따로 처리)
             (string_pattern, TokenType.STRING),
             # ✅ 식별자
-            (r'[a-zA-Z_\$][a-zA-Z0-9_]*', TokenType.IDENTIFIER),
+            # (r'[a-zA-Z_\$][a-zA-Z0-9_]*', TokenType.IDENTIFIER),
+            # ✅ 식별자 (한글 지원)
+            (r'[가-힣a-zA-Z_\$][가-힣a-zA-Z0-9_\$]*', TokenType.IDENTIFIER),            
 
             # ✅ 숫자
             (r'\b\d+\.\d+|\.\d+|\d+\.\b', TokenType.FLOAT),
@@ -555,6 +557,7 @@ class CommandParser:
             and tokens[i + 1].type == TokenType.LEFT_BRACKET
         )
 
+
     @staticmethod
     def make_hash_map_token(tokens: List[Token], start_index: int) -> Tuple[HashMapToken, int]:
         ''' tokens의 start_index에서 부터 hashmaptoken을 만들고 token과 마지막 index를 리턴 '''
@@ -577,29 +580,44 @@ class CommandParser:
             i += 1
 
             value_tokens = []
-            while i < end_idx and tokens[i].type != TokenType.COMMA:
-                if tokens[i].type == TokenType.LEFT_BRACE:
+            bracket_depth = 0  # 🔥 괄호 깊이 추가!
+
+            while i < end_idx:
+                token = tokens[i]
+
+                if token.type in (TokenType.LEFT_PAREN, TokenType.LEFT_BRACKET, TokenType.LEFT_BRACE):
+                    bracket_depth += 1
+                elif token.type in (TokenType.RIGHT_PAREN, TokenType.RIGHT_BRACKET, TokenType.RIGHT_BRACE):
+                    bracket_depth -= 1
+
+                # ✅ 괄호 밖에서만 ','를 항목 구분자로 인식
+                if bracket_depth == 0 and token.type == TokenType.COMMA:
+                    i += 1  # ',' 넘기고
+                    break
+
+                if token.type == TokenType.LEFT_BRACE:
                     sub_hashmap_token, i = CommandParser.make_hash_map_token(tokens, i)
                     value_tokens.append(sub_hashmap_token)
-                elif tokens[i].type == TokenType.LEFT_BRACKET:
+                    continue
+                elif token.type == TokenType.LEFT_BRACKET:
                     sub_array_token, i = CommandParser.make_array_token(tokens, i)
                     value_tokens.append(sub_array_token)
+                    continue
                 elif CommandParser._is_access_index_start(tokens, i):
                     access_token, i = CommandParser.make_access_index_token(tokens, i)
                     value_tokens.append(access_token)
+                    continue
                 else:
-                    value_tokens.append(tokens[i])
+                    value_tokens.append(token)
                     i += 1
 
             hashmap_content[key] = CommandParser.post_process_tokens(value_tokens)
-
-            if i < end_idx and tokens[i].type == TokenType.COMMA:
-                i += 1
 
         return HashMapToken(
             data=HashMap({}),
             key_express_map=hashmap_content
         ), end_idx + 1
+
 
 
     @staticmethod
