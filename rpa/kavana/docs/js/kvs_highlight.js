@@ -14,7 +14,7 @@ const kvsKeywords = {
 };
 const basicCommands = [
   "DB CONNECT","DB EXECUTE", "DB QUERY", "DB BEGIN_TRANSACTION", "DB COMMIT", "DB ROLLBACK", "DB CLOSE",
-  "INCLUDE", "ENV_LOAD", "SET", "PRINT",
+  "INCLUDE", "LOAD_ENV", "SET", "PRINT",
   "JUST", "CONST"
 ];
 

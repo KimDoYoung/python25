@@ -4,7 +4,7 @@ from lib.core.command_preprocessor import CommandPreprocessor
 
 # 대입
 script = """
-ENV_LOAD ".env"
+LOAD_ENV ".env"
 function Remove_popups()
     LOG_INFO "=====================[ 팝업제거 시작]===================================="
     RPA wait seconds=(5)

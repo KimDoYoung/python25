@@ -20,7 +20,7 @@ class CommandParser:
     Kavana 스크립트의 명령어를 분석하는 파서.
     - `main ... end_main` 블록 안에서 실행
     - `INCLUDE` → 외부 KVS 파일 포함
-    - `ENV_LOAD` → .env 파일을 불러와 `SET`으로 변환
+    - `LOAD_ENV` → .env 파일을 불러와 `SET`으로 변환
     """
     def __init__(self, script_lines=[], base_path="."):
         self.script_lines = script_lines
@@ -81,11 +81,11 @@ class CommandParser:
                 continue
 
             # ✅ LOAD 처리
-            if cmd == "ENV_LOAD":
+            if cmd == "LOAD_ENV":
                 if not args:
-                    raise KavanaSyntaxError("ENV_LOAD 문에 .env 파일 경로가 필요합니다.")
+                    raise KavanaSyntaxError("LOAD_ENV 문에 .env 파일 경로가 필요합니다.")
                 env_path = args[0].data.value.strip('"')  # ✅ Token 객체에서 값 추출
-                self._env_load(env_path, parsed_commands)
+                self._LOAD_ENV(env_path, parsed_commands)
                 i += 1
                 continue
 
@@ -293,13 +293,13 @@ class CommandParser:
 
         parsed_commands.extend(included_commands)  # INCLUDE된 명령어 추가
 
-    def _env_load(self, env_path, parsed_commands):
+    def _LOAD_ENV(self, env_path, parsed_commands):
     
         # ✅ 상대 경로를 절대 경로로 변환
         full_path = os.path.abspath(os.path.join(self.base_path, env_path))
 
         if not os.path.exists(full_path):
-            raise FileNotFoundError(f"ENV_LOAD 파일을 찾을 수 없습니다: {full_path}")
+            raise FileNotFoundError(f"LOAD_ENV 파일을 찾을 수 없습니다: {full_path}")
 
         with open(full_path, "r", encoding="utf-8") as file:
             for line in file:
@@ -374,7 +374,7 @@ class CommandParser:
             (r'(?i)\bEND_FUNCTION\b', TokenType.END_FUNCTION),
             (r'(?i)\bEND_WHILE\b', TokenType.END_WHILE),
             (r'(?i)\bFUNCTION\b', TokenType.FUNCTION),
-            (r'(?i)\bENV_LOAD\b', TokenType.ENV_LOAD),
+            (r'(?i)\bLOAD_ENV\b', TokenType.LOAD_ENV),
             (r'(?i)\bEND_MAIN\b', TokenType.END_MAIN),
             (r'(?i)\bINCLUDE\b', TokenType.INCLUDE),
             (r'(?i)\bRETURN\b', TokenType.RETURN),

@@ -67,7 +67,7 @@ for command in parsed_commands:
 ## 명령어의 구성
 
 - 명령어 분류 : 기본명령어,  RPA,
-- 기본명령어 : SET, INCLUDE, ENV_LOAd, PRINT 등
+- 기본명령어 : SET, INCLUDE, LOAD_ENV, PRINT 등
 
 ## 주의사항
 

@@ -5,7 +5,7 @@ from lib.core.command_preprocessor import CommandPreprocessor
 # 대입
 script = """
 INCLUDE "./examples/common.kvs"
-ENV_LOAD "./examples/env.test"
+LOAD_ENV "./examples/env.test"
 MAIN
     print "{global_name}"
     print "PASSWORD: {$PASSWORD}, USERNAME: {$USERNAME}"

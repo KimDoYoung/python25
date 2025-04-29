@@ -4,7 +4,7 @@ from lib.core.command_preprocessor import CommandPreprocessor
 
 # 대입
 script = """
-ENV_LOAD ".env"
+LOAD_ENV ".env"
 MAIN
     // ftp info
     set text = "hello world 홍길동 산다는 것의 깊고 깊은 의미를 아직은"

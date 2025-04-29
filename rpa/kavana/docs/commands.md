@@ -90,7 +90,7 @@ END_MAIN
  INCLUDE "./common.kvs"
 ```
 
-### 🔶ENV_LOAD
+### 🔶LOAD_ENV
 
 - dot-env파일을 읽어들여서 상수로 처리한다.
 - 각 key는 $key 변수로 설정됩니다.
@@ -102,7 +102,7 @@ END_MAIN
 - **사용예**
 
 ```kvs
-ENV_LOAD ".env.test"
+LOAD_ENV ".env.test"
 MAIN
     PRINT "{$MY_KEY}"
 END_MAIN

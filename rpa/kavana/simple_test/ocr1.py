@@ -4,7 +4,7 @@ from lib.core.command_preprocessor import CommandPreprocessor
 
 # 대입
 script = """
-ENV_LOAD ".env"
+LOAD_ENV ".env"
 INCLUDE "simple_test/qhd_120.kvs"
 MAIN`
 

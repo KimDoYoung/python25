@@ -6,7 +6,7 @@ from lib.core.command_preprocessor import CommandPreprocessor
 
 def test_point_and_region_dump_attrs(monkeypatch):
     # Kavana 스크립트
-    script = """
+    script = """ 
     MAIN
         SET p = point(10,20)
         SET x = GET_ATTR(p, "x")
