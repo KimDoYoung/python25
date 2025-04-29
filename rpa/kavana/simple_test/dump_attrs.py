@@ -6,7 +6,7 @@ from lib.core.command_preprocessor import CommandPreprocessor
 script = """
 MAIN
     SET p = point(1,2)
-    print type_of(p)
+    //print type_of(p)
     SET x = GET_ATTR(p, "x")
     print x
     //SET d = dump_attrs(p)

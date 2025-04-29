@@ -1,7 +1,7 @@
 from typing import Any
 
 from lib.core.datatypes.hash_map import HashMap
-from lib.core.datatypes.kavana_datatype import Boolean, String
+from lib.core.datatypes.kavana_datatype import Boolean, KavanaDataType, String
 from lib.core.exceptions.kavana_exception import KavanaValueError
 from lib.core.token import HashMapToken, StringToken, Token
 from lib.core.token_util import TokenUtil
@@ -11,13 +11,18 @@ class DatatypeFunctions:
     """데이터타입관련 내장 함수"""
 
     @staticmethod
-    def GET_ATTR(obj: Any, attr_name:str) -> Token:
+    def GET_ATTR(obj: KavanaDataType, attr_name:str) -> Token:
         """객체의 속성값을 반환"""
-        if hasattr(obj, attr_name):
-            attr_value = getattr(obj, attr_name)
-            return TokenUtil.object_to_object_token(attr_value)
+        if not isinstance(obj, KavanaDataType):
+            raise KavanaValueError("GET_ATTR 함수는 KavanaDataType 객체만 지원합니다.")
+        if not isinstance(attr_name, String):
+            raise KavanaValueError("GET_ATTR 함수는 문자열 속성 이름만 지원합니다.")
+        name = attr_name.value
+        if hasattr(obj, name):
+            attr_value = getattr(obj, name)
+            return TokenUtil.primitive_to_token(attr_value)
         else:
-            raise KavanaValueError(f"'{attr_name}' 속성이 존재하지 않습니다.")
+            raise KavanaValueError(f"'{name}' 속성이 존재하지 않습니다.")
 
     @staticmethod
     def TYPE_OF(obj: Any) -> StringToken:
