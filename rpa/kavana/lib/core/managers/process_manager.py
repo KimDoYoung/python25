@@ -48,12 +48,9 @@ class ProcessManager(BaseManager):
             except (psutil.NoSuchProcess, psutil.AccessDenied):
                 continue
 
-    def get_window_info_list(self, process_name: str) -> List[WindowInfo]:
-        """✅ 특정 프로세스 이름에 해당하는 모든 윈도우 정보 리스트 반환
-        
-        Returns:
-            List[WindowInfo]: [WindowInfo(hwnd, title, class_name), ...]
-        """
+    def get_window_info_list(self, process_name: str = None) -> List[WindowInfo]:
+        """✅ 프로세스 이름 없으면 전체 창, 있으면 해당 프로세스만 반환"""
+
         matched_windows: List[WindowInfo] = []
 
         def callback(hwnd, lParam):
@@ -61,16 +58,23 @@ class ProcessManager(BaseManager):
                 try:
                     _, pid = win32process.GetWindowThreadProcessId(hwnd)
                     process = psutil.Process(pid)
-                    if process.name().lower() == process_name.lower():
-                        title = win32gui.GetWindowText(hwnd)
-                        class_name = win32gui.GetClassName(hwnd)
+                    title = win32gui.GetWindowText(hwnd)
+                    class_name = win32gui.GetClassName(hwnd)
+
+                    if process_name:
+                        if process.name().lower() == process_name.lower():
+                            matched_windows.append(WindowInfo(hwnd, title, class_name))
+                    else:
                         matched_windows.append(WindowInfo(hwnd, title, class_name))
+
                 except (psutil.NoSuchProcess, psutil.AccessDenied):
                     pass
+
             return True
 
         win32gui.EnumWindows(callback, None)
         return matched_windows
+
 
     def find_top_window_info(self) -> Optional[WindowInfo]:
         """✅ OS전체에서 현재 포커스(최상단) 윈도우 정보 반환 
@@ -118,3 +122,33 @@ class ProcessManager(BaseManager):
         width = rect[2] - rect[0]
         height = rect[3] - rect[1]
         return (x, y, width, height)
+    
+    def find_top_modal_window(self, process_name: str) -> Optional[WindowInfo]:
+        """주어진 프로세스 이름의 최상단 Modal 성격 창을 찾아 반환"""
+        candidate_windows = []
+
+        def callback(hwnd, lParam):
+            if win32gui.IsWindowVisible(hwnd) and win32gui.IsWindowEnabled(hwnd):
+                try:
+                    _, pid = win32process.GetWindowThreadProcessId(hwnd)
+                    process = psutil.Process(pid)
+                    if process.name().lower() == process_name.lower():
+                        title = win32gui.GetWindowText(hwnd)
+                        class_name = win32gui.GetClassName(hwnd)
+                        # 아주 간단한 필터링 추가 가능 (title 이 존재한다든가)
+                        if title.strip():
+                            lParam.append((hwnd, title, class_name))
+                except (psutil.NoSuchProcess, psutil.AccessDenied):
+                    pass
+            return True
+
+        win32gui.EnumWindows(callback, candidate_windows)
+
+        if not candidate_windows:
+            print(f"[WARN] 프로세스({process_name}) 창이 없습니다.")
+            return None
+
+        # 가장 마지막(최상단) 창을 기준으로 (혹은 활성 창을 따로 필터링해도 됨)
+        top_hwnd, title, class_name = candidate_windows[-1]
+        print(f"[INFO] 최상단 창: {title} (HWND: {top_hwnd})")
+        return WindowInfo(top_hwnd, title, class_name)    

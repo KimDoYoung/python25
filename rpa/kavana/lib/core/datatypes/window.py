@@ -6,6 +6,7 @@ class Window(KavanaDataType):
         self.title = title
         self.hwnd = None  # Window handle
         self.value = title  # ✅ value를 title로 설정
+        self.class_name = None  # 클래스 이름
         self._initialize_window()
 
     def _initialize_window(self):

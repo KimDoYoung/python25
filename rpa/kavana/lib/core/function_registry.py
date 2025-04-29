@@ -1,5 +1,6 @@
 from typing import List
 from lib.core.builtins.builtin_registry import BUILTIN_FUNCTIONS
+from lib.core.exceptions.kavana_exception import KavanaValueError
 
 class FunctionRegistry:
     """사용자함수의 본체를 저장"""
@@ -11,7 +12,7 @@ class FunctionRegistry:
         """사용자 정의 함수 등록 (내장 함수 이름과 중복 방지)"""
         name_upper = name.upper()
         if name_upper in FunctionRegistry.builtin_functions:
-            raise ValueError(f"Cannot override built-in function: {name}")
+            raise KavanaValueError(f"Cannot override built-in function: {name}")
 
         FunctionRegistry.user_functions[name_upper] = {
             "params": param_names,

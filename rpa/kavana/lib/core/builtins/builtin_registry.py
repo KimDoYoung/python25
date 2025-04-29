@@ -3,13 +3,18 @@ from lib.core.builtins.dir_functions import DirFunctions
 from lib.core.builtins.file_functions import FileFunctions
 from lib.core.builtins.path_functions import PathFunctions
 from lib.core.builtins.rpa_functions import RpaFunctions
+from lib.core.builtins.region_point_functions import RegionPointFunctions
 from lib.core.builtins.ymd_time_functions import YmdTimeFunctions
 from .string_functions import StringFunctions
 from .numeric_functions import NumericFunctions
 
 BUILTIN_FUNCTIONS = {
+    # Point Region 관련 함수
+    "POINT_OF_REGION": (RegionPointFunctions.POINT_OF_REGION, 2),
     # ✅ RPA 관련 함수 추가
     "WINDOW_LIST":(RpaFunctions.WINDOW_LIST, 1),
+    "WINDOW_TOP": (RpaFunctions.WINDOW_TOP, 1),
+    "WINDOW_REGION": (RpaFunctions.WINDOW_REGION, 1),
     # ✅ 데이터타입관련 함수 추가
     "TYPE_OF": (DatatypeFunctions.TYPE_OF, 1),
     "IS_TYPE": (DatatypeFunctions.IS_TYPE, 2),
