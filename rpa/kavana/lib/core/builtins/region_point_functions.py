@@ -5,7 +5,7 @@ from lib.core.builtins.builtin_consts import PointName
 from lib.core.datatypes.point import Point
 from lib.core.exceptions.kavana_exception import KavanaValueError
 from lib.core.token import TokenStatus
-from lib.core.token_custom import PointToken
+from lib.core.token_custom import PointToken, RegionToken
 from lib.core.token_util import TokenUtil
 
 

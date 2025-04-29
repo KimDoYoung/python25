@@ -598,10 +598,12 @@ class CommandParser:
                 if token.type == TokenType.LEFT_BRACE:
                     sub_hashmap_token, i = CommandParser.make_hash_map_token(tokens, i)
                     value_tokens.append(sub_hashmap_token)
+                    bracket_depth -= 1  # 이미 [ 을 +1 했는데 이것을 감소시켜야함
                     continue
                 elif token.type == TokenType.LEFT_BRACKET:
                     sub_array_token, i = CommandParser.make_array_token(tokens, i)
                     value_tokens.append(sub_array_token)
+                    bracket_depth -= 1  # 이미 [ 을 +1 했는데 이것을 감소시켜야함
                     continue
                 elif CommandParser._is_access_index_start(tokens, i):
                     access_token, i = CommandParser.make_access_index_token(tokens, i)
