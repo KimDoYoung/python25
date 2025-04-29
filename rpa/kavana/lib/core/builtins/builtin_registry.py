@@ -11,6 +11,7 @@ from .numeric_functions import NumericFunctions
 BUILTIN_FUNCTIONS = {
     # Point Region 관련 함수
     "POINT_OF_REGION": (RegionPointFunctions.POINT_OF_REGION, 2),
+    "REGION_OF_REGION": (RegionPointFunctions.REGION_OF_REGION, 2),
     # ✅ RPA 관련 함수 추가
     "WINDOW_LIST":(RpaFunctions.WINDOW_LIST, 1),
     "WINDOW_TOP": (RpaFunctions.WINDOW_TOP, 1),

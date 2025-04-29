@@ -1,10 +1,12 @@
 from typing import Tuple
 
+from lib.actions.enums import RegionName
 from lib.core.builtins.builtin_consts import PointName
 from lib.core.datatypes.point import Point
 from lib.core.exceptions.kavana_exception import KavanaValueError
 from lib.core.token import TokenStatus
 from lib.core.token_custom import PointToken
+from lib.core.token_util import TokenUtil
 
 
 class RegionPointFunctions:
@@ -37,3 +39,37 @@ class RegionPointFunctions:
         point_token=  PointToken(data=pt)
         point_token.status = TokenStatus.EVALUATED
         return point_token
+    
+    def REGION_OF_REGION(region: Tuple[int, int, int, int], region_name: str) -> RegionToken:
+        """Region 객체 (x, y, width, height) 에서 region_name에 해당하는 RegionToken 반환"""
+        x, y, width, height = region
+        region_name = region_name.lower()
+        if region_name == RegionName.LEFT_ONE_THIRD.value:
+            return TokenUtil.region_to_token(x, y, width // 3, height)
+        elif region_name == RegionName.RIGHT_ONE_THIRD.value:
+            return TokenUtil.region_to_token(x + 2 * (width // 3), y, width // 3, height)
+        elif region_name == RegionName.TOP_ONE_THIRD.value:
+            return TokenUtil.region_to_token(x, y, width, height // 3)
+        elif region_name == RegionName.BOTTOM_ONE_THIRD.value:
+            return TokenUtil.region_to_token(x, y + 2 * (height // 3), width, height // 3)
+        elif region_name == RegionName.LEFT_TOP.value:
+            return TokenUtil.region_to_token(x, y, width // 2, height // 2)
+        elif region_name == RegionName.RIGHT_TOP.value:
+            return TokenUtil.region_to_token(x + width // 2, y, width // 2, height // 2)
+        elif region_name == RegionName.RIGHT_BOTTOM.value:
+            return TokenUtil.region_to_token(x + width // 2, y + height // 2, width // 2, height // 2)
+        elif region_name == RegionName.LEFT_BOTTOM.value:
+            return TokenUtil.region_to_token(x, y + height // 2, width // 2, height // 2)
+        elif region_name == RegionName.CENTER.value:
+            return TokenUtil.region_to_token(x + width // 3, y + height // 3, width // 3, height // 3)
+        elif region_name == RegionName.LEFT.value:
+            return TokenUtil.region_to_token(x, y, width // 2, height)
+        elif region_name == RegionName.RIGHT.value:
+            return TokenUtil.region_to_token(x + width // 2, y, width // 2, height)
+        elif region_name == RegionName.TOP.value:
+            return TokenUtil.region_to_token(x, y, width, height // 2)
+        elif region_name == RegionName.BOTTOM.value:
+            return TokenUtil.region_to_token(x, y + height // 2, width, height // 2)
+        else:
+            raise KavanaValueError(f"Unknown region name: {region_name}")
+        

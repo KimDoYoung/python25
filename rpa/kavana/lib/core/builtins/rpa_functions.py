@@ -8,13 +8,17 @@ from lib.core.token_type import TokenType
 
 
 class RpaFunctions:
+    executor = None  # ✅ 클래스 변수로 executor 저장
+
+    @staticmethod
+    def set_executor(executor_instance):
+        RpaFunctions.executor = executor_instance
+
     @staticmethod
     def WINDOW_LIST(process_name:str=None) -> Token:
         """특정 디렉토리의 파일 목록 반환"""
-        from lib.core.command_executor import CommandExecutor
         try:
-            executor = CommandExecutor()
-            pm = ProcessManager(executor=executor)
+            pm = ProcessManager(executor=RpaFunctions.executor)
             if process_name:
                 window_info_list = pm.get_window_info_list(process_name)
             else:
@@ -32,16 +36,15 @@ class RpaFunctions:
             token.status = TokenStatus.EVALUATED
             return token
         except Exception as e:
-            # print(f"[WINDOW_LIST ERROR] {e}")
+            if RpaFunctions.executor:
+                RpaFunctions.executor.log_command("ERROR", f"WINDOW_LIST ERROR: {e}")
             return Token(data=Array([]), type=TokenType.ARRAY)  # 오류 시 빈 리스트 반환
 
     @staticmethod    
     def WINDOW_TOP(process_name:str=None) -> Token:
         """특정 프로세스의 최상위 창 반환"""
-        from lib.core.command_executor import CommandExecutor
         try:
-            executor = CommandExecutor()
-            pm = ProcessManager(executor=executor)
+            pm = ProcessManager(executor=RpaFunctions.executor)
             top_window = pm.find_top_modal_window(process_name)
             if top_window:
                 window = Window(title=top_window.title)
@@ -53,21 +56,21 @@ class RpaFunctions:
             else:
                 return NoneToken()  # 창이 없을 경우 None 반환
         except Exception as e:
-            # print(f"[WINDOW_TOPIC ERROR] {e}")
+            if RpaFunctions.executor:
+                RpaFunctions.executor.log_command("ERROR", f"WINDOW_TOP ERROR: {e}")
             return NoneToken()
     
     @staticmethod
     def WINDOW_REGION(hwnd: int) -> RegionToken:
         """특정 창의 위치 및 크기를 Region 객체로 반환"""
-        from lib.core.command_executor import CommandExecutor
         try:
-            executor = CommandExecutor()
-            pm = ProcessManager(executor=executor)
+            pm = ProcessManager(executor=RpaFunctions.executor)
             x,y,w,h = pm.get_window_region(hwnd)
             token = RegionToken(data=(x, y, w, h))
             token.status = TokenStatus.EVALUATED
             return token
         except Exception as e:
-            # print(f"[WINDOW_REGION ERROR] {e}")
+            if RpaFunctions.executor:
+                RpaFunctions.executor.log_command("ERROR", f"WINDOW_TOP ERROR: {e}")
             return NoneToken()
     

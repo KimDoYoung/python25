@@ -1,4 +1,5 @@
 import sys
+from lib.core.builtins.rpa_functions import RpaFunctions
 from lib.core.commands.browser.browser_command import BrowserCommand
 from lib.core.commands.const_command import ConstCommand
 from lib.core.commands.database.database_command import DatabaseCommand
@@ -66,6 +67,8 @@ class CommandExecutor:
             "IMAGE" : ImageCommand(),
             
         }
+        # ✅ Functions에서 log_command를 사용하기 위해서.. injection
+        RpaFunctions.set_executor(self)        
         
     def execute(self, command):
         cmd = command["cmd"]
