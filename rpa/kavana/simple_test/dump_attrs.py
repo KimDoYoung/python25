@@ -5,12 +5,14 @@ from lib.core.command_preprocessor import CommandPreprocessor
 # 대입
 script = """
 MAIN
-    SET p = point(1,2)
-    //print type_of(p)
+    SET p = point(10,20)
     SET x = GET_ATTR(p, "x")
-    print x
-    //SET d = dump_attrs(p)
-    //PRINT d["x"], d["y"] 
+    SET d = dump_attrs(p)
+    print x == d["x"]
+    SET r = region(1,1,100,200)
+    SET x = GET_ATTR(r, "x")
+    SET d = dump_attrs(r)
+    print x, d["x"]+1, d["y"]+1
 END_MAIN
 """
 #---------------------------

@@ -46,7 +46,7 @@ class FunctionExecutor:
         내장 함수를 실행하고 결과를 반환한다.
         """
         func = self.func_body
-        if self.function_name in {"TYPE_OF", "IS_TYPE", "GET_ATTR"}: # 토큰으로 넘겨야 할 함수들
+        if self.function_name in {"TYPE_OF", "IS_TYPE", "GET_ATTR", "DUMP_ATTRS"}: # kavana type으로 넘겨야할 함수들
             converted_args = [arg.data for arg in self.arg_values]    
             return func(*converted_args)
         

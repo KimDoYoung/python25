@@ -17,6 +17,7 @@ BUILTIN_FUNCTIONS = {
     "WINDOW_TOP": (RpaFunctions.WINDOW_TOP, 1),
     "WINDOW_REGION": (RpaFunctions.WINDOW_REGION, 1),
     # ✅ 데이터타입관련 함수 추가
+    "DUMP_ATTRS": (DatatypeFunctions.DUMP_ATTRS, 1),
     "GET_ATTR": (DatatypeFunctions.GET_ATTR, 2),
     "TYPE_OF": (DatatypeFunctions.TYPE_OF, 1),
     "IS_TYPE": (DatatypeFunctions.IS_TYPE, 2),

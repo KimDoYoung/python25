@@ -11,6 +11,19 @@ class DatatypeFunctions:
     """데이터타입관련 내장 함수"""
 
     @staticmethod
+    def DUMP_ATTRS(obj: KavanaDataType) -> HashMapToken:
+        """객체의 속성값을 반환"""
+        if not isinstance(obj, KavanaDataType):
+            raise KavanaValueError("DUMP_ATTRS 함수는 KavanaDataType 객체만 지원합니다.")
+
+        attr_dict = {}
+        for attr in dir(obj):
+            if not attr.startswith("_") and not callable(getattr(obj, attr)):
+                value = getattr(obj, attr)
+                attr_dict[attr] =  value #TokenUtil.primitive_to_token(value)
+        return TokenUtil.dict_to_hashmap_token(attr_dict)
+
+    @staticmethod
     def GET_ATTR(obj: KavanaDataType, attr_name:str) -> Token:
         """객체의 속성값을 반환"""
         if not isinstance(obj, KavanaDataType):
