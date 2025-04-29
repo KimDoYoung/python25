@@ -25,20 +25,20 @@ class RpaManager(BaseManager):
 
     def execute(self):
         method_map = {
-            "app_open": self.app_open,
-            "app_close": self.app_close,
+            "open_app": self.open_app,
+            "close_app": self.close_app,
             "wait": self.wait,
             "wait_image": self.wait_image,
             "click_point": self.click_point,
             "click_image": self.click_image,
             "find_image": self.find_image,
-            "mouse_move": self.mouse_move,
+            "move_mouse": self.move_mouse,
             "key_in": self.key_in,
             "put_text": self.put_text,
             "get_text": self.get_text,
             "capture": self.capture,
             "close_all_children": self.close_all_children,
-            "re_connect": self.re_connect,
+            "focus_app": self.focus_app,
         }
 
         func = method_map.get(self.command.lower())
@@ -49,7 +49,7 @@ class RpaManager(BaseManager):
 
         return result
 
-    def app_open(self):
+    def open_app(self):
         ''' 애플리케이션 실행 '''
         from_var = self.options.get("from_var")
         maximize = self.options.get("maximize", False)
@@ -57,7 +57,7 @@ class RpaManager(BaseManager):
         focus = self.options.get("focus")
 
         if not from_var:
-            self.raise_error("app_open 명령에는 'from_var' 옵션이 필요합니다.")
+            self.raise_error("open_app 명령에는 'from_var' 옵션이 필요합니다.")
 
         app_token = self.executor.get_variable(from_var)
 
@@ -76,12 +76,12 @@ class RpaManager(BaseManager):
         except Exception as e:
             self.raise_error(f"Application 실행 실패: {e}")
 
-    def app_close(self):
+    def close_app(self):
         ''' 애플리케이션 종료 '''
         from_var = self.options.get("from_var")
 
         if not from_var:
-            self.raise_error("app_close 명령에는 'from_var' 옵션이 필요합니다.")
+            self.raise_error("close_app 명령에는 'from_var' 옵션이 필요합니다.")
 
         app_token = self.executor.get_variable(from_var)
 
@@ -112,10 +112,9 @@ class RpaManager(BaseManager):
         except Exception as e:
             self.raise_error(f"close all childredn window 실패: {e}")
 
-    def re_connect(self):
+    def focus_app(self):
         """RPA 명령어: reconnect - 연결된 애플리케이션을 재연결"""
         from_var = self.options.get("from_var")
-        focus = self.options.get("focus", False)
         if not from_var:
             self.raise_error("reconnect 명령에는 'from_var' 옵션이 필요합니다.")
 
@@ -125,7 +124,7 @@ class RpaManager(BaseManager):
 
         app = app_token.data
         try:
-            app.reconnect(executor=self.executor, focus=focus)
+            app.reconnect(executor=self.executor, focus=True)
             self.log("INFO", f"Application 재연결 완료: {app.path}")
         except Exception as e:
             self.raise_error(f"Application 재연결 실패: {e}")
@@ -368,12 +367,13 @@ class RpaManager(BaseManager):
             return None
 
 
-    def mouse_move(self):
-        """RPA 명령어: mouse_move - 마우스를 지정 좌표로 이동 (절대/상대)"""
+    def move_mouse(self):
+        """RPA 명령어: move_mouse - 마우스를 지정 좌표로 이동 (절대/상대)"""
 
         x = self.options.get("x")
         y = self.options.get("y")
-        location = self.options.get("location")
+        location = self.options.get("location", None)
+        locations = self.options.get("locations", None)
         duration = float(self.options.get("duration", 0.5))
         relative = self.options.get("relative", False)
         after = self.options.get("after", None)
@@ -381,14 +381,19 @@ class RpaManager(BaseManager):
         if location:
             x, y = location            
 
-        if relative:
+        if relative and not locations:
             current_x, current_y = pyautogui.position()
             x += current_x
             y += current_y
             self.log("DEBUG", f"[RPA] 상대 이동 → 기준: ({current_x}, {current_y}) → 목적지: ({x}, {y})")
 
         self.log("INFO", f"[RPA] 마우스 이동 → ({x}, {y}), duration={duration}s")
-        pyautogui.moveTo(x, y, duration=duration)
+        if locations:
+            for pt in locations:
+                x,y = pt
+                pyautogui.moveTo(x, y, duration=duration)    
+        else:
+            pyautogui.moveTo(x, y, duration=duration)
         if after:
             self._after_action(None, after)
         return

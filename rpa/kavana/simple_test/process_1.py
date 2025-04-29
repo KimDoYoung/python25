@@ -15,5 +15,5 @@ r = pm.get_window_region(wi_list[0].hwnd)
 print("MDI Top Window Region:", r)
 
 print("----------------------")
-top_window = pm.find_mdi_top_window_info(2689692)
+top_window = pm.find_mdi_top_window_info()
 print(top_window)

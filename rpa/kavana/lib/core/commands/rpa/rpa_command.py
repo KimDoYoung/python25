@@ -36,18 +36,19 @@ class RpaCommand(BaseCommand):
         "to_file": {"required": False, "allowed_types": [TokenType.STRING]},
         "after": {"required": False, "allowed_types": [TokenType.STRING]},
         "location": {"required": False, "allowed_types": [TokenType.POINT]},
+        "locations": {"required": False, "allowed_types": [TokenType.ARRAY]},
         "multi" :{"default": False, "allowed_types": [TokenType.BOOLEAN]},
         "clipboard":{"default": False, "allowed_types": [TokenType.BOOLEAN]},
     }
 
 
     COMMAND_SPECS = {
-        "app_open": {
+        "open_app": {
             "keys": ["from_var", "maximize", "process_name", "focus"],
             "overrides": {},
             "rules": {}
         },
-        "app_close": {
+        "close_app": {
             "keys": ["from_var"],
             "overrides": {
                 "from_var": {"required": True}
@@ -61,8 +62,8 @@ class RpaCommand(BaseCommand):
             },
             "rules": {}
         },
-        "re_connect" : {
-            "keys": ["from_var", "focus"],
+        "focus_app" : {
+            "keys": ["from_var"],
             "overrides": {
                 "from_var": {"required": True}
             },
@@ -111,12 +112,13 @@ class RpaCommand(BaseCommand):
                 ],
             }
         },
-        "mouse_move": {
-            "keys": ["x", "y", "location", "duration", "relative","after"],
+        "move_mouse": {
+            "keys": ["x", "y", "location", "locations", "duration", "relative","after"],
             "overrides": {},
             "rules": {
                 "mutually_exclusive": [
-                    ["location", "x"],["location", "y"]
+                    ["location", "x"],["location", "y"], ["locations","location"],
+                    ["locations", "x"],["locations", "y"]
                 ],
                 "required_together": [["x", "y"]]
             }

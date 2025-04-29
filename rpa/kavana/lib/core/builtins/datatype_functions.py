@@ -9,6 +9,16 @@ from lib.core.token_util import TokenUtil
 
 class DatatypeFunctions:
     """데이터타입관련 내장 함수"""
+
+    @staticmethod
+    def GET_ATTR(obj: Any, attr_name:str) -> Token:
+        """객체의 속성값을 반환"""
+        if hasattr(obj, attr_name):
+            attr_value = getattr(obj, attr_name)
+            return TokenUtil.object_to_object_token(attr_value)
+        else:
+            raise KavanaValueError(f"'{attr_name}' 속성이 존재하지 않습니다.")
+
     @staticmethod
     def TYPE_OF(obj: Any) -> StringToken:
         """특정 디렉토리의 파일 목록 반환"""

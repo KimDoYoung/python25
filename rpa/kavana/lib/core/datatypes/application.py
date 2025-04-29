@@ -1,3 +1,4 @@
+import os
 import subprocess
 import time
 import psutil
@@ -9,13 +10,14 @@ import win32con
 import win32gui  # 추가된 import
 
 class Application(KavanaDataType):
-    def __init__(self, path: str):
+    def __init__(self, path: str ):
         self.path = path  # 실행 파일 경로
         self.pid = None  # 프로세스 ID
         self.app = None  # pywinauto Application 객체
         self.title = None  # 창 제목
         self.process = None  # subprocess 프로세스 핸들
-        self.process_name = None # 프로세스 이름
+        # path에서 실행파일명을 추출 process_name으로 한다. 
+        self.process_name = os.path.basename(self.path).lower()  # 실행파일명        
 
     def launch(self, executor = None, maximize=False, focus=True, process_name=None):
         """애플리케이션 실행"""
