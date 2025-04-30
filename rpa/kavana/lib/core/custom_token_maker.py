@@ -27,7 +27,7 @@ class CustomTokenMaker:
         }
 
         if object_type not in type_to_function:
-            raise CustomTokenMakerError(f"Unknown object type: {object_type}", tokens[start_idx].line, tokens[start_idx].column)
+            raise CustomTokenMakerError(f"알려지지 않은 데이터 타입입니다.: {object_type}", tokens[start_idx].line, tokens[start_idx].column)
 
         return type_to_function[object_type](tokens, start_idx)
 
@@ -48,13 +48,13 @@ class CustomTokenMaker:
 
     @staticmethod
     def window_token(tokens, start_idx):
-        """✅ `Window("title")` 또는 `Window "title"` 형식을 처리"""
-        return CustomTokenMaker._parse_single_argument(tokens, start_idx, TokenType.WINDOW)
+        """✅ `Window("title")`"""
+        return CustomTokenMaker._parse_three_arguments(tokens, start_idx, TokenType.WINDOW)
 
     @staticmethod
     def application_token(tokens, start_idx):
-        """✅ `Application("name")` 또는 `Application "name"` 형식을 처리"""
-        return CustomTokenMaker._parse_single_argument(tokens, start_idx, TokenType.APPLICATION)
+        """✅ `Application("name")` """
+        return CustomTokenMaker._parse_two_arguments(tokens, start_idx, TokenType.APPLICATION)
    
     @staticmethod
     def image_token(tokens, start_idx):
@@ -308,3 +308,84 @@ class CustomTokenMaker:
         result_token.column = tokens[start_idx].column
 
         return result_token, i 
+
+    @staticmethod
+    def _parse_three_arguments(tokens, start_idx, object_type):
+        """✅ 3개의 인자를 갖는 사용자 정의 객체 파싱"""
+        if tokens[start_idx].type != object_type:
+            raise CustomTokenMakerError(
+                f"Invalid {object_type.name} syntax: Expected {object_type.name} at position {start_idx}",
+                tokens[start_idx].line, tokens[start_idx].column
+            )
+
+        i = start_idx + 1
+        if i >= len(tokens) or tokens[i].type != TokenType.LEFT_PAREN:
+            raise CustomTokenMakerError(
+                f"Invalid {object_type.name} syntax: Expected '(' after {object_type.name}",
+                tokens[start_idx].line, tokens[start_idx].column
+            )
+
+        i += 1  # skip '('
+        args = [[] for _ in range(3)]
+        arg_index = 0
+
+        paren_count = 1
+        bracket_count = 0
+        brace_count = 0
+
+        while i < len(tokens):
+            tok = tokens[i]
+
+            if tok.type == TokenType.LEFT_PAREN:
+                paren_count += 1
+            elif tok.type == TokenType.RIGHT_PAREN:
+                paren_count -= 1
+                if paren_count == 0 and bracket_count == 0 and brace_count == 0:
+                    break
+            elif tok.type == TokenType.LEFT_BRACKET:
+                bracket_count += 1
+            elif tok.type == TokenType.RIGHT_BRACKET:
+                bracket_count -= 1
+            elif tok.type == TokenType.LEFT_BRACE:
+                brace_count += 1
+            elif tok.type == TokenType.RIGHT_BRACE:
+                brace_count -= 1
+            elif tok.type == TokenType.COMMA:
+                if paren_count == 1 and bracket_count == 0 and brace_count == 0:
+                    arg_index += 1
+                    if arg_index >= 3:
+                        raise CustomTokenMakerError(
+                            f"Invalid {object_type.name} syntax: Too many arguments",
+                            tokens[start_idx].line, tokens[start_idx].column
+                        )
+                    i += 1
+                    continue
+
+            args[arg_index].append(tok)
+            i += 1
+
+        if paren_count != 0 or bracket_count != 0 or brace_count != 0:
+            raise CustomTokenMakerError(
+                f"Invalid {object_type.name} syntax: Unmatched grouping symbols",
+                tokens[start_idx].line, tokens[start_idx].column
+            )
+
+        if any(not arg for arg in args):
+            raise CustomTokenMakerError(
+                f"Invalid {object_type.name} syntax: Expected 3 arguments",
+                tokens[start_idx].line, tokens[start_idx].column
+            )
+        
+        if object_type == TokenType.WINDOW:
+            result_token = WindowToken(data=None)
+        else:
+            raise CustomTokenMakerError(
+                f"Unknown three-argument token type: {object_type}",
+                tokens[start_idx].line, tokens[start_idx].column
+            )
+        # ✅ 토큰 생성 (예: CustomToken, 또는 새 Token 클래스)
+        result_token.expressions = args
+        result_token.line = tokens[start_idx].line
+        result_token.column = tokens[start_idx].column
+
+        return result_token, i

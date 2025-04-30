@@ -11,6 +11,16 @@ class Image(KavanaDataType):
         self.height = 0  # 이미지 높이
         self.width = 0
 
+    def __eq__(self, other):
+        if not isinstance(other, Image):
+            return NotImplemented  # Python의 내장 비교 연산자가 처리함
+        if self.path == other.path:
+            return True  # 경로가 같으면 완전 동일한 이미지로 간주 가능
+        try:
+            return self.compare(other, threshold=0.95)
+        except Exception as e:
+            return False
+
     def load(self):
         """이미지 파일 로드 (lazy loading)"""
         if self.data is None:

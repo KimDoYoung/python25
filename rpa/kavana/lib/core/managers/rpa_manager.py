@@ -1,4 +1,6 @@
+import os
 import re
+import tempfile
 import time
 from typing import List, Tuple
 import pyautogui
@@ -6,6 +8,7 @@ import pyperclip
 
 from lib.core.builtins.builtin_consts import PointName
 from lib.core.datatypes.application import Application
+from lib.core.datatypes.image import Image
 from lib.core.exceptions.kavana_exception import KavanaSyntaxError, KavanaValueError
 from lib.core.managers.base_manager import BaseManager
 from lib.core.token import NoneToken
@@ -184,7 +187,7 @@ class RpaManager(BaseManager):
                     self._after_action(location, after)
                     if to_var:
                         region_token = TokenUtil.region_to_token(location)
-                        self.set_variable(to_var, region_token)
+                        self.executor.set_variable(to_var, region_token)
                     return location
                     
             except Exception as e:
@@ -192,7 +195,7 @@ class RpaManager(BaseManager):
 
             time.sleep(0.5)
         if to_var:
-            self.set_variable(to_var, NoneToken())
+            self.executor.set_variable(to_var, NoneToken())
         self.log("ERROR", f"[RPA:wait_image] 이미지 {target_image.filename} {timeout}초 내에 찾을 수 없음.")
         return None
 
@@ -290,7 +293,7 @@ class RpaManager(BaseManager):
                 center = pyautogui.center(location)
                 result_token = TokenUtil.region_to_token(location)
                 if to_var:
-                    self.set_variable(to_var, result_token)
+                    self.executor.set_variable(to_var, result_token)
                 self.log("INFO", f"[RPA:click_image] {target_img.filename} 이미지 클릭 완료: {center}")
                 if after:
                     self._after_action(location, after)
@@ -298,7 +301,7 @@ class RpaManager(BaseManager):
         except Exception as e:
             self.log("ERROR", f"[RPA:click_image] 이미지 {target_img.filename} 검색 중 오류 발생: {e}")
             if to_var:
-                self.set_variable(to_var, NoneToken())
+                self.executor.set_variable(to_var, NoneToken())
 
         self.log("WARN", f"[RPA:click_image] click_image  이미지를 {target_img.filename}초 내에 찾지 못했습니다.")
         return None
@@ -492,12 +495,18 @@ class RpaManager(BaseManager):
                 self.log("WARN", "[RPA:get_text] 복사된 텍스트가 비어 있습니다.")
 
             # 변수 저장
-            self.set_variable(to_var, copied_text)
+            self.executor.set_variable(to_var, copied_text)
             self.log("INFO", f"[RPA:get_text] 텍스트 복사 완료 → 변수 '{to_var}'에 저장됨")
 
         except Exception as e:
+            self.log("ERROR", f"[RPA:get_text] 텍스트 복사 중 오류 발생: {e}")
             self.raise_error(f"[RPA:get_text] 텍스트 복사 중 오류 발생: {e}")
-
+    
+    def _get_temp_file_path(self, suffix=".png", prefix="tmp_", dir=None):
+        """임시 파일 경로를 생성하고 반환 (파일 생성은 안 함)"""
+        tmp_fd, tmp_path = tempfile.mkstemp(suffix=suffix, prefix=prefix, dir=dir)
+        os.close(tmp_fd)  # 파일 디스크립터는 닫아줌 (파일은 그대로 있음)
+        return tmp_path
 
     def capture(self):
         """RPA 명령어: capture - 화면 또는 특정 영역을 이미지로 캡처 (파일 저장 또는 변수 저장)"""
@@ -511,26 +520,31 @@ class RpaManager(BaseManager):
 
         # 영역 지정이 있다면 pyautogui용 튜플로 변환
         region = None
-        if area and hasattr(area, "left"):
-            region = (area.left, area.top, area.width, area.height)
+        if area:
+            region = area
+            # region = (area.left, area.top, area.width, area.height)
+            # region = (area[0], area[1], area[2], area[3])
 
         try:
             self.log("INFO", f"[RPA] 화면 캡처 시작 (영역: {region if region else '전체 화면'})")
 
             # 스크린샷 찍기
             screenshot = pyautogui.screenshot(region=region)
-
-            # to_file로 저장
+            image_path = self._get_temp_file_path(suffix=".png", prefix="screenshot_")
             if to_file:
-                screenshot.save(to_file)
-                self.log("INFO", f"[RPA:capture] 이미지 저장 완료: {to_file}")
+                image_path = to_file
+            screenshot.save(image_path)
+            self.log("INFO", f"[RPA:capture] 이미지 저장 완료: {image_path}")
 
             # to_var에 저장
             if to_var:
-                self.set_variable(to_var, screenshot)
+                image = Image(image_path)
+                image_token = TokenUtil.image_to_image_token(image)
+                self.executor.set_variable(to_var, image_token)
                 self.log("INFO", f"[RPA:capture] 이미지 객체 변수 저장 완료: {to_var}")
 
         except Exception as e:
+            self.log("ERROR", f"[RPA:capture] 화면 캡처 중 오류 발생: {e}")
             self.raise_error(f"[RPA:capture] 화면 캡처 실패: {e}")
 
     

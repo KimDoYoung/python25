@@ -189,9 +189,13 @@ class WindowToken(CustomToken):
             return self
 
         title_token = evaluator.evaluate(self.expressions[0])
+        hwnd_token = evaluator.evaluate(self.expressions[1])
+        class_name_token = evaluator.evaluate(self.expressions[2])
         title = title_token.data.value
+        hwnd = hwnd_token.data.value
+        class_name = class_name_token.data.value if class_name_token else None
 
-        self.data = Window(title)
+        self.data = Window(title, hwnd, class_name)
         self.status = TokenStatus.EVALUATED
         return self
 

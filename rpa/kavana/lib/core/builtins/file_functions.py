@@ -159,3 +159,4 @@ class FileFunctions:
             return Token(data=Array([String(os.path.basename(f)) for f in files]), type=TokenType.ARRAY)
         except Exception:
             return Token(data=Array([]), type=TokenType.ARRAY)
+

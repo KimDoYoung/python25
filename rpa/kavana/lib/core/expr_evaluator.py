@@ -346,7 +346,10 @@ class ExprEvaluator:
                         result_type = TokenType.STRING
                     
                     elif (a.type == b.type and a.type in  CUSTOM_TYPES and token.data.value in { "==", "!="}):
-                        b = self.OPERATORS[token.data.value][1](a.data.value, b.data.value)
+                        if a.type == TokenType.IMAGE:
+                            b = self.OPERATORS[token.data.value][1](a.data, b.data)
+                        else:    
+                            b = self.OPERATORS[token.data.value][1](a.data.value, b.data.value)
                         result = Boolean(b)
                         result_type = TokenType.BOOLEAN
 

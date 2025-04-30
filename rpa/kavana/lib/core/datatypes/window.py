@@ -2,12 +2,18 @@ import pygetwindow as gw
 from lib.core.datatypes.kavana_datatype import KavanaDataType
 
 class Window(KavanaDataType):
-    def __init__(self, title: str):
+    def __init__(self, title: str, hwnd: int, class_name: str = None):
         self.title = title
-        self.hwnd = None  # Window handle
+        self.hwnd = hwnd  # Window handle
         self.value = title  # ✅ value를 title로 설정
-        self.class_name = None  # 클래스 이름
+        self.class_name = class_name  # 클래스 이름
         self._initialize_window()
+    
+    def __eq__(self, other):
+        if not isinstance(other, Window):
+            return NotImplemented
+        if  self.title == other.title and self.hwnd == other.hwnd and self.class_name == other.class_name:
+            return True
 
     def _initialize_window(self):
         """창을 찾고 핸들을 저장"""

@@ -3,6 +3,7 @@ from datetime import date, datetime
 import re
 from typing import Any, List
 from lib.core.datatypes.hash_map import HashMap
+from lib.core.datatypes.image import Image
 from lib.core.datatypes.kavana_datatype import Boolean, Float, Integer, KavanaDataType, NoneType, String
 from lib.core.datatypes.array import Array
 from lib.core.datatypes.point import Point
@@ -10,7 +11,7 @@ from lib.core.datatypes.region import Region
 from lib.core.datatypes.ymd_time import Ymd, YmdTime
 from lib.core.exceptions.kavana_exception import DataTypeError, KavanaSyntaxError, KavanaValueError
 from lib.core.token import ArrayToken, HashMapToken, NoneToken, StringToken, Token, TokenStatus
-from lib.core.token_custom import PointToken, RegionToken
+from lib.core.token_custom import ImageToken, PointToken, RegionToken
 from lib.core.token_type import TokenType
 
 
@@ -352,4 +353,15 @@ class TokenUtil:
         for item in items:
             array_obj.append(item)
         result = ArrayToken(data=array_obj, element_expresses=[], status=TokenStatus.EVALUATED)
+        return result
+    
+    @staticmethod
+    def image_to_image_token(image: Image) -> ImageToken:
+        """Image를 ImageToken으로 변환"""
+        from lib.core.exceptions.kavana_exception import KavanaTypeError
+
+        if not isinstance(image, Image):
+            raise KavanaTypeError("image_to_image_token은 Image 타입만 허용됩니다.")
+
+        result = ImageToken(data=image)
         return result
