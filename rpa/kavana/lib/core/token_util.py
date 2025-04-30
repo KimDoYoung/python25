@@ -317,6 +317,19 @@ class TokenUtil:
         return result
     
     @staticmethod
+    def integer_to_integer_token(data: int) -> Token:
+        """정수를 IntegerToken으로 변환"""
+        from lib.core.datatypes.kavana_datatype import KavanaDataType
+        from lib.core.exceptions.kavana_exception import KavanaTypeError
+
+        if not isinstance(data, int):
+            raise KavanaTypeError("integer_to_integer_token은 정수만 허용됩니다.")
+
+        integer_obj = Integer(data)
+        result = Token(data=integer_obj, type=TokenType.INTEGER)
+        return result
+    
+    @staticmethod
     def boolean_to_boolean_token(data: bool) -> Token:
         """Boolean을 BooleanToken으로 변환"""
         from lib.core.datatypes.kavana_datatype import KavanaDataType
