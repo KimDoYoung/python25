@@ -6,6 +6,13 @@ from lib.core.token import  ArrayToken, Token
 from lib.core.token_type import TokenType
 
 class NumericFunctions:
+    ''' 숫자 관련 내장 함수들 '''
+    executor = None  # ✅ 클래스 변수로 executor 저장
+
+    @staticmethod
+    def set_executor(executor_instance):
+        NumericFunctions.executor = executor_instance
+
     @staticmethod
     def RANDOM(min_val: int, max_val: int) -> Integer:
         '''
@@ -18,7 +25,7 @@ class NumericFunctions:
         if not isinstance(min_val, int) or not isinstance(max_val, int):
             raise KavanaTypeError("RANDOM() 함수는 정수형 인자만 받을 수 있습니다")
         if min_val > max_val:
-            raise KavanaTypeError("최소값은 최대값보다 작아야 합니다")
+            raise KavanaTypeError("RANDOM() 함수: 최소값은 최대값보다 작아야 합니다")
         i = random.randint(min_val, max_val)
         return Token(data=Integer(i), type=TokenType.INTEGER)
     

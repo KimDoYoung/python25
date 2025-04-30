@@ -6,10 +6,17 @@ from lib.core.exceptions.kavana_exception import KavanaValueError
 from lib.core.token import HashMapToken, StringToken, Token
 from lib.core.token_util import TokenUtil
 
-# TODO executor를 주입하자. 모두
+
 # TODO builtin 모든 class에 대해서 pytest 정형적인 모델을 만들어야할 듯. 
 class DatatypeFunctions:
     """데이터타입관련 내장 함수"""
+
+    executor = None  # ✅ 클래스 변수로 executor 저장
+
+    @staticmethod
+    def set_executor(executor_instance):
+        DatatypeFunctions.executor = executor_instance
+
 
     @staticmethod
     def DUMP_ATTRS(obj: KavanaDataType) -> HashMapToken:

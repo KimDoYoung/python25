@@ -9,6 +9,14 @@ from lib.core.token_util import TokenUtil
 
 
 class RegionPointFunctions:
+    """Region과 Point 관련 내장 함수들"""
+    
+    executor = None  # ✅ 클래스 변수로 executor 저장
+
+    @staticmethod
+    def set_executor(executor_instance):
+        RegionPointFunctions.executor = executor_instance
+
     @staticmethod
     def POINT_OF_REGION(region: Tuple[int, int, int, int], point_name: str) -> PointToken:
         """Region 객체 (x, y, width, height) 에서 point_name에 해당하는 PointToken 반환"""

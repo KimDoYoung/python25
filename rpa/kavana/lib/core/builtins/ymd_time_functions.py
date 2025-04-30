@@ -6,6 +6,12 @@ from lib.core.token import YmdTimeToken, YmdToken
 
 class YmdTimeFunctions:
     
+    executor = None  # ✅ 클래스 변수로 executor 저장
+    
+    @staticmethod
+    def set_executor(executor_instance):
+        YmdTimeFunctions.executor = executor_instance
+
     @staticmethod
     def YMDTIME(
         y: Optional[int] = 0, 

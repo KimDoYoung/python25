@@ -8,6 +8,13 @@ from lib.core.token_type import TokenType
 
 
 class StringFunctions:
+    ''' 문자열 관련 내장 함수들 '''
+    executor = None  # ✅ 클래스 변수로 executor 저장
+    
+    @staticmethod
+    def set_executor(executor_instance):
+        StringFunctions.executor = executor_instance
+
     @staticmethod
     def LENGTH(s: Any) -> int:
         if isinstance(s, str):

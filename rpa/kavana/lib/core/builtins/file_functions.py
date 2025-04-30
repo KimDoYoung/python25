@@ -14,10 +14,14 @@ from lib.core.token_type import TokenType
 
 
 class FileFunctions:
-    # @staticmethod
-    # def FILES_IN_DIR(directory):
-    #     ''' 파일들 리스트 '''
-    #     return [f for f in os.listdir(directory) if os.path.isfile(os.path)]
+    ''' 파일 관련 내장 함수들 '''
+
+    executor = None  # ✅ 클래스 변수로 executor 저장
+
+    @staticmethod
+    def set_executor(executor_instance):
+        FileFunctions.executor = executor_instance
+
     @staticmethod
     def FILE_READ(file_path: str) -> Token:
         """파일 읽기, String Token 반환"""

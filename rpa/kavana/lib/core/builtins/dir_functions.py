@@ -4,6 +4,13 @@ from lib.core.datatypes.array import Array
 from lib.core.token import Token, TokenType,  String
 
 class DirFunctions:
+    ''' 디렉토리 관련 내장 함수들 '''
+    executor = None  # ✅ 클래스 변수로 executor 저장
+
+    @staticmethod
+    def set_executor(executor_instance):
+        DirFunctions.executor = executor_instance
+
     @staticmethod
     def DIR_LIST(directory: str) -> Token:
         """특정 디렉토리의 파일 목록 반환"""

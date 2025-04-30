@@ -1,5 +1,13 @@
 import sys
+from lib.core.builtins.datatype_functions import DatatypeFunctions
+from lib.core.builtins.dir_functions import DirFunctions
+from lib.core.builtins.file_functions import FileFunctions
+from lib.core.builtins.numeric_functions import NumericFunctions
+from lib.core.builtins.path_functions import PathFunctions
+from lib.core.builtins.region_point_functions import RegionPointFunctions
 from lib.core.builtins.rpa_functions import RpaFunctions
+from lib.core.builtins.string_functions import StringFunctions
+from lib.core.builtins.ymd_time_functions import YmdTimeFunctions
 from lib.core.commands.browser.browser_command import BrowserCommand
 from lib.core.commands.const_command import ConstCommand
 from lib.core.commands.database.database_command import DatabaseCommand
@@ -68,7 +76,15 @@ class CommandExecutor:
             
         }
         # ✅ Functions에서 log_command를 사용하기 위해서.. injection
-        RpaFunctions.set_executor(self)        
+        DatatypeFunctions.set_executor(self)
+        DirFunctions.set_executor(self)
+        FileFunctions.set_executor(self)
+        NumericFunctions.set_executor(self)
+        PathFunctions.set_executor(self)
+        RegionPointFunctions.set_executor(self)
+        RpaFunctions.set_executor(self)
+        StringFunctions.set_executor(self)
+        YmdTimeFunctions.set_executor(self)
         
     def execute(self, command):
         cmd = command["cmd"]
