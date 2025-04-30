@@ -10,9 +10,9 @@ def script():
         SET p = Point(10,20)
         SET rt = Rectangle(0,0,10,20)
         SET rg = Region(1,1,100,200)
-        SET win1 = WINDOW("title1")
+        SET win1 = WINDOW("title1", 0, "aaa")
         SET img1 = Image("C:/tmp/1.png")
-        SET app1 = Application("notepad.exe")
+        SET app1 = Application("notepad.exe","abc")
         print f"{p}, {rt}, {rg}, {win1}, {img1}"
     end_main
     """

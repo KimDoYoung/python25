@@ -6,6 +6,7 @@ from lib.core.token_custom import (
     PointToken, RectangleToken, RegionToken,
     ImageToken, ApplicationToken, WindowToken
 )
+from lib.core.token import StringToken
 
 
 class DummyEvaluator:
@@ -64,7 +65,8 @@ def test_region_token(evaluator):
 def test_application_token(evaluator):
     app = ApplicationToken(data=None)
     app.expressions = [
-        [Token(data=String("notepad.exe"), type=TokenType.STRING)]
+        [ Token(data=String("notepad.exe"), type=TokenType.STRING)],
+        [ Token(data=String("process_name"), type=TokenType.STRING)]
     ]
     result = app.evaluate(evaluator)
     assert result.data.path == "notepad.exe"
@@ -73,7 +75,9 @@ def test_application_token(evaluator):
 def test_window_token(evaluator):
     win = WindowToken(data=None)
     win.expressions = [
-        [Token(data=String("MyApp Window"), type=TokenType.STRING)]
+        [StringToken(data=String("MyApp Window"), type=TokenType.STRING)],
+        [Token(data=Integer(0), type=TokenType.INTEGER)],
+        [StringToken(data=String("MyApp Window"), type=TokenType.STRING)]
     ]
     result = win.evaluate(evaluator)
     assert result.data.title == "MyApp Window"
