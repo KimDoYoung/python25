@@ -19,7 +19,7 @@ class RegionPointFunctions:
         RegionPointFunctions.executor = executor_instance
 
     @staticmethod
-    def is_point_in_region(p: Tuple[int,int], region: Tuple[int, int, int, int]) -> Token:
+    def IS_POINT_IN_REGION(p: Tuple[int,int], region: Tuple[int, int, int, int]) -> Token:
         """Point p가 Region에 포함되는지 여부를 반환"""
         x, y, width, height = region
         px, py = p

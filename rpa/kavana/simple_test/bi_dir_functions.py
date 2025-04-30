@@ -5,11 +5,19 @@ from lib.core.command_preprocessor import CommandPreprocessor
 # 대입
 script = """
 MAIN
-    SET i = (10 + 20) * 30
-    SET f = 12.34
-    SET s = "Hello"
-    SET b = not True
-    PRINT f"{i} {f} {s} {b}"
+    SET dirs = DIR_LIST("C:/tmp")
+    for file in dirs:
+        print file["name"], file["is_directory"], file["size"], file["modified_time"]
+    END_FOR
+    PRINT "-----------------"
+    SET exists = DIR_EXISTS("C:/tmp")
+    PRINT exists
+    SET created = DIR_CREATE("C:/tmp/new_dir")
+    PRINT created
+    SET renamed = DIR_RENAME("C:/tmp/new_dir", "C:/tmp/renamed_dir")
+    PRINT renamed
+    SET deleted = DIR_DELETE("C:/tmp/renamed_dir")
+    PRINT deleted
 END_MAIN
 """
 #---------------------------

@@ -12,6 +12,7 @@ BUILTIN_FUNCTIONS = {
     # Point Region 관련 함수
     "POINT_OF_REGION": (RegionPointFunctions.POINT_OF_REGION, 2),
     "REGION_OF_REGION": (RegionPointFunctions.REGION_OF_REGION, 2),
+    "IS_POINT_IN_REGION": (RegionPointFunctions.IS_POINT_IN_REGION, 2),
     # ✅ RPA 관련 함수 추가
     "WINDOW_LIST":(RpaFunctions.WINDOW_LIST, 1),
     "WINDOW_TOP": (RpaFunctions.WINDOW_TOP, 1),
@@ -60,6 +61,9 @@ BUILTIN_FUNCTIONS = {
     "YMD": (YmdTimeFunctions.YMD, 3),
     "NOW": (YmdTimeFunctions.NOW, 0),
     "TODAY": (YmdTimeFunctions.TODAY, 0),
+    "WEEKDAY": (YmdTimeFunctions.WEEKDAY, 1),
+    "IS_WEEKEND": (YmdTimeFunctions.IS_WEEKEND, 1),
+    "WEEK_NAME": (YmdTimeFunctions.WEEK_NAME, 2),
 
     # ✅ 파일 관련 함수 추가
     "FILE_READ": (FileFunctions.FILE_READ, 1),
@@ -67,14 +71,13 @@ BUILTIN_FUNCTIONS = {
     "FILE_APPEND": (FileFunctions.FILE_APPEND, 1),
     "FILE_EXISTS": (FileFunctions.FILE_EXISTS, 1),
     "FILE_DELETE": (FileFunctions.FILE_DELETE, 1),
-    "FILE_SIZE": (FileFunctions.FILE_SIZE, 1),
-    "FILE_MODIFIED_TIME": (FileFunctions.FILE_MODIFIED_TIME, 1),
-    "FILE_TYPE" : (FileFunctions.FILE_TYPE, 1),
+    "FILE_INFO" : (FileFunctions.FILE_INFO, 1),
     "FILE_COPY" : (FileFunctions.FILE_COPY, 2),
     "FILE_MOVE" : (FileFunctions.FILE_MOVE, 2),
     "FILE_HASH" : (FileFunctions.FILE_HASH, 2),
     "FILE_LINES" : (FileFunctions.FILE_LINES, 1),
     "FILE_FIND" : (FileFunctions.FILE_FIND, 2),
+    "FILE_TEMP_NAME" : (FileFunctions.FILE_TEMP_NAME, 1),
     
     # ✅ PATH 관련 함수 추가
     "PATH_JOIN": (PathFunctions.PATH_JOIN, 2),
@@ -86,4 +89,5 @@ BUILTIN_FUNCTIONS = {
     "DIR_EXISTS": (DirFunctions.DIR_EXISTS, 1),
     "DIR_CREATE": (DirFunctions.DIR_CREATE, 1),
     "DIR_DELETE": (DirFunctions.DIR_DELETE, 1),
+    "DIR_RENAME": (DirFunctions.DIR_RENAME, 2),
 }

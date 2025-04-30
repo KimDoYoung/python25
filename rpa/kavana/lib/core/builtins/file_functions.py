@@ -9,8 +9,9 @@ from lib.core.datatypes.kavana_datatype import Boolean, Integer, String
 from lib.core.datatypes.array import Array
 from lib.core.datatypes.ymd_time import YmdTime
 from lib.core.exceptions.kavana_exception import KavanaException, KavanaFileNotFoundError
-from lib.core.token import StringToken, Token
+from lib.core.token import NoneToken, StringToken, Token
 from lib.core.token_type import TokenType
+from lib.core.token_util import TokenUtil
 
 
 class FileFunctions:
@@ -39,10 +40,10 @@ class FileFunctions:
         try:
             with open(file_path, "w", encoding="utf-8") as f:
                 f.write(content)
-        except Exception as e:            
-            return Token(data=Boolean(False), type=TokenType.BOOLEAN)
-
-        return Token(data=Boolean(True), type=TokenType.BOOLEAN)
+            return TokenUtil.boolean_to_token(True)  # 성공 시 True 토큰 반환    
+        except Exception as e:
+            FileFunctions.executor.log_command("ERROR", f"FILE_WRITE: Error writing to file: {file_path}, Error: {e}")  
+            return TokenUtil.boolean_to_token(False)  # 실패 시 False 토큰 반환
 
     @staticmethod
     def FILE_APPEND(file_path: str, content: str) -> Token:
@@ -50,17 +51,18 @@ class FileFunctions:
         try:
             with open(file_path, "a", encoding="utf-8") as f:
                 f.write(content)
-        except Exception:
-            return Token(data=Boolean(False), type=TokenType.BOOLEAN)
-
-        return Token(data=Boolean(True), type=TokenType.BOOLEAN)
+            return TokenUtil.boolean_to_token(True)  # 성공 시 True 토큰 반환
+        except Exception as e:
+            FileFunctions.executor.log_command("ERROR", f"FILE_APPEND: Error appending to file: {file_path}, Error: {e}")  
+            
+            return TokenUtil.boolean_to_token(False)
 
     @staticmethod
     def FILE_EXISTS(file_path: str) -> Token:
         """파일 존재 여부 확인: 존재하면 True, 없으면 False"""
         import os
         exists = os.path.exists(file_path)
-        return Token(data=Boolean(exists), type=TokenType.BOOLEAN)
+        return TokenUtil.boolean_to_token(exists)  # 존재 여부를 Boolean으로 반환
 
     @staticmethod
     def FILE_DELETE(file_path: str) -> Token:
@@ -68,40 +70,54 @@ class FileFunctions:
         import os
         try:
             os.remove(file_path)
-        except Exception:
-            return Token(data=Boolean(False), type=TokenType.BOOLEAN)
+            return TokenUtil.boolean_to_token(True)  # 성공 시 True 토큰 반환
+        except Exception as e:
+            FileFunctions.executor.log_command("ERROR", f"FILE_DELETE: Error deleting file: {file_path}, Error: {e}")
+            # 파일이 존재하지 않거나 디렉토리인 경우 False 반환
+            return TokenUtil.boolean_to_token(False)  # 실패 시 False 토큰 반환
 
-        return Token(data=Boolean(True), type=TokenType.BOOLEAN)
+    # @staticmethod
+    # def FILE_SIZE(file_path: str) -> Token:
+    #     """파일 크기 반환 (바이트)"""
+    #     try:
+    #         size = os.path.getsize(file_path)
+    #         return Token(data=Integer(size), type=TokenType.INTEGER)
+    #     except Exception as e:
+    #         FileFunctions.executor.log_command("ERROR", f"FILE_SIZE: Error getting file size: {file_path}, Error: {e}")
+    #         return Token(data=Integer(-1), type=TokenType.INTEGER)  # 오류 시 -1 반환
 
+    # @staticmethod
+    # def FILE_MODIFIED_TIME(file_path: str) -> Token:
+    #     """파일 최종 수정 시간 반환 (YYYY-MM-DD HH:MM:SS 형식)"""
+    #     try:
+    #         timestamp = os.path.getmtime(file_path)
+    #         mod_time = datetime.fromtimestamp(timestamp)
+    #         return Token(data=YmdTime.from_datetime(mod_time), type=TokenType.YMDTIME)
+    #     except Exception:
+    #         raise KavanaException(f"파일의 최종 변경시각을 가져 오지 못했습니다: {file_path}")
 
+    # @staticmethod
+    # def FILE_TYPE(file_path: str) -> Token:
+    #     """파일 유형 반환 (file / directory / none)"""
+    #     if os.path.isfile(file_path):
+    #         return StringToken(data=String("file"), type=TokenType.STRING)
+    #     elif os.path.isdir(file_path):
+    #         return StringToken(data=String("directory"), type=TokenType.STRING)
+    #     return StringToken(data=String("none"), type=TokenType.STRING)  # 존재하지 않으면 "none"
     @staticmethod
-    def FILE_SIZE(file_path: str) -> Token:
-        """파일 크기 반환 (바이트)"""
+    def FILE_INFO(file_path: str) -> Token:
+        """파일 정보 반환 (이름, 크기, 수정 시간)"""
         try:
-            size = os.path.getsize(file_path)
-            return Token(data=Integer(size), type=TokenType.INTEGER)
-        except Exception:
-            return Token(data=Integer(-1), type=TokenType.INTEGER)  # 오류 시 -1 반환
-
-    @staticmethod
-    def FILE_MODIFIED_TIME(file_path: str) -> Token:
-        """파일 최종 수정 시간 반환 (YYYY-MM-DD HH:MM:SS 형식)"""
-        try:
-            timestamp = os.path.getmtime(file_path)
-            mod_time = datetime.fromtimestamp(timestamp)
-            return Token(data=YmdTime.from_datetime(mod_time), type=TokenType.YMDTIME)
-        except Exception:
-            raise KavanaException(f"파일의 최종 변경시각을 가져 오지 못했습니다: {file_path}")
-
-    @staticmethod
-    def FILE_TYPE(file_path: str) -> Token:
-        """파일 유형 반환 (file / directory / none)"""
-        if os.path.isfile(file_path):
-            return StringToken(data=String("file"), type=TokenType.STRING)
-        elif os.path.isdir(file_path):
-            return StringToken(data=String("directory"), type=TokenType.STRING)
-        return StringToken(data=String("none"), type=TokenType.STRING)  # 존재하지 않으면 "none"
-
+            file_info = {
+                "name": os.path.basename(file_path),
+                "size": os.path.getsize(file_path),
+                "modified_time": datetime.fromtimestamp(os.path.getmtime(file_path)).strftime('%Y-%m-%d %H:%M:%S'),
+            }
+            hash_map_token = TokenUtil.dict_to_hash_map_token(file_info)  # 딕셔너리를 해시맵 토큰으로 변환
+            return hash_map_token
+        except Exception as e:
+            FileFunctions.executor.log_command("ERROR", f"FILE_INFO: Error getting file info: {file_path}, Error: {e}")
+            return NoneToken()  # 오류 시 None 반환
 
     @staticmethod
     def FILE_COPY(src: str, dest: str) -> Token:
@@ -118,7 +134,8 @@ class FileFunctions:
         try:
             shutil.move(src, dest)
             return Token(data=Boolean(True), type=TokenType.BOOLEAN)
-        except Exception:
+        except Exception as e:
+            FileFunctions.executor.log_command("ERROR", f"FILE_MOVE: Error moving file: {src} to {dest}, Error: {e}")
             return Token(data=Boolean(False), type=TokenType.BOOLEAN)
 
     @staticmethod
@@ -138,7 +155,8 @@ class FileFunctions:
                 while chunk := f.read(8192):
                     hasher.update(chunk)
             return StringToken(data=String(hasher.hexdigest()), type=TokenType.STRING)
-        except Exception:
+        except Exception as e:
+            FileFunctions.executor.log_command("ERROR", f"FILE_HASH: Error calculating hash for file: {file_path}, Error: {e}")
             return StringToken(data=String(""), type=TokenType.STRING)
 
     @staticmethod
@@ -146,17 +164,48 @@ class FileFunctions:
         """파일의 각 줄을 리스트로 반환"""
         try:
             with open(file_path, "r", encoding="utf-8") as f:
-                lines = [String(line.strip()) for line in f.readlines()]
-            return Token(data=Array(lines), type=TokenType.ARRAY)
-        except Exception:
-            return Token(data=Array([]), type=TokenType.ARRAY)
+                lines = [String(line) for line in f.readlines()]
+            return TokenUtil.array_to_array_token(lines)  # 리스트를 Array Token으로 변환
+        except Exception as e:
+            FileFunctions.executor.log_command("ERROR", f"FILE_LINES: Error reading file lines: {file_path}, Error: {e}")
+            return TokenUtil.array_to_array_token([])  # 오류 시 빈 리스트 반환
 
     @staticmethod
     def FILE_FIND(directory: str, pattern: str) -> Token:
         """특정 디렉토리에서 패턴과 일치하는 파일 찾기"""
         try:
             files = glob.glob(os.path.join(directory, pattern))
-            return Token(data=Array([String(os.path.basename(f)) for f in files]), type=TokenType.ARRAY)
-        except Exception:
+            file_info_list = []
+
+            for file_name in files:
+                file_path = os.path.join(directory, file_name)
+                file_info = {
+                    "name": file_name,
+                    "is_directory": os.path.isdir(file_path),
+                    "size": os.path.getsize(file_path) if os.path.isfile(file_path) else 0,
+                    "modified_time": datetime.fromtimestamp(os.path.getmtime(file_path)).strftime('%Y-%m-%d %H:%M:%S'),
+                }
+                file_info_list.append(file_info)               
+            return TokenUtil.array_to_array_token(file_info_list)  # 리스트를 Array Token으로 변환
+        except Exception as e:
+            FileFunctions.executor.log_command("ERROR", f"FILE_FIND: Error finding files in directory: {directory}, Error: {e}")
             return Token(data=Array([]), type=TokenType.ARRAY)
 
+
+    @staticmethod
+    def FILE_TEMP_NAME(suffix: str) -> Token:
+        """특정 확장자를 가진 임시 파일 이름 생성"""
+        import tempfile
+        import os
+
+        try:
+            # 임시 디렉토리에서 고유한 파일 이름 생성
+            tmp_file = tempfile.NamedTemporaryFile(delete=False, suffix=suffix)
+            tmp_file_name = tmp_file.name
+            tmp_file.close()  # 파일을 닫고 삭제하지 않도록 설정
+
+            # 반환: 임시 파일 이름을 StringToken으로 반환
+            return StringToken(data=String(tmp_file_name), type=TokenType.STRING)
+        except Exception as e:
+            FileFunctions.executor.log_command("ERROR", f"FILE_TMP_NAME_WITH_SUFFIX: Error creating temp file with suffix '{suffix}', Error: {e}")
+            return NoneToken()  # 오류 시 None 반환
