@@ -1,7 +1,6 @@
 from typing import Tuple
 
-from lib.actions.enums import RegionName
-from lib.core.builtins.builtin_consts import PointName
+from lib.core.builtins.builtin_consts import PointName, RegionName
 from lib.core.datatypes.point import Point
 from lib.core.exceptions.kavana_exception import KavanaValueError
 from lib.core.token import TokenStatus

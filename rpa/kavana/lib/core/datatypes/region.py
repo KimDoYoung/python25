@@ -1,4 +1,4 @@
-from lib.actions.enums import PointName
+from lib.core.builtins.builtin_consts import PointName
 from lib.core.datatypes.kavana_datatype import KavanaDataType
 from lib.core.datatypes.point import Point
 class Region(KavanaDataType):
