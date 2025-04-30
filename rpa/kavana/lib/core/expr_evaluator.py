@@ -201,7 +201,8 @@ class ExprEvaluator:
 
             if token.type in CUSTOM_TYPES:
                 custom_token, i = CustomTokenMaker.custom_object_token(tokens, i, token.type)
-                stack.append(custom_token)
+                # stack.append(custom_token)
+                output.append(custom_token)
                 i += 1
                 continue
 
@@ -340,10 +341,15 @@ class ExprEvaluator:
                         result = Integer(diff_days)
                         result_type = TokenType.INTEGER
 
-
                     elif a.type == TokenType.STRING and b.type == TokenType.STRING and token.data.value == "+":
                         result = String(a.data.value + b.data.value)
                         result_type = TokenType.STRING
+                    
+                    elif (a.type == b.type and a.type in  CUSTOM_TYPES and token.data.value in { "==", "!="}):
+                        b = self.OPERATORS[token.data.value][1](a.data.value, b.data.value)
+                        result = Boolean(b)
+                        result_type = TokenType.BOOLEAN
+
                     elif (a.type == TokenType.NONE or b.type == TokenType.NONE) and token.data.value in {"==", "!="}:
                         b = self.OPERATORS[token.data.value][1](a.data.value, b.data.value)
                         result = Boolean(b)

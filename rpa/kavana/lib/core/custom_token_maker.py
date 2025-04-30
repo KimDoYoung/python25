@@ -219,7 +219,7 @@ class CustomTokenMaker:
         result_token.line = tokens[start_idx].line
         result_token.column = tokens[start_idx].column
 
-        return result_token, i + 1  # `)` 다음 토큰 인덱스
+        return result_token, i   # `)` 다음 토큰 인덱스
 
     @staticmethod
     def _parse_four_arguments(tokens, start_idx, object_type):
@@ -307,4 +307,4 @@ class CustomTokenMaker:
         result_token.line = tokens[start_idx].line
         result_token.column = tokens[start_idx].column
 
-        return result_token, i + 1
+        return result_token, i 

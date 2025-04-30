@@ -5,6 +5,12 @@ class Point(KavanaDataType):
         super().__init__((x, y))  # ✅ value를 (x, y) 튜플로 설정
         self.x = x
         self.y = y
+    
+    def __eq__(self, other):
+        """Point 객체 비교"""
+        if isinstance(other, Point):
+            return self.x == other.x and self.y == other.y
+        return False
 
     def move(self, dx: int, dy: int):
         """Point 좌표를 이동시키는 메서드"""

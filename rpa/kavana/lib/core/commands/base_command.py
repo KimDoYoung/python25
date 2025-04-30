@@ -242,10 +242,6 @@ class BaseCommand(ABC):
                 result[key] = self.array_token_to_list(token, executor)
             else:
                 result[key] = token.data.value
-            # if isinstance(result[key], HashMapToken):
-            #     result[key] = self.hashmap_token_to_dict(result[key], executor)
-            # elif isinstance(result[key], ArrayToken):
-            #     result[key] = self.array_token_to_list(result[key], executor)
                 
         return result
     
