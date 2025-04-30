@@ -4,6 +4,7 @@ from lib.core.command_preprocessor import CommandPreprocessor
 
 script = """
 MAIN
+    LOG_CONFIG level="ERROR"
     SET b1 =  Point(10,20)==Point(11,22)
     SET b2 =  Region(1,2,10,20) == Region(1,2,10,20)
     SET b3 =  1.23 == 1.23

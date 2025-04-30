@@ -108,6 +108,8 @@ class LogConfigCommand(BaseCommand):
         evaluator = ExprEvaluator(executor)
         for key, expr_tokens in config_params.items():    
             try:
+                if not expr_tokens:
+                    continue
                 evakyated_token = evaluator.evaluate(expr_tokens)  # ✅ 표현식 평가
                 value = evakyated_token.data.string  # ✅ 평가된 값을 문자열로 변환
                 config_params[key] = value
@@ -122,5 +124,5 @@ class LogConfigCommand(BaseCommand):
         )
 
         # ✅ 변경 사항 출력
-        print(f"✅ 로그 설정 변경됨: dir='{logger.log_dir}', prefix='{logger.log_prefix}', level='{logger.logger.level}'")
+        #print(f"✅ 로그 설정 변경됨: dir='{logger.log_dir}', prefix='{logger.log_prefix}', level='{logger.logger.level}'")
 
