@@ -1,130 +1,64 @@
 import pytest
+from lib.core.builtins.region_point_functions import RegionPointFunctions
 from lib.core.builtins.builtin_consts import PointName, RegionName
-# ---------------------- Enum 정의 ----------------------
 
+# Mock PointToken과 RegionToken이 TokenStatus.EVALUATED이고 value를 가지는지 확인
+def get_point_value(token):
+    assert token.status.name == "EVALUATED"
+    return token.data.x, token.data.y
 
-# ---------------------- Mock 객체 ----------------------
+def get_region_value(token):
+    assert token.status.name == "EVALUATED"
+    return token.data.x, token.data.y, token.data.width, token.data.height
 
-class MockPoint:
-    def __init__(self, x, y):
-        self.x = x
-        self.y = y
-        self.value = (x, y)
-
-class MockRegion:
-    def __init__(self, x, y, w, h):
-        self.value = (x, y, w, h)
-
-class MockTokenUtil:
-    @staticmethod
-    def region_to_token(x, y, w, h):
-        return type("RegionToken", (), {
-            "data": MockRegion(x, y, w, h),
-            "status": "EVALUATED"
-        })()
-
-class MockPointToken:
-    def __init__(self, pt):
-        self.data = MockPoint(pt.x, pt.y)
-        self.status = "EVALUATED"
-
-# ---------------------- 실제 테스트 대상 클래스 ----------------------
-
-class RegionPointFunctions:
-    @staticmethod
-    def POINT_OF_REGION(region, point_name: str):
-        x, y, width, height = region
-        point_name = point_name.lower()
-        pt = None
-        if point_name == PointName.CENTER.value:
-            pt = MockPoint(x + width // 2, y + height // 2)
-        elif point_name == PointName.TOP_LEFT.value:
-            pt = MockPoint(x, y)
-        elif point_name == PointName.TOP_CENTER.value:
-            pt = MockPoint(x + width // 2, y)
-        elif point_name == PointName.TOP_RIGHT.value:
-            pt = MockPoint(x + width, y)
-        elif point_name == PointName.MIDDLE_LEFT.value:
-            pt = MockPoint(x, y + height // 2)
-        elif point_name == PointName.MIDDLE_RIGHT.value:
-            pt = MockPoint(x + width, y + height // 2)
-        elif point_name == PointName.BOTTOM_LEFT.value:
-            pt = MockPoint(x, y + height)
-        elif point_name == PointName.BOTTOM_CENTER.value:
-            pt = MockPoint(x + width // 2, y + height)
-        elif point_name == PointName.BOTTOM_RIGHT.value:
-            pt = MockPoint(x + width, y + height)
-        else:
-            raise ValueError(f"Unknown point name: {point_name}")
-        return MockPointToken(pt)
-
-    @staticmethod
-    def REGION_OF_REGION(region, region_name: str):
-        x, y, width, height = region
-        region_name = region_name.lower()
-        if region_name == RegionName.LEFT_ONE_THIRD.value:
-            return MockTokenUtil.region_to_token(x, y, width // 3, height)
-        elif region_name == RegionName.RIGHT_ONE_THIRD.value:
-            return MockTokenUtil.region_to_token(x + 2 * (width // 3), y, width // 3, height)
-        elif region_name == RegionName.TOP_ONE_THIRD.value:
-            return MockTokenUtil.region_to_token(x, y, width, height // 3)
-        elif region_name == RegionName.BOTTOM_ONE_THIRD.value:
-            return MockTokenUtil.region_to_token(x, y + 2 * (height // 3), width, height // 3)
-        elif region_name == RegionName.TOP_LEFT.value:
-            return MockTokenUtil.region_to_token(x, y, width // 2, height // 2)
-        elif region_name == RegionName.TOP_RIGHT.value:
-            return MockTokenUtil.region_to_token(x + width // 2, y, width // 2, height // 2)
-        elif region_name == RegionName.BOTTOM_RIGHT.value:
-            return MockTokenUtil.region_to_token(x + width // 2, y + height // 2, width // 2, height // 2)
-        elif region_name == RegionName.BOTTOM_LEFT.value:
-            return MockTokenUtil.region_to_token(x, y + height // 2, width // 2, height // 2)
-        elif region_name == RegionName.CENTER.value:
-            return MockTokenUtil.region_to_token(x + width // 3, y + height // 3, width // 3, height // 3)
-        elif region_name == RegionName.LEFT.value:
-            return MockTokenUtil.region_to_token(x, y, width // 2, height)
-        elif region_name == RegionName.RIGHT.value:
-            return MockTokenUtil.region_to_token(x + width // 2, y, width // 2, height)
-        elif region_name == RegionName.TOP.value:
-            return MockTokenUtil.region_to_token(x, y, width, height // 2)
-        elif region_name == RegionName.BOTTOM.value:
-            return MockTokenUtil.region_to_token(x, y + height // 2, width, height // 2)
-        else:
-            raise ValueError(f"Unknown region name: {region_name}")
-
-# ---------------------- 테스트 코드 ----------------------
+# ---------------------- POINT 테스트 ----------------------
 
 @pytest.mark.parametrize("point_name,expected", [
-    ("center", (50, 50)),
-    ("top-left", (0, 0)),
-    ("top-center", (50, 0)),
-    ("top-right", (100, 0)),
-    ("middle-left", (0, 50)),
-    ("middle-right", (100, 50)),
-    ("bottom-left", (0, 100)),
-    ("bottom-center", (50, 100)),
-    ("bottom-right", (100, 100)),
+    (PointName.CENTER.value, (50, 50)),
+    (PointName.TOP_LEFT.value, (0, 0)),
+    (PointName.TOP_CENTER.value, (50, 0)),
+    (PointName.TOP_RIGHT.value, (100, 0)),
+    (PointName.MIDDLE_LEFT.value, (0, 50)),
+    (PointName.MIDDLE_RIGHT.value, (100, 50)),
+    (PointName.BOTTOM_LEFT.value, (0, 100)),
+    (PointName.BOTTOM_CENTER.value, (50, 100)),
+    (PointName.BOTTOM_RIGHT.value, (100, 100)),
 ])
 def test_POINT_OF_REGION(point_name, expected):
     region = (0, 0, 100, 100)
     token = RegionPointFunctions.POINT_OF_REGION(region, point_name)
-    assert token.data.value == expected
+    assert get_point_value(token) == expected
+
+# ---------------------- REGION 테스트 ----------------------
 
 @pytest.mark.parametrize("region_name,expected", [
-    ("left-one-third", (0, 0, 33, 100)),
-    ("right-one-third", (66, 0, 33, 100)),
-    ("top-one-third", (0, 0, 100, 33)),
-    ("bottom-one-third", (0, 66, 100, 33)),
-    ("top-left", (0, 0, 50, 50)),
-    ("top-right", (50, 0, 50, 50)),
-    ("bottom-right", (50, 50, 50, 50)),
-    ("bottom-left", (0, 50, 50, 50)),
-    ("center", (33, 33, 33, 33)),
-    ("left", (0, 0, 50, 100)),
-    ("right", (50, 0, 50, 100)),
-    ("top", (0, 0, 100, 50)),
-    ("bottom", (0, 50, 100, 50)),
+    (RegionName.LEFT_ONE_THIRD.value, (0, 0, 33, 100)),
+    (RegionName.RIGHT_ONE_THIRD.value, (66, 0, 33, 100)),
+    (RegionName.TOP_ONE_THIRD.value, (0, 0, 100, 33)),
+    (RegionName.BOTTOM_ONE_THIRD.value, (0, 66, 100, 33)),
+    (RegionName.TOP_LEFT.value, (0, 0, 50, 50)),
+    (RegionName.TOP_RIGHT.value, (50, 0, 50, 50)),
+    (RegionName.BOTTOM_RIGHT.value, (50, 50, 50, 50)),
+    (RegionName.BOTTOM_LEFT.value, (0, 50, 50, 50)),
+    (RegionName.CENTER.value, (33, 33, 33, 33)),
+    (RegionName.LEFT.value, (0, 0, 50, 100)),
+    (RegionName.RIGHT.value, (50, 0, 50, 100)),
+    (RegionName.TOP.value, (0, 0, 100, 50)),
+    (RegionName.BOTTOM.value, (0, 50, 100, 50)),
 ])
 def test_REGION_OF_REGION(region_name, expected):
     region = (0, 0, 100, 100)
     token = RegionPointFunctions.REGION_OF_REGION(region, region_name)
+    assert get_region_value(token) == expected
+
+@pytest.mark.parametrize("point, region, expected", [
+    ((10, 10), (0, 0, 100, 100), True),   # 내부에 있음
+    ((0, 0), (0, 0, 100, 100), True),     # 꼭짓점
+    ((100, 100), (0, 0, 100, 100), True), # 오른쪽 하단 꼭짓점 포함
+    ((101, 101), (0, 0, 100, 100), False),# 바깥
+    ((-1, 10), (0, 0, 100, 100), False),  # 왼쪽 바깥
+    ((50, 200), (0, 0, 100, 100), False), # 아래쪽 바깥
+])
+def test_is_point_in_region(point, region, expected):
+    token = RegionPointFunctions.is_point_in_region(point, region)
     assert token.data.value == expected
