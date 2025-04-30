@@ -65,7 +65,7 @@ class CustomTokenMaker:
     @staticmethod
     def _parse_single_argument(tokens, start_idx, object_type):
         """ 1개의 인자를 갖는 객체처리 Image, Window, Application """
-        if tokens[start_idx].type not in [TokenType.WINDOW, TokenType.APPLICATION, TokenType.IMAGE]:
+        if tokens[start_idx].type not in [TokenType.IMAGE]:
             raise CustomTokenMakerError(
                 f"Invalid {object_type.name} syntax: Expected 'Image' or 'Window' or 'Application' at position {start_idx}",
                 tokens[start_idx].line, tokens[start_idx].column
@@ -209,6 +209,9 @@ class CustomTokenMaker:
         if object_type == TokenType.POINT:
             result_token = PointToken(data=None)
             result_token.type = TokenType.POINT
+        elif object_type == TokenType.APPLICATION:
+            result_token = ApplicationToken(data=None)
+            result_token.type = TokenType.APPLICATION
         else:
             raise CustomTokenMakerError(
                 f"Unknown two-argument token type: {object_type}",

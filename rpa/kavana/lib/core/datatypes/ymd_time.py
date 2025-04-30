@@ -48,6 +48,12 @@ class Ymd(KavanaDataType):
     def __init__(self, year: int, month: int, day: int):
         self.value = date(year, month, day)
 
+    def __eq__(self, other):
+        """✅ Ymd 객체 비교"""
+        if isinstance(other, Ymd):
+            return self.value == other.value
+        return False
+
     @property
     def string(self) -> str:
         """✅ 항상 문자열(str)로 변환"""

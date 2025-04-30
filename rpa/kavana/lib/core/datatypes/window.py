@@ -7,6 +7,7 @@ class Window(KavanaDataType):
         self.hwnd = hwnd  # Window handle
         self.value = title  # ✅ value를 title로 설정
         self.class_name = class_name  # 클래스 이름
+        self.value = f"{title} ({hwnd}){class_name}"  # ✅ value를 title과 hwnd로 설정
         self._initialize_window()
     
     def __eq__(self, other):

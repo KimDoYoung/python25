@@ -10,14 +10,20 @@ import win32con
 import win32gui  # 추가된 import
 
 class Application(KavanaDataType):
-    def __init__(self, path: str ):
+    def __init__(self, path: str, process_name: str):
         self.path = path  # 실행 파일 경로
         self.pid = None  # 프로세스 ID
         self.app = None  # pywinauto Application 객체
         self.title = None  # 창 제목
         self.process = None  # subprocess 프로세스 핸들
         # path에서 실행파일명을 추출 process_name으로 한다. 
-        self.process_name = os.path.basename(self.path).lower()  # 실행파일명        
+        self.process_name = process_name
+        self.value = f"{path} ({process_name})"  # ✅ value를 path와 process_name으로 설정
+    
+    def __eq__(self, other):
+        if not isinstance(other, Application):
+            return NotImplemented
+        return self.path == other.path and self.process_name == other.process_name
 
     def launch(self, executor = None, maximize=False, focus=True, process_name=None):
         """애플리케이션 실행"""

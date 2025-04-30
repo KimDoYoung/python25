@@ -167,8 +167,10 @@ class ApplicationToken(CustomToken):
 
         path_token = evaluator.evaluate(self.expressions[0])
         path = path_token.data.value
+        process_name_token = evaluator.evaluate(self.expressions[1])
+        process_name = process_name_token.data.value if process_name_token else None
 
-        self.data = Application(path)
+        self.data = Application(path, process_name=process_name)
         self.status = TokenStatus.EVALUATED
         return self
 
