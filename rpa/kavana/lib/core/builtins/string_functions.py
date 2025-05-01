@@ -161,24 +161,29 @@ class StringFunctions:
             raise KavanaTypeError("INDEX_OF()는 문자열, 리스트, 딕셔너리에만 적용됩니다")    
 
     @staticmethod
-    def TO_INT(s: str) -> Token:
+    def TO_INT(s: Union[str, float]) -> Token:
         '''
-        문자열을 정수로 변환합니다.
+        문자열 또는 실수를 정수로 변환합니다.
         
         예:
         TO_INT("42") → 42
         TO_INT("-10") → -10
+        TO_INT(3.14) → 3
         
         잘못된 입력 예:
         TO_INT("abc") → 오류 발생
         '''
-        if not isinstance(s, str):
-            raise KavanaTypeError("TO_INT() 함수는 문자열 인자만 받을 수 있습니다")
-        try:
+        if isinstance(s, float):
             return Token(data=Integer(int(s)), type="INTEGER")
-        except ValueError:
-            StringFunctions.executor.log_command("ERROR", "TO_INT() 함수는 정수형 문자열만 받을 수 있습니다")
-            raise KavanaValueError("TO_INT() 함수는 정수형 문자열만 받을 수 있습니다")
+        elif isinstance(s, str):
+            try:
+                return Token(data=Integer(int(float(s))), type="INTEGER")
+            except ValueError:
+                StringFunctions.executor.log_command("ERROR", "TO_INT() 함수는 정수형 또는 실수형 문자열만 받을 수 있습니다")
+                raise KavanaValueError("TO_INT() 함수는 정수형 또는 실수형 문자열만 받을 수 있습니다")
+        else:
+            StringFunctions.executor.log_command("ERROR", "TO_INT() 함수는 문자열 또는 실수만 받을 수 있습니다")
+            raise KavanaTypeError("TO_INT() 함수는 문자열 또는 실수만 받을 수 있습니다")
         
     @staticmethod
     def TO_FLOAT(s: Union[str, int]) -> Token:
@@ -204,3 +209,23 @@ class StringFunctions:
         else:
             StringFunctions.executor.log_command("ERROR", "TO_FLOAT() 함수는 문자열 또는 정수만 받을 수 있습니다")
             raise KavanaTypeError("TO_FLOAT() 함수는 문자열 또는 정수만 받을 수 있습니다")
+
+    def TO_STR(s: Any) -> Token:
+        """
+        주어진 값을 문자열로 변환합니다.
+        
+        Args:
+            s (Any): 변환할 값.
+        
+        Returns:
+            Token: 문자열로 변환된 결과를 포함하는 Token 객체.
+        """
+        if isinstance(s, str):
+            return StringToken(data=String(s), type=TokenType.STRING)
+        elif isinstance(s, (int, float)):
+            return StringToken(data=String(str(s)), type=TokenType.STRING)
+        elif isinstance(s, bool):
+            return StringToken(data=String(str(s)), type=TokenType.STRING)
+        else:
+            StringFunctions.executor.log_command("ERROR", "TO_STR() 함수는 문자열, 정수, 실수, 불리언만 받을 수 있습니다")
+            raise KavanaTypeError("TO_STR() 함수는 문자열, 정수, 실수, 불리언만 받을 수 있습니다")

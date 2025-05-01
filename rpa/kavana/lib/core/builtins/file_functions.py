@@ -40,10 +40,10 @@ class FileFunctions:
         try:
             with open(file_path, "w", encoding="utf-8") as f:
                 f.write(content)
-            return TokenUtil.boolean_to_token(True)  # 성공 시 True 토큰 반환    
+            return TokenUtil.boolean_to_boolean_token(True)  # 성공 시 True 토큰 반환    
         except Exception as e:
             FileFunctions.executor.log_command("ERROR", f"FILE_WRITE: Error writing to file: {file_path}, Error: {e}")  
-            return TokenUtil.boolean_to_token(False)  # 실패 시 False 토큰 반환
+            return TokenUtil.boolean_to_boolean_token(False)  # 실패 시 False 토큰 반환
 
     @staticmethod
     def FILE_APPEND(file_path: str, content: str) -> Token:
@@ -51,18 +51,18 @@ class FileFunctions:
         try:
             with open(file_path, "a", encoding="utf-8") as f:
                 f.write(content)
-            return TokenUtil.boolean_to_token(True)  # 성공 시 True 토큰 반환
+            return TokenUtil.boolean_to_boolean_token(True)  # 성공 시 True 토큰 반환
         except Exception as e:
             FileFunctions.executor.log_command("ERROR", f"FILE_APPEND: Error appending to file: {file_path}, Error: {e}")  
             
-            return TokenUtil.boolean_to_token(False)
+            return TokenUtil.boolean_to_boolean_token(False)
 
     @staticmethod
     def FILE_EXISTS(file_path: str) -> Token:
         """파일 존재 여부 확인: 존재하면 True, 없으면 False"""
         import os
         exists = os.path.exists(file_path)
-        return TokenUtil.boolean_to_token(exists)  # 존재 여부를 Boolean으로 반환
+        return TokenUtil.boolean_to_boolean_token(exists)  # 존재 여부를 Boolean으로 반환
 
     @staticmethod
     def FILE_DELETE(file_path: str) -> Token:
@@ -70,11 +70,11 @@ class FileFunctions:
         import os
         try:
             os.remove(file_path)
-            return TokenUtil.boolean_to_token(True)  # 성공 시 True 토큰 반환
+            return TokenUtil.boolean_to_boolean_token(True)  # 성공 시 True 토큰 반환
         except Exception as e:
             FileFunctions.executor.log_command("ERROR", f"FILE_DELETE: Error deleting file: {file_path}, Error: {e}")
             # 파일이 존재하지 않거나 디렉토리인 경우 False 반환
-            return TokenUtil.boolean_to_token(False)  # 실패 시 False 토큰 반환
+            return TokenUtil.boolean_to_boolean_token(False)  # 실패 시 False 토큰 반환
 
     # @staticmethod
     # def FILE_SIZE(file_path: str) -> Token:
@@ -113,7 +113,7 @@ class FileFunctions:
                 "size": os.path.getsize(file_path),
                 "modified_time": datetime.fromtimestamp(os.path.getmtime(file_path)).strftime('%Y-%m-%d %H:%M:%S'),
             }
-            hash_map_token = TokenUtil.dict_to_hash_map_token(file_info)  # 딕셔너리를 해시맵 토큰으로 변환
+            hash_map_token = TokenUtil.dict_to_hashmap_token(file_info)  # 딕셔너리를 해시맵 토큰으로 변환
             return hash_map_token
         except Exception as e:
             FileFunctions.executor.log_command("ERROR", f"FILE_INFO: Error getting file info: {file_path}, Error: {e}")
