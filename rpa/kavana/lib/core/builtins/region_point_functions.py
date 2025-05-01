@@ -61,7 +61,7 @@ class RegionPointFunctions:
     def REGION_OF_REGION(region: Tuple[int, int, int, int], region_name: str) -> RegionToken:
         """Region 객체 (x, y, width, height) 에서 region_name에 해당하는 RegionToken 반환"""
         x, y, width, height = region
-        region_name = region_name.lower()
+        region_name = region_name.lower().replace("_", "-")  # 🔥 대소문자 구분 없이 처리
         if region_name == RegionName.LEFT_ONE_THIRD.value:
             return TokenUtil.region_to_token((x, y, width // 3, height))
         elif region_name == RegionName.RIGHT_ONE_THIRD.value:
@@ -90,4 +90,22 @@ class RegionPointFunctions:
             return TokenUtil.region_to_token((x, y + height // 2, width, height // 2))
         else:
             raise KavanaValueError(f"Unknown region name: {region_name}")
-        
+
+    def POINT_MOVE_NORTH(p: Tuple[int,int], distance: int) -> PointToken:
+        """Point p를 북쪽으로 distance 만큼 이동시킨 PointToken 반환"""
+        x, y = p
+        return TokenUtil.xy_to_point_token(x, y - distance)
+
+    def POINT_MOVE_SOUTH(p: Tuple[int,int], distance: int) -> PointToken:
+        """Point p를 남쪽으로 distance 만큼 이동시킨 PointToken 반환"""
+        x, y = p
+        return TokenUtil.xy_to_point_token(x, y + distance)
+    def POINT_MOVE_EAST(p: Tuple[int,int], distance: int) -> PointToken:
+        """Point p를 동쪽으로 distance 만큼 이동시킨 PointToken 반환"""
+        x, y = p
+        return TokenUtil.xy_to_point_token(x + distance, y)
+    def POINT_MOVE_WEST(p: Tuple[int,int], distance: int) -> PointToken:
+        """Point p를 서쪽으로 distance 만큼 이동시킨 PointToken 반환"""
+        x, y = p
+        return TokenUtil.xy_to_point_token(x - distance, y)
+    
