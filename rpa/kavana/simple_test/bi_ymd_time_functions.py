@@ -21,6 +21,9 @@ MAIN
     SET end_time = now()
     SET elapsed_time = end_time - start_time
     print "경과 시간:", elapsed_time
+    print YMD_FORMAT(now, "%Y%m%d %H:%M:%S")
+    print YMD_FORMAT(today, "%Y%m%d")
+    print YMD_FORMAT(ymd1, "%Y%m%d")
 END_MAIN
 """
 #---------------------------

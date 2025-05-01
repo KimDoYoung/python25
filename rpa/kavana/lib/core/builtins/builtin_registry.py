@@ -12,6 +12,15 @@ from .numeric_functions import NumericFunctions
 #TODO set a = -1 
 #TODO " 안에 " 를 처리
 BUILTIN_FUNCTIONS = {
+    # ✅ 데이터타입관련 함수 추가
+    "DUMP_ATTRS": (DatatypeFunctions.DUMP_ATTRS, 1),
+    "GET_ATTR": (DatatypeFunctions.GET_ATTR, 2),
+    "TYPE_OF": (DatatypeFunctions.TYPE_OF, 1),
+    "IS_TYPE": (DatatypeFunctions.IS_TYPE, 2),
+    "IS_NULL": (DatatypeFunctions.IS_NULL, 1),
+    "IS_NONE": (DatatypeFunctions.IS_NULL, 1), # alias for IS_NULL
+    "JSON_STR_PARSE": (DatatypeFunctions.JSON_STR_PARSE, 1),
+
     # Point Region 관련 함수
     "POINT_OF_REGION": (RegionPointFunctions.POINT_OF_REGION, 2),
     "REGION_OF_REGION": (RegionPointFunctions.REGION_OF_REGION, 2),
@@ -24,14 +33,7 @@ BUILTIN_FUNCTIONS = {
     "WINDOW_LIST":(RpaFunctions.WINDOW_LIST, 1),
     "WINDOW_TOP": (RpaFunctions.WINDOW_TOP, 1),
     "WINDOW_REGION": (RpaFunctions.WINDOW_REGION, 1),
-    # ✅ 데이터타입관련 함수 추가
-    "DUMP_ATTRS": (DatatypeFunctions.DUMP_ATTRS, 1),
-    "GET_ATTR": (DatatypeFunctions.GET_ATTR, 2),
-    "TYPE_OF": (DatatypeFunctions.TYPE_OF, 1),
-    "IS_TYPE": (DatatypeFunctions.IS_TYPE, 2),
-    "IS_NULL": (DatatypeFunctions.IS_NULL, 1),
-    "IS_NONE": (DatatypeFunctions.IS_NULL, 1), # alias for IS_NULL
-    "JSON_STR_PARSE": (DatatypeFunctions.JSON_STR_PARSE, 1),
+
     # ✅ 문자열 관련 함수 추가
     "LENGTH": (StringFunctions.LENGTH, 1),
     "SUBSTR": (StringFunctions.SUBSTR, 3),
@@ -78,6 +80,7 @@ BUILTIN_FUNCTIONS = {
     "WEEKDAY": (YmdTimeFunctions.WEEKDAY, 1),
     "IS_WEEKEND": (YmdTimeFunctions.IS_WEEKEND, 1),
     "WEEK_NAME": (YmdTimeFunctions.WEEK_NAME, 2),
+    "YMD_FORMAT": (YmdTimeFunctions.YMD_FORMAT, 2),
 
     # ✅ 파일 관련 함수 추가
     "FILE_READ": (FileFunctions.FILE_READ, 1),

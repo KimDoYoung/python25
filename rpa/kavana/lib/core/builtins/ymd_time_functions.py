@@ -101,3 +101,20 @@ class YmdTimeFunctions:
         name = week_names[type]
         
         return TokenUtil.string_to_string_token(name[d])
+
+    @staticmethod
+    def YMD_FORMAT(date: Union[Ymd, YmdTime], format: str) -> StringToken:
+        """
+        주어진 날짜를 지정된 형식(format)으로 문자열로 변환합니다.
+
+        예:
+        YMD_FORMAT(Ymd(2025, 5, 1), "%Y-%m-%d") → "2025-05-01"
+        YMD_FORMAT(YmdTime(2025, 5, 1, 12, 30, 45), "%Y-%m-%d %H:%M:%S") → "2025-05-01 12:30:45"
+        """
+        try:
+            # 지정된 형식으로 변환
+            formatted_date = date.strftime(format)
+            return TokenUtil.string_to_string_token(formatted_date)
+        except Exception as e:
+            YmdTimeFunctions.executor.log_command("ERROR", f"YMD_FORMAT: 날짜 형식 변환 중 오류 발생: {e}")
+            raise KavanaValueError(f"YMD_FORMAT: 날짜 형식 변환 중 오류가 발생했습니다: {e}")    
