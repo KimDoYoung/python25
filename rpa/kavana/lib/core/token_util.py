@@ -351,6 +351,8 @@ class TokenUtil:
 
         array_obj = Array([])
         for item in items:
+            if not isinstance(item, Token):
+                raise KavanaTypeError("array_to_array_token은 Token 리스트만 허용됩니다.")
             array_obj.append(item)
         result = ArrayToken(data=array_obj, element_expresses=[], status=TokenStatus.EVALUATED)
         return result

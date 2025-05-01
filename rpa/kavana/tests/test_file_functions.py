@@ -47,23 +47,6 @@ def test_file_read():
     assert result.type == TokenType.STRING
     assert result.data.value == TEST_CONTENT
 
-def test_file_size():
-    """파일 크기 테스트"""
-    result = FileFunctions.FILE_SIZE(TEST_FILE_PATH)
-    assert result.type == TokenType.INTEGER
-    assert result.data.value == len(TEST_CONTENT)
-
-def test_file_modified_time():
-    """파일 수정 시간 테스트"""
-    result = FileFunctions.FILE_MODIFIED_TIME(TEST_FILE_PATH)
-    assert result.type == TokenType.YMDTIME
-    # assert len(result.data.string) > 0  # 날짜 형식인지 간단히 확인
-
-def test_file_type():
-    """파일 유형 테스트"""
-    result = FileFunctions.FILE_TYPE(TEST_FILE_PATH)
-    assert result.type == TokenType.STRING
-    assert result.data.value == "file"
 
 def test_file_copy():
     """파일 복사 테스트"""

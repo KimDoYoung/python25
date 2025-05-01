@@ -8,12 +8,18 @@ class MockYmd:
         self.data = dt
 
 class MockYmdTime(MockYmd):
-    pass
+    def __init__(self, dt):
+        super().__init__(dt)
+        self.value = dt
+    def weekday(self):
+        return self.value.weekday()
+
+    def is_weekend(self):
+        return self.weekday() in (5, 6)  # 5: Saturday, 6: Sunday
 
 class MockToken:
     def __init__(self, value):
         self.value = value
-
 class MockTokenUtil:
     @staticmethod
     def integer_to_integer_token(val):

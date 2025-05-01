@@ -2,16 +2,16 @@ from lib.core.command_executor import CommandExecutor
 from lib.core.command_parser import CommandParser
 from lib.core.command_preprocessor import CommandPreprocessor
 
-
-# 사용자 함수처리
+# 대입
 script = """
 MAIN
-    function plus(a, b)
-        set c = 2+3+(4*5)
-        return a + b + c - 10
-    END_FUNCTION
-    SET d = plus(1, 2) + 12
-    print f"{d}"
+    SET s1 = "hello" //나는 내가 빛나는 별인 줄 알았어요"
+    SET s2 = "홍길동 입니다"
+    print "------------------------------"   
+    PRINT length(s1) , length(s2)
+    PRINT substr(s1, 0, 2) , substr(s2, 0, 2)
+    SET array1 = SPLIT("hello,world", ",")
+    PRINT array1[0], array1[1]
 END_MAIN
 """
 #---------------------------
@@ -19,16 +19,10 @@ END_MAIN
 #---------------------------
 script_lines = script.split("\n")
 command_preprocssed_lines = CommandPreprocessor().preprocess(script_lines)
-for line in command_preprocssed_lines:
-    print(line)
 parser = CommandParser()
 parsed_commands = parser.parse(command_preprocssed_lines)
 
 commandExecutor = CommandExecutor()
 
 for command in parsed_commands:
-    print("----------------------")
-    print(command)
     commandExecutor.execute(command)
-    print("----------------------")
-

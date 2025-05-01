@@ -147,7 +147,10 @@ class NumericFunctions:
         if not isinstance(i, int):
             NumericFunctions.executor.log_command("ERROR", "IS_EVEN() 함수는 정수형 인자만 받을 수 있습니다")
             raise KavanaTypeError("IS_EVEN() 함수는 정수형 인자만 받을 수 있습니다")
-        return Token(data=Integer(int(i % 2 == 0)), type=TokenType.INTEGER)
+        if ((i % 2) == 0):
+            return TokenUtil.boolean_to_boolean_token(True)
+        else:
+            return TokenUtil.boolean_to_boolean_token(False)
     
     @staticmethod
     def IS_ODD(i: int) -> Token:
@@ -161,7 +164,11 @@ class NumericFunctions:
         if not isinstance(i, int):
             NumericFunctions.executor.log_command("ERROR", "IS_ODD() 함수는 정수형 인자만 받을 수 있습니다")
             raise KavanaTypeError("IS_ODD() 함수는 정수형 인자만 받을 수 있습니다")
-        return Token(data=Integer(int(i % 2 == 1)), type=TokenType.INTEGER)
+
+        if ((i % 2) == 1):
+            return TokenUtil.boolean_to_boolean_token(True)
+        else:
+            return TokenUtil.boolean_to_boolean_token(False)        
 
     @staticmethod
     def RANGE(*args) -> ArrayToken:
@@ -189,7 +196,10 @@ class NumericFunctions:
             raise KavanaValueError("RANGE()의 step 값은 0이 될 수 없습니다.")
 
         range_list = list(range(start, stop, step))
-        resultToken = TokenUtil.array_to_array_token(range_list)
+        token_list =[]
+        for i in range_list:
+            token_list.append(Token(data=Integer(i), type=TokenType.INTEGER))
+        resultToken = TokenUtil.array_to_array_token(token_list)
         return resultToken
 
     @staticmethod

@@ -402,6 +402,11 @@ class CommandParser:
             # ✅ YmdTime 키워드
             (r"(?i)\bYmdTime\b", TokenType.IDENTIFIER),
             (r"(?i)\bYmd\b", TokenType.IDENTIFIER),
+            # ✅ 숫자
+            (r'\b\d+\.\d+|\.\d+|\d+\.\b', TokenType.FLOAT),
+            (r'\b\d+\b', TokenType.INTEGER),
+            # (r'(?<!\w)[-+]?\d+\.\d+|\.\d+(?!\w)', TokenType.FLOAT),
+            # (r'(?<!\w)[-+]?\d+(?!\w)', TokenType.INTEGER),
 
             # ✅ 작은따옴표 오류 감지
             (r"'([^']*)'", None),
@@ -425,9 +430,6 @@ class CommandParser:
             # ✅ 식별자 (한글 지원)
             (r'[가-힣a-zA-Z_\$][가-힣a-zA-Z0-9_\$]*', TokenType.IDENTIFIER),            
 
-            # ✅ 숫자
-            (r'\b\d+\.\d+|\.\d+|\d+\.\b', TokenType.FLOAT),
-            (r'\b\d+\b', TokenType.INTEGER),
 
         ]
 

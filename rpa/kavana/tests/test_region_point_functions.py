@@ -60,5 +60,5 @@ def test_REGION_OF_REGION(region_name, expected):
     ((50, 200), (0, 0, 100, 100), False), # 아래쪽 바깥
 ])
 def test_is_point_in_region(point, region, expected):
-    token = RegionPointFunctions.is_point_in_region(point, region)
+    token = RegionPointFunctions.IS_POINT_IN_REGION(point, region)
     assert token.data.value == expected

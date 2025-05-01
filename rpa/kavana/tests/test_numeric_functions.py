@@ -35,8 +35,8 @@ def test_floor():
 
 def test_ceil():
     """CEIL() 함수 테스트"""
-    assert NumericFunctions.CEIL(3).data.value == 4  # 올림
-    assert NumericFunctions.CEIL(-2).data.value == -1  # 올림
+    assert NumericFunctions.CEIL(3).data.value == 3  # 올림
+    assert NumericFunctions.CEIL(-2).data.value == -2  # 올림
 
 def test_trunc():
     """TRUNC() 함수 테스트"""
@@ -57,10 +57,21 @@ def test_range():
     """RANGE() 함수 테스트"""
     result = NumericFunctions.RANGE(5)
     assert isinstance(result, ArrayToken)
-    assert result.data == Array([0, 1, 2, 3, 4])
+    array = []
+    for t in result.data.value:
+        array.append(t.data.value)
+    assert array == [0, 1, 2, 3, 4]
 
+    array =[]
     result = NumericFunctions.RANGE(2, 6)
-    assert result.data == Array([2, 3, 4, 5])
-
+    assert isinstance(result, ArrayToken)
+    for t in result.data.value:
+        array.append(t.data.value)
+    assert array == [2, 3, 4, 5]
+    
     result = NumericFunctions.RANGE(1, 10, 2)
-    assert result.data == Array([1, 3, 5, 7, 9])
+    assert isinstance(result, ArrayToken)
+    array = []
+    for t in result.data.value:
+        array.append(t.data.value)
+    assert array == [1, 3, 5, 7, 9]

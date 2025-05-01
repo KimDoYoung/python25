@@ -95,8 +95,10 @@ class StringFunctions:
         '''  문자열을 구분자로 나누어 리스트로 반환합니다.'''
         if isinstance(s, str) and isinstance(sep, str):
             result = s.split(sep)
-            list_type = Array(result)
-            return TokenUtil.array_to_array_token(list_type)  # Updated to use 'list_type' instead of 'result'
+            token_list = []
+            for item in result:
+                token_list.append(StringToken(data=String(item), type=TokenType.STRING))
+            return TokenUtil.array_to_array_token(token_list)  
         StringFunctions.executor.log_command("ERROR", "사용형식 : SPLIT(문자열, 구분자)")
         raise KavanaTypeError("사용형식 : SPLIT(문자열, 구분자)")
     

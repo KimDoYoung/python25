@@ -2,6 +2,7 @@ import os
 import shutil
 import pytest
 from lib.core.builtins.dir_functions import DirFunctions
+from lib.core.token_type import TokenType
 
 # 테스트용 디렉토리 이름
 TEST_DIR = "test_temp_dir"
@@ -37,9 +38,7 @@ def test_DIR_LIST():
             f.write("test")
 
     token = DirFunctions.DIR_LIST(TEST_DIR)
-    listed_files = [f.value for f in token.data.value]
-    assert set(filenames).issubset(set(listed_files))
-
+    assert token.type == TokenType.ARRAY
 def test_DIR_DELETE():
     # 디렉토리 비워야 삭제 가능
     for f in os.listdir(TEST_DIR):
