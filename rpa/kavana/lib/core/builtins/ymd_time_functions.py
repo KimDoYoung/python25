@@ -70,28 +70,28 @@ class YmdTimeFunctions:
     @staticmethod
     def WEEKDAY(date: Union[Ymd, YmdTime]) -> Token:
         ''' 요일을 0(월요일)부터 6(일요일)까지의 정수로 반환 '''
-        d = date.data
+        d = date.weekday()
         # 월요일: 0, 화요일: 1, 수요일: 2, 목요일: 3, 금요일: 4, 토요일: 5, 일요일: 6
-        return TokenUtil.integer_to_integer_token(d.weekday())
+        return TokenUtil.integer_to_integer_token(d)
 
     @staticmethod
     def IS_WEEKEND(date: Union[Ymd, YmdTime]) -> Token:
-        d = date.data
+        d = date.weekday()
         # 토요일: 5, 일요일: 6
-        if d.weekday() in (5, 6):
+        if d in (5, 6):
             return TokenUtil.boolean_to_boolean_token(True)
         return TokenUtil.boolean_to_boolean_token(False)
     
     @staticmethod
     def WEEK_NAME(date: Union[Ymd, YmdTime], type:str="korea-short") -> StringToken:
-        d = date.data
+        d = date.weekday()
         # 월요일: 0, 화요일: 1, 수요일: 2, 목요일: 3, 금요일: 4, 토요일: 5, 일요일: 6
         korea_short = ["월", "화", "수", "목", "금", "토", "일"]
         korea_long = ["월요일", "화요일", "수요일", "목요일", "금요일", "토요일", "일요일"]
         english_short = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"]
         english_long = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"]
         week_names = {
-            "korea-short": korea_short,
+            "korea-short": korea_short, 
             "korea-long": korea_long,
             "english-short": english_short,
             "english-long": english_long
@@ -99,4 +99,5 @@ class YmdTimeFunctions:
         if type not in week_names:
             raise KavanaValueError(f"WEEK_NAME : 지원하지 않는 요일 형식입니다: {type}")
         name = week_names[type]
-        return TokenUtil.string_to_string_token(name[d.weekday()])
+        
+        return TokenUtil.string_to_string_token(name[d])

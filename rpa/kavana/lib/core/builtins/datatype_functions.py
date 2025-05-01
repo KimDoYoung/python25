@@ -15,7 +15,6 @@ class DatatypeFunctions:
     def set_executor(executor_instance):
         DatatypeFunctions.executor = executor_instance
 
-
     @staticmethod
     def DUMP_ATTRS(obj: KavanaDataType) -> HashMapToken:
         """객체의 속성값을 반환"""
