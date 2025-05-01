@@ -56,6 +56,12 @@ BUILTIN_FUNCTIONS = {
     "IS_EVEN" : (NumericFunctions.IS_EVEN, 1),
     "IS_ODD" : (NumericFunctions.IS_ODD, 1),
     "RANGE" : (NumericFunctions.RANGE, 2),
+    "POWER" : (NumericFunctions.POWER, 2),
+    "SQRT" : (NumericFunctions.SQRT, 1),
+    "SIN" : (NumericFunctions.SIN, 1),
+    "COS" : (NumericFunctions.COS, 1),
+    "TAN" : (NumericFunctions.TAN, 1),
+    "MOD" : (NumericFunctions.MOD, 2),
 
     # ✅ 날짜 관련 함수 추가
     "YMDTIME": (YmdTimeFunctions.YMDTIME, 6),

@@ -1,5 +1,7 @@
+import math
 import random
-from lib.core.datatypes.kavana_datatype import Integer
+from typing import Union
+from lib.core.datatypes.kavana_datatype import Float, Integer
 from lib.core.datatypes.array import Array
 from lib.core.exceptions.kavana_exception import KavanaValueError, KavanaTypeError
 from lib.core.token import  ArrayToken, Token
@@ -75,21 +77,22 @@ class NumericFunctions:
         return Token(data=Integer(min(i, j)),type=TokenType.INTEGER)
     
     @staticmethod
-    def ROUND(i: int) -> Token:
+    def ROUND(i: Union[int, float]) -> Token:
         '''
         주어진 숫자를 반올림합니다.
         
         예:
         ROUND(3.6) → 4
         ROUND(2.3) → 2
+        ROUND(5) → 5
         '''
-        if not isinstance(i, int):
-            NumericFunctions.executor.log_command("ERROR", "ROUND() 함수는 정수형 인자만 받을 수 있습니다")
-            raise KavanaTypeError("ROUND() 함수는 정수형 인자만 받을 수 있습니다")
+        if not isinstance(i, (int, float)):
+            NumericFunctions.executor.log_command("ERROR", "ROUND() 함수는 정수형 또는 실수형 인자만 받을 수 있습니다")
+            raise KavanaTypeError("ROUND() 함수는 정수형 또는 실수형 인자만 받을 수 있습니다")
         return Token(data=Integer(round(i)), type=TokenType.INTEGER)
     
     @staticmethod
-    def FLOOR(i: int) -> Token:
+    def FLOOR(i: Union[int, float]) -> Token:
         '''
         주어진 숫자를 내림 처리합니다 (소수점 이하 제거).
         
@@ -97,13 +100,14 @@ class NumericFunctions:
         FLOOR(3.9) → 3
         FLOOR(-1.2) → -2
         '''
-        if not isinstance(i, int):
-            NumericFunctions.executor.log_command("ERROR", "FLOOR() 함수는 정수형 인자만 받을 수 있습니다")
-            raise KavanaTypeError("FLOOR() 함수는 정수형 인자만 받을 수 있습니다")
-        return Token(data=Integer(int(i // 1)), type=TokenType.INTEGER)
-    
+        if not isinstance(i, (int, float)):
+            NumericFunctions.executor.log_command("ERROR", "FLOOR() 함수는 정수형 또는 실수형 인자만 받을 수 있습니다")
+            raise KavanaTypeError("FLOOR() 함수는 정수형 또는 실수형 인자만 받을 수 있습니다")
+        return Token(data=Integer(math.floor(i)), type=TokenType.INTEGER)
+
+
     @staticmethod
-    def CEIL(i: int) -> Token:
+    def CEIL(i: Union[int, float]) -> Token:
         '''
         주어진 숫자를 올림 처리합니다.
         
@@ -111,13 +115,14 @@ class NumericFunctions:
         CEIL(3.1) → 4
         CEIL(-1.8) → -1
         '''
-        if not isinstance(i, int):
-            NumericFunctions.executor.log_command("ERROR", "CEIL() 함수는 정수형 인자만 받을 수 있습니다")
-            raise KavanaTypeError("CEIL() 함수는 정수형 인자만 받을 수 있습니다")
-        return Token(data=Integer(int(i // 1 + 1)), type=TokenType.INTEGER)
-    
+        if not isinstance(i, (int, float)):
+            NumericFunctions.executor.log_command("ERROR", "CEIL() 함수는 정수형 또는 실수형 인자만 받을 수 있습니다")
+            raise KavanaTypeError("CEIL() 함수는 정수형 또는 실수형 인자만 받을 수 있습니다")
+        return Token(data=Integer(math.ceil(i)), type=TokenType.INTEGER)
+
+
     @staticmethod
-    def TRUNC(i: int) -> Token:
+    def TRUNC(i: Union[int, float]) -> Token:
         '''
         주어진 숫자의 소수점을 제거하여 정수 부분만 반환합니다.
         
@@ -125,10 +130,10 @@ class NumericFunctions:
         TRUNC(3.14159) → 3
         TRUNC(-5.9) → -5
         '''
-        if not isinstance(i, int):
-            NumericFunctions.executor.log_command("ERROR", "TRUNC() 함수는 정수형 인자만 받을 수 있습니다")
-            raise KavanaTypeError("TRUNC() 함수는 정수형 인자만 받을 수 있습니다")
-        return Token(data=Integer(int(i)), type=TokenType.INTEGER)
+        if not isinstance(i, (int, float)):
+            NumericFunctions.executor.log_command("ERROR", "TRUNC() 함수는 정수형 또는 실수형 인자만 받을 수 있습니다")
+            raise KavanaTypeError("TRUNC() 함수는 정수형 또는 실수형 인자만 받을 수 있습니다")
+        return Token(data=Integer(math.trunc(i)), type=TokenType.INTEGER)    
     
     @staticmethod
     def IS_EVEN(i: int) -> Token:
@@ -186,3 +191,91 @@ class NumericFunctions:
         range_list = list(range(start, stop, step))
         resultToken = TokenUtil.array_to_array_token(range_list)
         return resultToken
+
+    @staticmethod
+    def POWER(base: Union[int, float], exp: Union[int, float]) -> Token:
+        '''
+        base의 exp 거듭제곱을 반환합니다.
+        
+        예:
+        POWER(2, 3) → 8
+        POWER(4, 0.5) → 2
+        '''
+        if not isinstance(base, (int, float)) or not isinstance(exp, (int, float)):
+            NumericFunctions.executor.log_command("ERROR", "POWER() 함수는 정수형 또는 실수형 인자만 받을 수 있습니다")
+            raise KavanaTypeError("POWER() 함수는 정수형 또는 실수형 인자만 받을 수 있습니다")
+        return Token(data=Float(math.pow(base, exp)), type=TokenType.FLOAT)
+
+    @staticmethod
+    def SQRT(i: Union[int, float]) -> Token:
+        '''
+        숫자의 제곱근을 반환합니다.
+        
+        예:
+        SQRT(16) → 4
+        SQRT(2) → 1.414
+        '''
+        if not isinstance(i, (int, float)) or i < 0:
+            NumericFunctions.executor.log_command("ERROR", "SQRT() 함수는 0 이상의 정수형 또는 실수형 인자만 받을 수 있습니다")
+            raise KavanaValueError("SQRT() 함수는 0 이상의 정수형 또는 실수형 인자만 받을 수 있습니다")
+        return Token(data=Float(math.sqrt(i)), type=TokenType.FLOAT)
+
+    @staticmethod
+    def SIN(angle: Union[int, float]) -> Token:
+        '''
+        주어진 각도의 사인 값을 반환합니다 (라디안 단위).
+        
+        예:
+        SIN(math.pi / 2) → 1
+        SIN(0) → 0
+        '''
+        if not isinstance(angle, (int, float)):
+            NumericFunctions.executor.log_command("ERROR", "SIN() 함수는 정수형 또는 실수형 인자만 받을 수 있습니다")
+            raise KavanaTypeError("SIN() 함수는 정수형 또는 실수형 인자만 받을 수 있습니다")
+        return Token(data=Float(math.sin(angle)), type=TokenType.FLOAT)
+
+    @staticmethod
+    def COS(angle: Union[int, float]) -> Token:
+        '''
+        주어진 각도의 코사인 값을 반환합니다 (라디안 단위).
+        
+        예:
+        COS(0) → 1
+        COS(math.pi) → -1
+        '''
+        if not isinstance(angle, (int, float)):
+            NumericFunctions.executor.log_command("ERROR", "COS() 함수는 정수형 또는 실수형 인자만 받을 수 있습니다")
+            raise KavanaTypeError("COS() 함수는 정수형 또는 실수형 인자만 받을 수 있습니다")
+        return Token(data=Float(math.cos(angle)), type=TokenType.FLOAT)
+
+    @staticmethod
+    def TAN(angle: Union[int, float]) -> Token:
+        '''
+        주어진 각도의 탄젠트 값을 반환합니다 (라디안 단위).
+        
+        예:
+        TAN(0) → 0
+        TAN(math.pi / 4) → 1
+        '''
+        if not isinstance(angle, (int, float)):
+            NumericFunctions.executor.log_command("ERROR", "TAN() 함수는 정수형 또는 실수형 인자만 받을 수 있습니다")
+            raise KavanaTypeError("TAN() 함수는 정수형 또는 실수형 인자만 받을 수 있습니다")
+        return Token(data=Float(math.tan(angle)), type=TokenType.FLOAT)
+
+    @staticmethod
+    def MOD(a: int, b: int) -> Token:
+        '''
+        a를 b로 나눈 나머지를 반환합니다.
+        
+        예:
+        MOD(10, 3) → 1
+        MOD(15, 5) → 0
+        '''
+        if not isinstance(a, int) or not isinstance(b, int):
+            NumericFunctions.executor.log_command("ERROR", "MOD() 함수는 정수형 인자만 받을 수 있습니다")
+            raise KavanaTypeError("MOD() 함수는 정수형 인자만 받을 수 있습니다")
+        if b == 0:
+            NumericFunctions.executor.log_command("ERROR", "MOD() 함수는 0으로 나눌 수 없습니다")
+            raise KavanaValueError("MOD() 함수는 0으로 나눌 수 없습니다")
+        return Token(data=Integer(a % b), type=TokenType.INTEGER)
+
