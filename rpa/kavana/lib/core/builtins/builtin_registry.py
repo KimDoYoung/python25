@@ -7,7 +7,10 @@ from lib.core.builtins.region_point_functions import RegionPointFunctions
 from lib.core.builtins.ymd_time_functions import YmdTimeFunctions
 from .string_functions import StringFunctions
 from .numeric_functions import NumericFunctions
-
+#TODO builtin함수에 default인자를 줄 수 없나? 인자가 1개 생략되면 default가 적용
+#TODO 여러개의 인자를 보낼때, 즉 정해지지 않은 인자갯수 path_join
+#TODO set a = -1 
+#TODO " 안에 " 를 처리
 BUILTIN_FUNCTIONS = {
     # Point Region 관련 함수
     "POINT_OF_REGION": (RegionPointFunctions.POINT_OF_REGION, 2),
