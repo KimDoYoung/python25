@@ -6,6 +6,7 @@
     "python.testing.pytestEnabled": true,
     "terminal.integrated.defaultProfile.windows": "Git Bash",
     "editor.codeActionsOnSave": {
-        "source.fixAll.markdownlint": "explicit"
+        // "source.fixAll.markdownlint": "explicit"
     },
+    
 }

@@ -35,18 +35,21 @@ class NumericFunctions:
         return Token(data=Integer(i), type=TokenType.INTEGER)
     
     @staticmethod
-    def ABS(i: int) -> Token:
+    def ABS(i: Union[int,float]) -> Token:
         '''
         주어진 숫자의 절대값을 반환합니다.
         
         예:
         ABS(-5) → 5
-        ABS(10) → 10
+        ABS(-10.3) → 10.3
         '''
-        if not isinstance(i, int):
-            NumericFunctions.executor.log_command("ERROR", "ABS() 함수는 정수형 인자만 받을 수 있습니다")
-            raise KavanaTypeError("ABS() 함수는 정수형 인자만 받을 수 있습니다")
-        return Token(data=Integer(abs(i)), type=TokenType.INTEGER)
+        if not isinstance(i, int) and not isinstance(i, float):
+            NumericFunctions.executor.log_command("ERROR", "ABS() 함수는 정수형 또는 실수형 인자만 받을 수 있습니다")
+            raise KavanaTypeError("ABS() 함수는 정수형 또는 실수형 인자만 받을 수 있습니다")
+        if isinstance(i, float):
+            return Token(data=Float(abs(i)), type=TokenType.FLOAT)
+        else:
+            return Token(data=Integer(abs(i)), type=TokenType.INTEGER)
     
     @staticmethod
     def MAX(i: int, j: int) -> Token:

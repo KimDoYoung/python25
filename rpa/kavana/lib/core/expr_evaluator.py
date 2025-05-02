@@ -303,85 +303,104 @@ class ExprEvaluator:
                     result = self.OPERATORS[logical_op][1](a.data.value)
                     stack.append(Token(Boolean(result), TokenType.BOOLEAN, line=token.line, column=token.column))
                 else:
-                    b = stack.pop()
-                    a = stack.pop()
-                    result_type = TokenType.UNKNOWN
-                    if token.data.value == "%":
-                        if not a.type == TokenType.INTEGER or not b.type == TokenType.INTEGER:
-                            raise ExprEvaluationError(f"%는 지원하지 않는 타입입니다 : {a.type} and {b.type}")
-                        result = Integer(a.data.value % b.data.value)
-                        result_type = TokenType.INTEGER
-                    if token.data.value == '+' and a.type == TokenType.ARRAY and b.type == TokenType.ARRAY:
-                        # list + list
-                        if a.element_type != b.element_type:
-                            raise ExprEvaluationError("배열에는 다른 데이터 타입을 추가할 수 없습니다.", token.line, token.column)
-                        new_list = Array(a.data.value.copy() + b.data.value.copy())                        
-                        result = new_list
-                        result_type = TokenType.ARRAY
-                    # YmdTime 연산 : Ymd + Integer, Ymd - Integer, Ymd - Ymd
-                    elif a.type == TokenType.YMDTIME and b.type == TokenType.INTEGER:
-                        dt = a.data.value + timedelta(days=b.data.value) if token.data.value == "+" else a.data.value - timedelta(days=b.data.value)
-                        result = YmdTime.from_datetime(dt)
-                        result_type = TokenType.YMDTIME
-                    elif a.type == TokenType.YMDTIME and b.type == TokenType.YMDTIME and token.data.value == "-":
-                        # YMDTIME - YMDTIME
-                        diff_seconds = (a.data.value - b.data.value).total_seconds()  # ✅ 초 단위 차이 계산
-                        result = Integer(int(diff_seconds))  # ✅ 결과를 정수(Integer)로 변환
-                        result_type = TokenType.INTEGER
-                    # Ymd연산 : Ymd + Integer, Ymd - Integer, Ymd - Ymd
-                    elif a.type == TokenType.YMD and b.type == TokenType.INTEGER:
-                        # ✅ YMD + int 또는 YMD - int (N일 더하거나 빼기)
-                        dt = a.data.value + timedelta(days=b.data.value) if token.data.value == "+" else a.data.value - timedelta(days=b.data.value)
-                        result = Ymd.from_date(dt)  
-                        result_type = TokenType.YMD
-
-                    elif a.type == TokenType.YMD and b.type == TokenType.YMD and token.data.value == "-":
-                        # ✅ YMD - YMD (날짜 차이 반환)
-                        diff_days = (a.data.value - b.data.value).days  # ✅ `days` 속성은 이미 `일 단위`이므로 `// 86400` 불필요
-                        result = Integer(diff_days)
-                        result_type = TokenType.INTEGER
-
-                    elif a.type == TokenType.STRING and b.type == TokenType.STRING and token.data.value == "+":
-                        result = String(a.data.value + b.data.value)
-                        result_type = TokenType.STRING
-                    
-                    elif (a.type == b.type and a.type in  CUSTOM_TYPES and token.data.value in { "==", "!="}):
-                        if a.type in { TokenType.IMAGE }:
-                            b = self.OPERATORS[token.data.value][1](a.data, b.data)
-                        else:    
-                            b = self.OPERATORS[token.data.value][1](a.data.value, b.data.value)
-                        result = Boolean(b)
-                        result_type = TokenType.BOOLEAN
-
-                    elif (a.type == TokenType.NONE or b.type == TokenType.NONE) and token.data.value in {"==", "!="}:
-                        b = self.OPERATORS[token.data.value][1](a.data.value, b.data.value)
-                        result = Boolean(b)
-                        result_type = TokenType.BOOLEAN
-
-                    elif a.type in {TokenType.INTEGER, TokenType.FLOAT, TokenType.BOOLEAN, TokenType.STRING} and b.type in {TokenType.INTEGER, TokenType.FLOAT, TokenType.BOOLEAN, TokenType.STRING}:
-                        result = self.OPERATORS[token.data.value.upper()][1](a.data.value, b.data.value)
-                        # ✅ 비교 연산자일 경우 결과는 항상 BOOLEAN
-                        if token.data.value in {"==", "!=", ">", "<", ">=", "<="}:
-                            result = Boolean(result)
-                            result_type = TokenType.BOOLEAN
-
-                        # ✅ 산술 연산자는 결과 타입을 결정해야 함
-                        elif token.data.value in {"+", "-", "*", "/"}:
-                            if a.type == TokenType.FLOAT or b.type == TokenType.FLOAT:
-                                result = Float(result)  # ✅ Float으로 변환
-                                result_type = TokenType.FLOAT
+                    if len(stack) == 1: # unary operator -1, +1
+                        a = stack.pop()
+                        op = token.data.value
+                        if op in {'-', '+'} :
+                            # 단항 연산자 처리 (ex: -a, +a)
+                            if a.type == TokenType.INTEGER:
+                                result = Integer(a.data.value)
+                                if op == "-":
+                                    result = Integer(-a.data.value)
+                            elif a.type == TokenType.FLOAT:
+                                result = Float(a.data.value)
+                                if op == "-":
+                                    result = Float(-a.data.value)
                             else:
-                                result = Integer(result)  # ✅ Integer로 변환
-                                result_type = TokenType.INTEGER
-                        elif token.data.value.upper() in {"AND", "OR"}:
-                            result = Boolean(result)
-                            result_type = TokenType.BOOLEAN
+                                raise ExprEvaluationError(f"단항 연산자는 (-,+)는 정수와 실수만 지원합니다", token.line, token.column) 
+                            stack.append(Token(data=result, type=a.type, line=token.line, column=token.column))
                         else:
-                            raise ExprEvaluationError(f"지원하지 않는 연산자 입니다: {token.data.value}", token.line, token.column)
+                            raise ExprEvaluationError(f"지원하지 않는 단항 연산자입니다: `{op}`", token.line, token.column)
                     else:
-                        raise ExprEvaluationError(f"연산을 지원하지 않는 타입입니다.: {a.type} and {b.type}", token.line, token.column)
+                        b = stack.pop()
+                        a = stack.pop()
+                        result_type = TokenType.UNKNOWN
+                        if token.data.value == "%":
+                            if not a.type == TokenType.INTEGER or not b.type == TokenType.INTEGER:
+                                raise ExprEvaluationError(f"%는 지원하지 않는 타입입니다 : {a.type} and {b.type}")
+                            result = Integer(a.data.value % b.data.value)
+                            result_type = TokenType.INTEGER
+                        if token.data.value == '+' and a.type == TokenType.ARRAY and b.type == TokenType.ARRAY:
+                            # list + list
+                            if a.element_type != b.element_type:
+                                raise ExprEvaluationError("배열에는 다른 데이터 타입을 추가할 수 없습니다.", token.line, token.column)
+                            new_list = Array(a.data.value.copy() + b.data.value.copy())                        
+                            result = new_list
+                            result_type = TokenType.ARRAY
+                        # YmdTime 연산 : Ymd + Integer, Ymd - Integer, Ymd - Ymd
+                        elif a.type == TokenType.YMDTIME and b.type == TokenType.INTEGER:
+                            dt = a.data.value + timedelta(days=b.data.value) if token.data.value == "+" else a.data.value - timedelta(days=b.data.value)
+                            result = YmdTime.from_datetime(dt)
+                            result_type = TokenType.YMDTIME
+                        elif a.type == TokenType.YMDTIME and b.type == TokenType.YMDTIME and token.data.value == "-":
+                            # YMDTIME - YMDTIME
+                            diff_seconds = (a.data.value - b.data.value).total_seconds()  # ✅ 초 단위 차이 계산
+                            result = Integer(int(diff_seconds))  # ✅ 결과를 정수(Integer)로 변환
+                            result_type = TokenType.INTEGER
+                        # Ymd연산 : Ymd + Integer, Ymd - Integer, Ymd - Ymd
+                        elif a.type == TokenType.YMD and b.type == TokenType.INTEGER:
+                            # ✅ YMD + int 또는 YMD - int (N일 더하거나 빼기)
+                            dt = a.data.value + timedelta(days=b.data.value) if token.data.value == "+" else a.data.value - timedelta(days=b.data.value)
+                            result = Ymd.from_date(dt)  
+                            result_type = TokenType.YMD
 
-                    stack.append(Token(result, result_type, line=token.line, column=token.column))
+                        elif a.type == TokenType.YMD and b.type == TokenType.YMD and token.data.value == "-":
+                            # ✅ YMD - YMD (날짜 차이 반환)
+                            diff_days = (a.data.value - b.data.value).days  # ✅ `days` 속성은 이미 `일 단위`이므로 `// 86400` 불필요
+                            result = Integer(diff_days)
+                            result_type = TokenType.INTEGER
+
+                        elif a.type == TokenType.STRING and b.type == TokenType.STRING and token.data.value == "+":
+                            result = String(a.data.value + b.data.value)
+                            result_type = TokenType.STRING
+                        
+                        elif (a.type == b.type and a.type in  CUSTOM_TYPES and token.data.value in { "==", "!="}):
+                            if a.type in { TokenType.IMAGE }:
+                                b = self.OPERATORS[token.data.value][1](a.data, b.data)
+                            else:    
+                                b = self.OPERATORS[token.data.value][1](a.data.value, b.data.value)
+                            result = Boolean(b)
+                            result_type = TokenType.BOOLEAN
+
+                        elif (a.type == TokenType.NONE or b.type == TokenType.NONE) and token.data.value in {"==", "!="}:
+                            b = self.OPERATORS[token.data.value][1](a.data.value, b.data.value)
+                            result = Boolean(b)
+                            result_type = TokenType.BOOLEAN
+
+                        elif a.type in {TokenType.INTEGER, TokenType.FLOAT, TokenType.BOOLEAN, TokenType.STRING} and b.type in {TokenType.INTEGER, TokenType.FLOAT, TokenType.BOOLEAN, TokenType.STRING}:
+                            result = self.OPERATORS[token.data.value.upper()][1](a.data.value, b.data.value)
+                            # ✅ 비교 연산자일 경우 결과는 항상 BOOLEAN
+                            if token.data.value in {"==", "!=", ">", "<", ">=", "<="}:
+                                result = Boolean(result)
+                                result_type = TokenType.BOOLEAN
+
+                            # ✅ 산술 연산자는 결과 타입을 결정해야 함
+                            elif token.data.value in {"+", "-", "*", "/"}:
+                                if a.type == TokenType.FLOAT or b.type == TokenType.FLOAT:
+                                    result = Float(result)  # ✅ Float으로 변환
+                                    result_type = TokenType.FLOAT
+                                else:
+                                    result = Integer(result)  # ✅ Integer로 변환
+                                    result_type = TokenType.INTEGER
+                            elif token.data.value.upper() in {"AND", "OR"}:
+                                result = Boolean(result)
+                                result_type = TokenType.BOOLEAN
+                            else:
+                                raise ExprEvaluationError(f"지원하지 않는 연산자 입니다: {token.data.value}", token.line, token.column)
+                        else:
+                            raise ExprEvaluationError(f"연산을 지원하지 않는 타입입니다.: {a.type} and {b.type}", token.line, token.column)
+
+                        stack.append(Token(result, result_type, line=token.line, column=token.column))
 
             elif token.type == TokenType.FUNCTION:
                 func_name = token.function_name.upper()
