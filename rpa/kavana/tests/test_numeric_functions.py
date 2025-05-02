@@ -15,6 +15,8 @@ def test_abs():
     """ABS() 함수 테스트"""
     assert NumericFunctions.ABS(-5).data.value == 5
     assert NumericFunctions.ABS(10).data.value == 10
+    assert NumericFunctions.ABS(-5.3).data.value == 5.3
+    assert NumericFunctions.ABS(-10.3).data.value == 10.3
 
 def test_max_min():
     """MAX(), MIN() 함수 테스트"""
