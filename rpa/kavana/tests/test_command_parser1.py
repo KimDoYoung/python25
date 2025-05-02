@@ -9,6 +9,30 @@ from tests.helper_func import get_raw_tokens, get_tokens, get_command
 def parser():
     return CommandParser()
 
+def test_command_parser0():
+    ''' set i = -1 '''
+    s = [
+        "set i = -1",
+        "set i = 1 + -1",
+        "set i = 1 - 10",
+        "set i = 1 +-1",
+        "set i = 1 ++1",
+        "set c = 2+3+(4*5)"
+    ]    
+    for str in s:
+        commands = get_command(str)
+        cmd = commands[0]['cmd']
+        args = commands[0]['args']
+        # print (commands[0]['cmd'])
+        print ("\n--------------------------------")
+        for token in args:
+            print (token.type, token.data.value)
+        print ("--------------------------------")
+        # assert cmd == "SET"
+        # assert len (args) == 3
+
+
+
 def test_command_parser1():
     commands = get_command("set i = 1 + 1")
     cmd = commands[0]['cmd']

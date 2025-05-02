@@ -6,6 +6,7 @@ from lib.core.command_preprocessor import CommandPreprocessor
 script = """
 MAIN
     SET i = -12
+    PRINT i
     SET f = -12.34
     SET f2 = +12.34
     SET a = ABS(-10)
