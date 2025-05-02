@@ -126,13 +126,28 @@ class StringFunctions:
         StringFunctions.executor.log_command("ERROR", "사용형식 : ENDSWITH(문자열, 접미사)")
         raise KavanaTypeError("사용형식 : ENDSWITH(문자열, 접미사)")
     
+
     @staticmethod
-    def CONTAINS(s: str, sub: str) -> Token:
+    def CONTAINS(s: Union[str, List, Dict], sub: Any) -> Token:
+        """
+        문자열, 리스트, 딕셔너리에서 특정 요소가 포함되어 있는지 확인합니다.
+        
+        - 문자열: 부분 문자열이 포함되어 있는지 확인.
+        - 리스트: 요소가 포함되어 있는지 확인.
+        - 딕셔너리: 키가 포함되어 있는지 확인.
+        """
         if isinstance(s, str) and isinstance(sub, str):
             b = sub in s
-            return TokenUtil.boolean_to_boolean_token(b)  
-        StringFunctions.executor.log_command("ERROR", "사용형식 : CONTAINS(문자열, 포함문자열)")
-        raise KavanaTypeError("사용형식 : CONTAINS(문자열, 포함문자열)")
+            return TokenUtil.boolean_to_boolean_token(b)
+        elif isinstance(s, List):
+            b = sub in s
+            return TokenUtil.boolean_to_boolean_token(b)
+        elif isinstance(s, Dict):
+            b = sub in s.keys()
+            return TokenUtil.boolean_to_boolean_token(b)
+        else:
+            StringFunctions.executor.log_command("ERROR", "CONTAINS()는 문자열, 리스트, 딕셔너리에만 적용됩니다")
+            raise KavanaTypeError("CONTAINS()는 문자열, 리스트, 딕셔너리에만 적용됩니다")
 
     @staticmethod
     def INDEX_OF(s: Union[str, List, Dict], sub: Any) -> Token:
@@ -179,10 +194,10 @@ class StringFunctions:
             return Token(data=Integer(int(s)), type="INTEGER")
         elif isinstance(s, str):
             try:
-                return Token(data=Integer(int(float(s))), type="INTEGER")
-            except ValueError:
-                StringFunctions.executor.log_command("ERROR", "TO_INT() 함수는 정수형 또는 실수형 문자열만 받을 수 있습니다")
-                raise KavanaValueError("TO_INT() 함수는 정수형 또는 실수형 문자열만 받을 수 있습니다")
+                return Token(data=Integer(int(s)), type="INTEGER")
+            except KavanaValueError as e:
+                StringFunctions.executor.log_command("ERROR", f"TO_INT() 함수 변환 에러: {e}")
+                raise KavanaValueError(f"TO_INT() 함수 변환 에러: {e}")
         else:
             StringFunctions.executor.log_command("ERROR", "TO_INT() 함수는 문자열 또는 실수만 받을 수 있습니다")
             raise KavanaTypeError("TO_INT() 함수는 문자열 또는 실수만 받을 수 있습니다")
@@ -205,9 +220,9 @@ class StringFunctions:
             try:
                 f = float(s)
                 return Token(data=Float(f), type="FLOAT")
-            except ValueError:
-                StringFunctions.executor.log_command("ERROR", "TO_FLOAT() 함수는 실수형 문자열만 받을 수 있습니다")
-                raise KavanaValueError("TO_FLOAT() 함수는 실수형 문자열만 받을 수 있습니다")
+            except KavanaValueError as e:
+                StringFunctions.executor.log_command("ERROR", f"TO_FLOAT() 함수 변환 예러: {e}")
+                raise KavanaValueError(f"TO_FLOAT() 함수 변환 예러: {e}")
         else:
             StringFunctions.executor.log_command("ERROR", "TO_FLOAT() 함수는 문자열 또는 정수만 받을 수 있습니다")
             raise KavanaTypeError("TO_FLOAT() 함수는 문자열 또는 정수만 받을 수 있습니다")
