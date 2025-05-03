@@ -463,4 +463,75 @@ class BrowserManager(BaseManager):
                 BrowserManager._driver = None
                 self.log("INFO", "브라우저 종료 완료")
 
-                
+    #----------------------------------- 
+    # TODO: 추가만 해 놓음, 구현 필요
+    #----------------------------------- 
+    def find_elements(self):
+        ''' 웹페이지에서 요소를 찾는 메서드 '''
+        select = self.options.get("select")
+        select_by = self.options.get("select_by", "css")
+        within = self.options.get("within")
+        timeout = int(self.options.get("timeout", 10))
+
+        if not select:
+            self.raise_error("FIND_ELEMENTS에는 select가 필요합니다.")
+
+        by = {
+            "css": By.CSS_SELECTOR,
+            "xpath": By.XPATH,
+            "id": By.ID
+        }.get(select_by, By.CSS_SELECTOR)
+
+        driver = self._get_driver()
+
+        search_scope = driver
+        if within:
+            search_scope = driver.find_element(by, within)
+
+        try:
+            elements = WebDriverWait(search_scope, timeout).until(
+                EC.presence_of_all_elements_located((by, select))
+            )
+            return elements
+        except Exception as e:
+            self.log("ERROR", f"요소 찾기 실패: {select} - {str(e)}")
+            return []
+
+    #----------------------------------- 
+    # TODO: 추가만 해 놓음, 구현 필요
+    #----------------------------------- 
+    def scroll_to(self):
+        ''' 웹페이지에서 특정 요소로 스크롤하는 메서드 '''
+        select = self.options.get("select")
+        select_by = self.options.get("select_by", "css")
+        within = self.options.get("within")
+        scroll_first = self.options.get("scroll_first", True)
+        timeout = int(self.options.get("timeout", 10))
+
+        if not select:
+            self.raise_error("SCROLL_TO에는 select가 필요합니다.")
+
+        by = {
+            "css": By.CSS_SELECTOR,
+            "xpath": By.XPATH,
+            "id": By.ID
+        }.get(select_by, By.CSS_SELECTOR)
+
+        driver = self._get_driver()
+
+        search_scope = driver
+        if within:
+            search_scope = driver.find_element(by, within)
+
+        try:
+            element = WebDriverWait(search_scope, timeout).until(
+                EC.presence_of_element_located((by, select))
+            )
+
+            if scroll_first:
+                driver.execute_script("arguments[0].scrollIntoView({block: 'center'});", element)
+                self.log("INFO", f"스크롤 완료: {select}")
+
+        except Exception as e:
+            self.log("ERROR", f"스크롤 실패: {select} - {str(e)}")
+            self.raise_error(f"SCROLL_TO 실패: {str(e)}")

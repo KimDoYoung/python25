@@ -1,5 +1,5 @@
 import requests
-
+import subprocess, json
 from lib.core.managers.base_manager import BaseManager
 
 
@@ -58,7 +58,7 @@ class HttpManager(BaseManager):
         return response
 
     def send_request_with_curl(self):
-        import subprocess, json
+        
         from urllib.parse import urlencode
 
         method = self.command.upper()

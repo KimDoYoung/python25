@@ -242,32 +242,6 @@ class RpaManager(BaseManager):
         self.log("INFO", f"[RPA:click_point] CLICK_POINT  완료")
 
 
-    # def click(self, click_type:str, x:int, y:int, click_count:int=1, duration:float=0.2):
-    #         """ 클릭 유형에 따라 적절한 pyautogui 동작을 실행 """
-    #         if click_type == "single":
-    #             for _ in range(click_count):
-    #                 pyautogui.click(x, y)
-    #         elif click_type == "double":
-    #             pyautogui.doubleClick(x, y)
-    #         elif click_type == "right":
-    #             pyautogui.rightClick(x, y)
-    #         elif click_type == "middle":
-    #             pyautogui.middleClick(x, y)
-    #         elif click_type == "triple":
-    #             pyautogui.tripleClick(x, y)
-    #         elif click_type == "drag":
-    #             pyautogui.mouseDown(x, y)
-    #         elif click_type == "drop":
-    #             pyautogui.mouseUp(x, y)
-    #         elif click_type == "hold":
-    #             pyautogui.mouseDown(x, y)
-    #             time.sleep(duration)
-    #         elif click_type == "release":
-    #             pyautogui.mouseUp(x, y)
-    #         else:
-    #             super().log("ERROR", f"CLICK 명령어의 type 옵션 '{click_type}'은 올바르지 않습니다.")
-
-
     def click_image(self):
         """RPA 명령어: click_image - 화면에서 이미지 찾아 클릭"""
         region = self.options.get("area")
@@ -581,32 +555,6 @@ class RpaManager(BaseManager):
                 self.raise_error(f"이미지 파일 열기 실패: {from_file} -> {e}")
         else:
             self.raise_error("'from_file' 또는 'from_var' 중 하나는 반드시 필요합니다.")
-
-            
-    def _get_point_with_name(self, region, point_name: str):
-        """ Region 객체에서 point_name에 해당하는 좌표를 반환"""
-        x,y,w,h = region
-        point_enum = PointName(point_name.lower())
-        if point_enum == PointName.CENTER:
-            return x + w // 2, y + h // 2
-        elif point_enum == PointName.LEFT_TOP:
-            return x, y
-        elif point_enum == PointName.LEFT_MIDDLE:
-            return x, y + h // 2
-        elif point_enum == PointName.LEFT_BOTTOM:
-            return x, y + h
-        elif point_enum == PointName.MIDDLE_TOP:
-            return x + w // 2, y
-        elif point_enum == PointName.MIDDLE_BOTTOM:
-            return x + w // 2, y + h
-        elif point_enum == PointName.RIGHT_TOP:
-            return x + w, y
-        elif point_enum == PointName.RIGHT_MIDDLE:
-            return x + w, y + h // 2
-        elif point_enum == PointName.RIGHT_BOTTOM:
-            return x + w, y + h
-        else:
-            raise KavanaSyntaxError(f"Region에서 지원하지 않는 PointName: {point_name}")
 
     def _after_action(self, location: Tuple[int,int,int,int], after):
         """ 추가 작업 수행 """

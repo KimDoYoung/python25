@@ -29,7 +29,8 @@ class RpaFunctions:
                 window = Window(title=window_info.title)
                 window.hwnd = window_info.hwnd
                 window.class_name = window_info.class_name
-                window_token = WindowToken(data=window, status=TokenStatus.EVALUATED)
+                window_token = WindowToken(data=
+                window, status=TokenStatus.EVALUATED)
                 array.append(window_token)
 
             token =  ArrayToken(data=Array(array))
@@ -71,6 +72,6 @@ class RpaFunctions:
             return token
         except Exception as e:
             if RpaFunctions.executor:
-                RpaFunctions.executor.log_command("ERROR", f"WINDOW_TOP ERROR: {e}")
+                RpaFunctions.executor.log_command("ERROR", f"WINDOW_REGION ERROR: {e}")
             return NoneToken()
     
