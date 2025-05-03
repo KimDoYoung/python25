@@ -107,3 +107,61 @@ def test_to_float():
     assert StringFunctions.TO_FLOAT(5).data.value == 5.0
     with pytest.raises(Exception):
         StringFunctions.TO_FLOAT("hello")
+
+def test_to_str():
+    """TO_STR() 함수 테스트"""
+    assert StringFunctions.TO_STR(42).data.value == "42"
+    assert StringFunctions.TO_STR(3.14).data.value == "3.14"
+    assert StringFunctions.TO_STR(True).data.value == "True"
+    assert StringFunctions.TO_STR(False).data.value == "False"
+    assert StringFunctions.TO_STR([1, 2, 3]).data.value == "[1, 2, 3]"
+    assert StringFunctions.TO_STR({"a": 1, "b": 2}).data.value == "{'a': 1, 'b': 2}"
+    with pytest.raises(Exception):
+        StringFunctions.TO_STR(Array)
+
+def test_to_float_edge_cases():
+    """TO_FLOAT() 함수의 엣지 케이스 테스트"""
+    # 정수 입력 테스트
+    assert StringFunctions.TO_FLOAT(0).data.value == 0.0
+    assert StringFunctions.TO_FLOAT(-100).data.value == -100.0
+    assert StringFunctions.TO_FLOAT(123456789).data.value == 123456789.0
+
+    # 문자열 입력 테스트
+    assert StringFunctions.TO_FLOAT("0").data.value == 0.0
+    assert StringFunctions.TO_FLOAT("-0.0").data.value == -0.0
+    assert StringFunctions.TO_FLOAT("1e3").data.value == 1000.0
+    assert StringFunctions.TO_FLOAT("-1e-3").data.value == -0.001
+
+    # 잘못된 문자열 입력 테스트
+    with pytest.raises(Exception):
+        StringFunctions.TO_FLOAT("abc")
+    with pytest.raises(Exception):
+        StringFunctions.TO_FLOAT("3.14.15")
+    with pytest.raises(Exception):
+        StringFunctions.TO_FLOAT("")
+
+    # 기타 타입 입력 테스트
+    with pytest.raises(Exception):
+        StringFunctions.TO_FLOAT(None)
+    with pytest.raises(Exception):
+        StringFunctions.TO_FLOAT([1, 2, 3])
+    with pytest.raises(Exception):
+        StringFunctions.TO_FLOAT({"key": "value"})
+        
+def test_to_str_edge_cases():
+    """TO_STR() 함수의 엣지 케이스 테스트"""
+    # None 입력 테스트
+    assert StringFunctions.TO_STR(None).data.value == ""
+
+    # 빈 문자열 입력 테스트
+    assert StringFunctions.TO_STR("").data.value == ""
+
+    # 복잡한 리스트 입력 테스트
+    assert StringFunctions.TO_STR([1, "a", True, None]).data.value == "[1, 'a', True, None]"
+
+    # 복잡한 딕셔너리 입력 테스트
+    assert StringFunctions.TO_STR({"key1": 1, "key2": [1, 2], "key3": {"nested": "value"}}).data.value == "{'key1': 1, 'key2': [1, 2], 'key3': {'nested': 'value'}}"
+
+    # 잘못된 타입 입력 테스트
+    with pytest.raises(Exception):
+        StringFunctions.TO_STR(set([1, 2, 3]))

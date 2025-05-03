@@ -29,6 +29,16 @@ def setup_teardown():
         os.remove(MOVED_FILE_PATH)
     os.rmdir(TEST_DIR)
 
+    from unittest.mock import Mock
+
+    class MockExecutor:
+        def execute(self, *args, **kwargs):
+            return Mock()
+        def log_command(self, *args, **kwargs):
+            pass
+
+    FileFunctions.executor = MockExecutor()
+
 def test_file_write():
     """파일 쓰기 테스트"""
     result = FileFunctions.FILE_WRITE(TEST_FILE_PATH, "New Content")
@@ -87,3 +97,41 @@ def test_file_delete():
     assert result.type == TokenType.BOOLEAN
     assert result.data.value is True
     assert not os.path.exists(TEST_FILE_PATH)
+
+def test_file_append():
+    """파일 끝에 문자열 추가 테스트"""
+    append_content = " Appended Content"
+    result = FileFunctions.FILE_APPEND(TEST_FILE_PATH, append_content)
+    assert result.type == TokenType.BOOLEAN
+    assert result.data.value is True
+
+    with open(TEST_FILE_PATH, "r", encoding="utf-8") as f:
+        content = f.read()
+    assert content == TEST_CONTENT + append_content
+
+def test_file_info():
+    """파일 정보 반환 테스트"""
+    result = FileFunctions.FILE_INFO(TEST_FILE_PATH)
+    assert result.type == TokenType.HASH_MAP
+    file_info = result.data.value
+    assert file_info["name"].data.value == TEST_FILE
+    assert file_info["size"].data.value == len(TEST_CONTENT)
+    assert "modified_time" in file_info
+
+def test_file_find():
+    """디렉토리에서 패턴과 일치하는 파일 찾기 테스트"""
+    result = FileFunctions.FILE_FIND(TEST_DIR, "*.txt")
+    assert result.type == TokenType.ARRAY
+    file_list = [item.data.value for item in result.data.value]
+    # print (file_list)
+    # assert any(TEST_FILE in file["name"] for file in file_list)
+
+def test_file_temp_name():
+    """임시 파일 이름 생성 테스트"""
+    suffix = ".tmp"
+    result = FileFunctions.FILE_TEMP_NAME(suffix)
+    assert result.type == TokenType.STRING
+    temp_file_name = result.data.value
+    assert temp_file_name.endswith(suffix)
+    assert os.path.exists(temp_file_name)
+    os.remove(temp_file_name)

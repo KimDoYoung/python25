@@ -76,34 +76,6 @@ class FileFunctions:
             # 파일이 존재하지 않거나 디렉토리인 경우 False 반환
             return TokenUtil.boolean_to_boolean_token(False)  # 실패 시 False 토큰 반환
 
-    # @staticmethod
-    # def FILE_SIZE(file_path: str) -> Token:
-    #     """파일 크기 반환 (바이트)"""
-    #     try:
-    #         size = os.path.getsize(file_path)
-    #         return Token(data=Integer(size), type=TokenType.INTEGER)
-    #     except Exception as e:
-    #         FileFunctions.executor.log_command("ERROR", f"FILE_SIZE: Error getting file size: {file_path}, Error: {e}")
-    #         return Token(data=Integer(-1), type=TokenType.INTEGER)  # 오류 시 -1 반환
-
-    # @staticmethod
-    # def FILE_MODIFIED_TIME(file_path: str) -> Token:
-    #     """파일 최종 수정 시간 반환 (YYYY-MM-DD HH:MM:SS 형식)"""
-    #     try:
-    #         timestamp = os.path.getmtime(file_path)
-    #         mod_time = datetime.fromtimestamp(timestamp)
-    #         return Token(data=YmdTime.from_datetime(mod_time), type=TokenType.YMDTIME)
-    #     except Exception:
-    #         raise KavanaException(f"파일의 최종 변경시각을 가져 오지 못했습니다: {file_path}")
-
-    # @staticmethod
-    # def FILE_TYPE(file_path: str) -> Token:
-    #     """파일 유형 반환 (file / directory / none)"""
-    #     if os.path.isfile(file_path):
-    #         return StringToken(data=String("file"), type=TokenType.STRING)
-    #     elif os.path.isdir(file_path):
-    #         return StringToken(data=String("directory"), type=TokenType.STRING)
-    #     return StringToken(data=String("none"), type=TokenType.STRING)  # 존재하지 않으면 "none"
     @staticmethod
     def FILE_INFO(file_path: str) -> Token:
         """파일 정보 반환 (이름, 크기, 수정 시간)"""

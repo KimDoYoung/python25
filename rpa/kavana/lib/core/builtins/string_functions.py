@@ -243,6 +243,14 @@ class StringFunctions:
             return StringToken(data=String(str(s)), type=TokenType.STRING)
         elif isinstance(s, bool):
             return StringToken(data=String(str(s)), type=TokenType.STRING)
+        elif isinstance(s, List):
+            # 리스트를 문자열로 변환 (예: ["a", "b", "c"] -> "['a', 'b', 'c']")
+            return StringToken(data=String(str(s)), type=TokenType.STRING)
+        elif isinstance(s, Dict):
+            # 딕셔너리를 문자열로 변환 (예: {"a": 1, "b": 2} -> "{'a': 1, 'b': 2}")
+            return StringToken(data=String(str(s)), type=TokenType.STRING)
+        elif s is None: 
+            return StringToken(data=String(""), type=TokenType.STRING)
         else:
-            StringFunctions.executor.log_command("ERROR", "TO_STR() 함수는 문자열, 정수, 실수, 불리언만 받을 수 있습니다")
-            raise KavanaTypeError("TO_STR() 함수는 문자열, 정수, 실수, 불리언만 받을 수 있습니다")
+            StringFunctions.executor.log_command("ERROR", "TO_STR() 함수는 문자열, 정수, 실수, 불리언, 배열과 해쉬맵만 받을 수 있습니다")
+            raise KavanaTypeError("TO_STR() 함수는 문자열, 정수, 실수, 불리언, 배열과 해쉬맵만 받을 수 있습니다")
