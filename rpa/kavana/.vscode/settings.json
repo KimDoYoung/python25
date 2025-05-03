@@ -10,7 +10,7 @@
     },
     "github.copilot.chat.commitMessageGeneration.instructions": [
         {
-            "text": "simple, use yyyy-mm-dd format",
+            "text": "use emoji in commit message",
             "language": "korean"
         }
     ]
