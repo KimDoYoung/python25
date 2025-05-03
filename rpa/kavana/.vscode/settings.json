@@ -8,5 +8,10 @@
     "editor.codeActionsOnSave": {
         // "source.fixAll.markdownlint": "explicit"
     },
-    
+    "github.copilot.chat.commitMessageGeneration.instructions": [
+        {
+            "text": "simple, use yyyy-mm-dd format",
+            "language": "korean"
+        }
+    ]
 }
