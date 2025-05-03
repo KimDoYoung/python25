@@ -73,6 +73,12 @@ def test_contains():
     """CONTAINS() 함수 테스트"""
     assert StringFunctions.CONTAINS("hello world", "world").data.value is True
     assert StringFunctions.CONTAINS("hello world", "Python").data.value is False
+    assert StringFunctions.CONTAINS([1, 2, 3], 2).data.value is True
+    assert StringFunctions.CONTAINS([1, 2, 3], 4).data.value is False
+    assert StringFunctions.CONTAINS({"a": 1, "b": 2}, "b").data.value is True
+    assert StringFunctions.CONTAINS({"a": 1, "b": 2}, "c").data.value is False
+    with pytest.raises(Exception):
+        StringFunctions.CONTAINS("hello world", 1)
 
 def test_index_of():
     """INDEX_OF() 함수 테스트"""
