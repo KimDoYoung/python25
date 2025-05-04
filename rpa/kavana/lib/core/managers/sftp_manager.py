@@ -29,7 +29,7 @@ class SftpManager(BaseManager):
         func = commands.get(self.command)
         if not func:
             self.raise_error(f"지원하지 않는 명령어입니다: {self.command}")
-        func()
+        return func()
 
     def connect(self):
         try:
