@@ -67,6 +67,7 @@ class RectangleToken(CustomToken):
 
     def __post_init__(self):
         super().__post_init__()
+        self.type = TokenType.RECTANGLE
 
     def evaluate(self, evaluator) -> Token:
         if self.status == TokenStatus.EVALUATED:
