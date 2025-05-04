@@ -35,3 +35,9 @@ mkdocs serve           # 브라우저로 확인
 mkdocs build           # site/ 폴더 생성
 mkdocs gh-deploy       # GitHub Pages로 배포 가능
 ```
+
+
+## 단위 테스트 및 품질 검사.
+
+- run_test.sh
+- vulture  : vulture /lib

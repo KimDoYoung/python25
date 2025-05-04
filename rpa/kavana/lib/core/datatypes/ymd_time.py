@@ -21,6 +21,30 @@ class YmdTime(KavanaDataType):
         """Python 기본 타입 변환"""
         return self.value
 
+    @property
+    def year(self) -> int:
+        return self.value.year
+
+    @property
+    def month(self) -> int:
+        return self.value.month
+
+    @property
+    def day(self) -> int:
+        return self.value.day
+    
+    @property
+    def hour(self) -> int:
+        return self.value.hour
+    
+    @property
+    def minute(self) -> int:
+        return self.value.minute
+    
+    @property
+    def second(self) -> int:
+        return self.value.second
+
     def __add__(self, days: int):
         """YmdTime + int 지원 (N일 추가)"""
         if isinstance(days, int):
@@ -63,6 +87,18 @@ class Ymd(KavanaDataType):
     def primitive(self) -> date:
         """✅ Python 기본 타입 변환"""
         return self.value
+
+    @property
+    def year(self):
+        return self.value.year
+
+    @property
+    def month(self):
+        return self.value.month
+
+    @property
+    def day(self):
+        return self.value.day
 
     def __add__(self, days: int):
         """✅ Ymd + int 지원 (N일 추가)"""

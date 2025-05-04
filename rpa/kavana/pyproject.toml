@@ -28,6 +28,7 @@ dependencies = [
     "requests>=2.32.3",
     "screeninfo>=0.8.1",
     "selenium>=4.31.0",
+    "vulture>=2.14",
     "webdriver-manager>=4.0.2",
     "xlrd>=2.0.1",
     "xmltodict>=0.14.2",
