@@ -96,3 +96,14 @@ class Logger:
 
     def error(self, message):
         self.logger.error("❌ " + message)
+
+    @classmethod
+    def reset_instance(cls):
+        """테스트 간 싱글톤과 핸들러 리셋"""
+        if cls._instance:
+            for handler in cls._handlers:
+                handler.close()
+                cls._instance.logger.removeHandler(handler)
+            cls._handlers.clear()
+        cls._instance = None
+        logging.shutdown()
