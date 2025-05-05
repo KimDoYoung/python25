@@ -23,6 +23,9 @@ class Token:
         """디버깅을 위한 문자열 표현"""
         return f"Token(data={self.data.value}, type={self.type}, line={self.line}, column={self.column})"
 
+# 타입 정의
+Express = List[Token]
+
 @dataclass
 class NoneToken(Token):
     def __init__(self):
@@ -38,7 +41,8 @@ class StringToken(Token):
 class FunctionToken(Token):
     """✅ 함수 호출을 표현하는 토큰"""
     function_name: str =""  # ✅ 함수 이름
-    arguments: List[List[Token]] = field(default_factory=list) # 함수 인자 목록
+    # arguments: List[List[Token]] = field(default_factory=list) # 함수 인자 목록
+    arguments: List[Express] = field(default_factory=list) # 함수 인자 목록
     data: KavanaDataType = field(init=False)  # ✅ `data`는 function_name을 저장
     type: TokenType = field(default=TokenType.FUNCTION, init=False)  # ✅ `type`을 FUNCTION으로 고정
 
@@ -120,8 +124,6 @@ class HashMapToken(Token):
         if not isinstance(self.data, HashMap):
             raise TypeError("HashMapToken must contain a HashMap instance")
 
-# 타입 정의
-Express = List[Token]
 
 @dataclass
 class AccessIndexToken(Token):

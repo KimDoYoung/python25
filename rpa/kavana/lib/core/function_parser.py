@@ -6,26 +6,26 @@ from lib.core.token import FunctionToken, Token
 from lib.core.token_type import TokenType
 
 class FunctionParser:
-    @staticmethod
-    def parse(tokens):
-        """토큰 리스트를 파싱하여 함수 호출을 처리"""
-        stack = []
-        i = 0
-        while i < len(tokens):
-            token = tokens[i]
-            func_info = FunctionRegistry.get_function(token.upper())
-            if func_info:
-                # ✅ 함수 호출 감지
-                func = None
-                arg_count = func_info["arg_count"]
-                combined_token, new_index = FunctionParser._func_tokens_to_string(tokens, i, func, arg_count)
-                stack.append(combined_token)
-                i = new_index  # ✅ 함수 호출 후 다음 토큰 위치로 이동
-            else:
-                # ✅ 일반 토큰 처리
-                stack.append(token)
-                i += 1
-        return stack
+    # @staticmethod
+    # def parse(tokens):
+    #     """토큰 리스트를 파싱하여 함수 호출을 처리"""
+    #     stack = []
+    #     i = 0
+    #     while i < len(tokens):
+    #         token = tokens[i]
+    #         func_info = FunctionRegistry.get_function(token.upper())
+    #         if func_info:
+    #             # ✅ 함수 호출 감지
+    #             func = None
+    #             arg_count = func_info["arg_count"]
+    #             combined_token, new_index = FunctionParser._func_tokens_to_string(tokens, i, func, arg_count)
+    #             stack.append(combined_token)
+    #             i = new_index  # ✅ 함수 호출 후 다음 토큰 위치로 이동
+    #         else:
+    #             # ✅ 일반 토큰 처리
+    #             stack.append(token)
+    #             i += 1
+    #     return stack
 
     @staticmethod
     def make_function_token(tokens: List[Token], start_index: int) -> Tuple[FunctionToken, int]:
@@ -51,7 +51,6 @@ class FunctionParser:
                 paren_depth -= 1  # ✅ 중첩된 괄호 감소
                 if paren_depth == 0:  # ✅ 최상위 함수 호출 종료
                     break
-
             if tokens[i].type == TokenType.COMMA and paren_depth == 1:
                 args.append(arg_tokens)  # ✅ 인자 저장
                 arg_tokens = []  # ✅ 새로운 인자 그룹 시작
