@@ -1,8 +1,8 @@
 from dataclasses import dataclass, field
 from enum import Enum
-from typing import Dict, List, Literal, Optional
+from typing import Dict, List,  Optional
 from lib.core.datatypes.hash_map import HashMap
-from lib.core.datatypes.kavana_datatype import Integer, KavanaDataType, NoneType, String
+from lib.core.datatypes.kavana_datatype import  KavanaDataType, NoneType, String
 from lib.core.datatypes.array import Array
 from lib.core.datatypes.ymd_time import Ymd, YmdTime
 from lib.core.token_type import TokenType
@@ -147,14 +147,14 @@ class AccessIndexToken(Token):
                 f"data={repr(self.data)}, "
                 f"type={self.type})")
     
-    def count_of_expresses(self) -> int:
-        """표현식의 개수를 반환"""
-        return len(self.index_expresses)
+    # def count_of_expresses(self) -> int:
+    #     """표현식의 개수를 반환"""
+    #     return len(self.index_expresses)
     
-    def get_row_express(self) -> Express:
-        """리스트 또는 첫 번째 인덱스 접근 표현"""
-        return self.index_expresses[0] if len(self.index_expresses) >= 1 else []
+    # def get_row_express(self) -> Express:
+    #     """리스트 또는 첫 번째 인덱스 접근 표현"""
+    #     return self.index_expresses[0] if len(self.index_expresses) >= 1 else []
 
-    def get_column_express(self) -> Express:
-        """두 번째 인덱스 접근 표현 (예: 2차원 배열 또는 딕셔너리 내부 접근)"""
-        return self.index_expresses[1] if len(self.index_expresses) >= 2 else []
+    # def get_column_express(self) -> Express:
+    #     """두 번째 인덱스 접근 표현 (예: 2차원 배열 또는 딕셔너리 내부 접근)"""
+    #     return self.index_expresses[1] if len(self.index_expresses) >= 2 else []

@@ -321,10 +321,6 @@ class TestAccessIndexToken:
         assert token.index_expresses[0][0].data.value == 0
         assert token.index_expresses[1][0].data.value == "key"
         
-        # 헬퍼 메서드 테스트
-        assert token.count_of_expresses() == 2
-        assert token.get_row_express()[0].data.value == 0
-        assert token.get_column_express()[0].data.value == "key"
     
     def test_access_index_token_invalid_data(self):
         """AccessIndexToken 잘못된 데이터 타입 테스트"""
@@ -334,13 +330,3 @@ class TestAccessIndexToken:
                 index_expresses=[]
             )
     
-    def test_access_index_token_empty_expresses(self):
-        """AccessIndexToken 빈 표현식 테스트"""
-        token = AccessIndexToken(
-            data=String("arr"),
-            index_expresses=[]
-        )
-        
-        assert token.count_of_expresses() == 0
-        assert token.get_row_express() == []
-        assert token.get_column_express() == []

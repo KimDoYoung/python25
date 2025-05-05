@@ -3,8 +3,8 @@ from enum import Enum
 class TokenType(Enum):
     # COMMAND
     ACCESS_INDEX = "LIST_INDEX"
-    MAP_KEY = "MAP_KEY"
-    COMMAND = "COMMAND"
+    # MAP_KEY = "MAP_KEY"
+    # COMMAND = "COMMAND"
     
     UNKNOWN = "UNKNOWN"
     GLOBAL = "GLOBAL"
@@ -13,7 +13,7 @@ class TokenType(Enum):
     INTEGER = "INTEGER"
     FLOAT = "FLOAT"
     STRING = "STRING"
-    RAW_STRING = "RAW_STRING"
+    # RAW_STRING = "RAW_STRING"
     BOOLEAN = "BOOLEAN" # True, False
     YMDTIME = "YMDTIME"
     YMD = "YMD"
@@ -68,7 +68,7 @@ class TokenType(Enum):
     # ✅ 프로그램 실행 관련
     MAIN = "MAIN"
     END_MAIN = "END_MAIN"
-    EOF = "EOF"
+    # EOF = "EOF"
 
     CUSTOM_TYPE = "CUSTOM_TYPE" # 사용자 정의 데이터 타입
     
