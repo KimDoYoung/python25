@@ -10,9 +10,10 @@ from lib.core.command_preprocessor import CommandPreprocessor
         SET f = 12.34
         SET s = "Hello"
         SET b = not True
-        PRINT f"{i} {f} {s} {b}"
+        CONST pi = 3.14
+        PRINT f"{i} {f} {s} {b} {pi}"
     END_MAIN
-    """, "900 12.34 Hello False\n")  # ✅ 예상 출력값
+    """, "900 12.34 Hello False 3.14\n")  # ✅ 예상 출력값
 ])
 def test_script_execution(script, expected_output, capsys):
     """✅ Kavana 스크립트 실행 테스트"""

@@ -19,6 +19,6 @@ class ConstCommand(BaseCommand):
         # 수식 평가
         exprEvaluator = ExprEvaluator(executor)
         result_token = exprEvaluator.evaluate(expression)
-
+        
         # 변수 저장
         executor.variable_manager.set_const(var_name, result_token)

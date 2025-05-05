@@ -5,11 +5,12 @@ from lib.core.command_preprocessor import CommandPreprocessor
 # 대입
 script = """
 MAIN
+    CONST pi = 3.14
     SET i = (10 + 20) * 30
     SET f = 12.34
     SET s = "Hello"
     SET b = not True
-    PRINT f"{i} {f} {s} {b}"
+    PRINT f"{i} {f} {s} {b}, {pi}"
 END_MAIN
 """
 #---------------------------
