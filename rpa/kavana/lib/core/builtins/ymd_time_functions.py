@@ -30,7 +30,7 @@ class YmdTimeFunctions:
                 y, m, d, hh, mm, ss = now.year, now.month, now.day, now.hour, now.minute, now.second
             
             # 유효한 날짜인지 검증
-            ymd = datetime(y, m, d, hh, mm, ss)  
+            datetime(y, m, d, hh, mm, ss)  
         except ValueError as e:
             raise KavanaValueError(f"YMDTIME: 잘못된 날짜 형식입니다: {e}")
 
@@ -50,7 +50,7 @@ class YmdTimeFunctions:
                 y, m, d = today.year, today.month, today.day
             
             # 유효한 날짜인지 검증
-            ymd = date(y, m, d)
+            date(y, m, d)
         except ValueError as e:
             raise KavanaValueError(f"YMD:잘못된 날짜 형식입니다: {e}")
 

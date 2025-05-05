@@ -480,7 +480,7 @@ class CommandParser:
             raise KavanaSyntaxError(f"잘못된 문자열 형식입니다: {raw_string}")
 
         prefix = (match.group(1) or "").lower()
-        quoted = match.group(2)
+        # quoted = match.group(2)
         inner = match.group(3)
 
         is_raw = 'r' in prefix
