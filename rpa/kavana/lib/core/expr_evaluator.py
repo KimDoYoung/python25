@@ -1,29 +1,22 @@
-import codecs
 import re
 import operator
-from typing import List, Tuple, Union
-from datetime import datetime, timedelta
+from typing import List
+from datetime import  timedelta
 from lib.core.command_parser import CommandParser
 
 from lib.core.command_preprocessor import CommandPreprocessor
-from lib.core.datatypes.application import Application
 from lib.core.datatypes.hash_map import HashMap
-from lib.core.datatypes.image import Image
 from lib.core.datatypes.kavana_datatype import Boolean,  Float, Integer, KavanaDataType, String
 from lib.core.datatypes.array import Array
-from lib.core.datatypes.point import Point
-from lib.core.datatypes.rectangle import Rectangle
-from lib.core.datatypes.region import Region
-from lib.core.datatypes.window import Window
 from lib.core.datatypes.ymd_time import Ymd, YmdTime
 from lib.core.exceptions.kavana_exception import ExprEvaluationError, KavanaException, KavanaTypeError
 from lib.core.custom_token_maker import CustomTokenMaker
-from lib.core.token_custom import CUSTOM_TYPES, CustomToken
+from lib.core.token_custom import CUSTOM_TYPES
 from lib.core.token_type import TokenType
 from lib.core.function_executor import FunctionExecutor
 from lib.core.function_parser import FunctionParser
 from lib.core.function_registry import FunctionRegistry
-from lib.core.token import ArrayToken, AccessIndexToken, StringToken, Token, TokenStatus
+from lib.core.token import  StringToken, Token, TokenStatus
 from lib.core.token_util import TokenUtil
 from lib.core.variable_manager import VariableManager
 
@@ -60,63 +53,6 @@ class ExprEvaluator:
             TokenType.YMD,
         }            
 
-    def split_function_token(self, function_token:str) -> List[str]:
-        """function_token PLUS(3,4) -> PLUS,3,4 함수명과 인자로 분리"""
-        if "(" not in function_token or not function_token.endswith(")"):
-            return [function_token]  # 괄호가 없으면 그대로 반환
-
-        func_name = function_token[:function_token.index("(")]  # ✅ 함수명 추출
-        args_str = function_token[function_token.index("(") + 1:-1].strip()  # ✅ 괄호 안의 내용
-
-        if not args_str:  # ✅ 빈 괄호 처리 (예: MY_FUNC())
-            return [func_name]
-
-        args = []
-        current_arg = []
-        bracket_depth = 0  # ✅ 괄호 깊이 추적
-
-        i = 0
-        while i < len(args_str):
-            char = args_str[i]
-
-            if char == "(":
-                bracket_depth += 1
-            elif char == ")":
-                bracket_depth -= 1
-
-            if char == "," and bracket_depth == 0:
-                # ✅ 쉼표가 최상위 레벨에 있을 때만 인자 구분
-                args.append("".join(current_arg).strip())
-                current_arg = []
-            else:
-                current_arg.append(char)
-
-            i += 1
-
-        if current_arg:  # ✅ 마지막 인자 추가
-            args.append("".join(current_arg).strip())
-
-        return [func_name] + args
-
-    def is_function(self, token: Token) -> bool:
-        """토큰이 함수인지 확인 PLUS(3,4)"""
-        func_name = token.data.value.upper()
-        func_info = FunctionRegistry.get_function(func_name)
-        return func_info != None
-
-    def execute_user_function(self, func_body: List[Token], local_vars: dict):
-        """
-        간단한 사용자 정의 함수 실행기
-        - 현재는 간단한 RETURN 문만 지원
-        """
-        if func_body.startswith("RETURN "):
-            for var_name, token in local_vars.items():
-                self.variable_manager.set_variable(var_name, token, local=True)
-
-            evaluator = ExprEvaluator(self)  # ✅ 새로운 평가기 생성
-            return evaluator.evaluate(func_body)
-        raise ExprEvaluationError(f"Unsupported function body: {func_body}")
-
 
     def evaluate(self, tokens:List[Token]) -> Token:
         """수식을 계산하여 결과 반환 (예외 처리 강화)"""
@@ -132,41 +68,6 @@ class ExprEvaluator:
         except Exception as e:
             # ✅ 기타 예외는 ExprEvaluationError로 변환하여 감싸기
             raise ExprEvaluationError(f"표현식을 해석할 때 오류발생: {str(e)}")        
-
-    def get_token_type(self, value) -> TokenType:
-        """value 로 해당하는 토큰타입을 반환"""
-        if not isinstance(value, KavanaDataType):
-            raise ExprEvaluationError(f"지원하지 않는 kavana 데이터타입입니다: {value}")
-        
-        if value is None:
-            return TokenType.NONE
-        if isinstance(value, Integer):
-            return TokenType.INTEGER
-        if isinstance(value, Float):
-            return TokenType.FLOAT
-        if isinstance(value, Boolean):
-            return TokenType.BOOLEAN
-        if isinstance(value, String):
-            return TokenType.STRING
-        if isinstance(value, datetime):
-            return TokenType.YMDTIME
-        #Point, Rectangle, Region, window, Application, Image
-        
-        if isinstance(value, Point):
-            return TokenType.POINT
-        if isinstance(value, Rectangle):
-            return TokenType.RECTANGLE
-        if isinstance(value, Region):
-            return TokenType.REGION
-        if isinstance(value, Window):
-            return TokenType.WINDOW
-        if isinstance(value, Application):
-            return TokenType.APPLICATION
-        if isinstance(value, Image):
-            return TokenType.IMAGE
-        
-        raise ExprEvaluationError(f"Unsupported token type: {value}")
-
 
     def to_postfix(self, tokens: List[Token]) -> List[Token]:
         """토큰 리스트를  후위 표기법(RPN)으로 변환"""
@@ -477,14 +378,8 @@ class ExprEvaluator:
             line=token.line,
             column=token.column
         )
-    
-    def safe_decode_unicode_escapes(self, s: str) -> str:
-        try:
-            return codecs.decode(s, 'unicode_escape')
-        except Exception:
-            return s 
-           
-    def _evaluate_fstring(self, message: str, allow_recurse=True) -> str:
+              
+    def _evaluate_fstring(self, message: str) -> str:
         """f-string 내의 {} 표현식을 평가하여 실제 값으로 변환"""
         def replace_expr(match):
             expression = match.group(1)  # `{}` 내부 표현식
