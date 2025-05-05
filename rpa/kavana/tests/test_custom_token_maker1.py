@@ -11,7 +11,9 @@ from tests.helper_func import get_tokens  # 앞서 만든 get_tokens를 임포�
 ])
 def test_image_expression_token_count(source, expected_count):
     tokens, start_idx = get_tokens(source)
-    image_token, next_idx = CustomTokenMaker.image_token(tokens, start_idx)
+
+    # ✅ 리팩토링 이후 방식으로 호출
+    image_token, next_idx = CustomTokenMaker.custom_object_token(tokens, start_idx, TokenType.IMAGE)
     actual_count = len(image_token.expressions[0])
 
     assert actual_count == expected_count, (
