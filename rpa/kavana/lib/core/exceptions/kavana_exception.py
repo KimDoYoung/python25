@@ -17,10 +17,6 @@ class ContinueException(KavanaException):
     """반복문의 현재 실행을 건너뛰는 예외"""
     pass
 
-class TokenizationError(KavanaException):
-    """토큰화 과정에서 발생하는 오류"""
-    pass
-
 class DataTypeError(KavanaException):
     """데이터 타입 변환 오류"""
     pass
@@ -29,9 +25,6 @@ class ExprEvaluationError(KavanaException):
     """표현식 평가 오류"""
     pass
 
-class PreprocessorError(KavanaException):
-    """전처리 오류"""
-    pass
 
 class CommandExecutionError(KavanaException):
     """명령어 실행 오류"""
@@ -59,9 +52,6 @@ class KavanaValueError(KavanaException):
 
 class KavanaTypeError(KavanaException):
     """값 오류"""
-    pass
-class KavanaNameError(KavanaException):
-    '''변수명 오류'''
     pass
 
 class KavanaFileNotFoundError(KavanaException):
