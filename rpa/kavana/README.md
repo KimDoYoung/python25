@@ -41,3 +41,4 @@ mkdocs gh-deploy       # GitHub Pages로 배포 가능
 
 - run_test.sh
 - vulture  : vulture /lib
+- pylint --generate-rcfile > .pylintrc

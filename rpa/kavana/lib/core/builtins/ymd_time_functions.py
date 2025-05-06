@@ -7,7 +7,7 @@ from lib.core.token_util import TokenUtil
 
 
 class YmdTimeFunctions:
-    
+    ''' YmdTimeFunctions 클래스는 날짜 및 시간 관련 기능을 제공합니다. '''
     executor = None  # ✅ 클래스 변수로 executor 저장
     
     @staticmethod
@@ -16,11 +16,11 @@ class YmdTimeFunctions:
 
     @staticmethod
     def YMDTIME(
-        y: Optional[int] = 0, 
+        y: Optional[int] = 0,
         m: Optional[int] = 0, 
         d: Optional[int] = 0, 
-        hh: Optional[int] = 0, 
-        mm: Optional[int] = 0, 
+        hh: Optional[int] = 0,
+        mm: Optional[int] = 0,
         ss: Optional[int] = 0
     ) -> YmdTimeToken:
         try:
