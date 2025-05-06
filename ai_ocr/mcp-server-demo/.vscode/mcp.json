@@ -1,0 +1,33 @@
+{
+    "inputs": [
+      {
+        "type": "promptString",
+        "id": "github_token",
+        "description": "Enter your GitHub Personal Access Token"
+      }
+    ],
+    "servers": {
+        "note" : {
+            "command":"c:\\Users\\USER\\.local\\bin\\uv",
+            "args":[
+                "run",
+                "--with",
+                "mcp[cli]",
+                "mcp",
+                "run",
+                "c:\\Users\\USER\\work\\python25\\ai_ocr\\mcp-server-demo\\server.py"    
+            ]
+        },
+        "fetch": {
+            "command": "uvx",
+            "args": ["mcp-server-fetch"]
+        },
+        "playwright": {
+            "command": "npx",
+            "args": [
+                "@playwright/mcp@latest",
+                "--headless"
+            ]
+        }
+    }
+}

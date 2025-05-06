@@ -11,7 +11,7 @@ def ensure_file():
     """Ensure the note file exists."""
     # Check if the note file exists, if not, create it
     if not os.path.exists(NOTE_FILE):
-        with open(NOTE_FILE, "w") as f:
+        with open(NOTE_FILE, "w", encoding="utf-8") as f:
             f.write("")
 
 @mcp.tool("Add a note")
@@ -24,7 +24,7 @@ def add_note(note: str)->str:
             str: Success message.
     """
     ensure_file()
-    with open(NOTE_FILE, "a") as f:
+    with open(NOTE_FILE, "a", encoding="utf-8") as f:
         f.write(f"{datetime.now().strftime('%Y-%m-%d %H:%M:%S')}: {note}\n")
     return "Note added successfully."
 
@@ -36,7 +36,7 @@ def read_notes()->str:
             str: All notes in the note file.
     """
     ensure_file()
-    with open(NOTE_FILE, "r") as f:
+    with open(NOTE_FILE, "r", encoding="utf-8") as f:
         notes = f.readlines()
     if not notes:
         return "No notes found."
@@ -50,7 +50,7 @@ def get_latest_note()->str:
             str: The latest note in the note file.
     """
     ensure_file()
-    with open(NOTE_FILE, "r") as f:
+    with open(NOTE_FILE, "r", encoding="utf-8") as f:
         notes = f.readlines()
     if not notes:
         return "No notes found."
@@ -64,7 +64,7 @@ def note_summary_prompt()->str:
             str: The note summary.
     """
     ensure_file()
-    with open(NOTE_FILE, "r") as f:
+    with open(NOTE_FILE, "r", encoding="utf-8") as f:
         notes = f.readlines()
     if not notes:
         return "No notes found."
