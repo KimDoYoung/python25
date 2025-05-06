@@ -12,5 +12,6 @@
         {
             "text": "한글과 영어로,짧게, 파일명,클래스명을 반드시 포함하여 작성해 주세요."
         }
-    ]
+    ],
+    "chat.mcp.discovery.enabled": true
 }
