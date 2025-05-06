@@ -1,0 +1,21 @@
+vulture.txt
+.env*
+# Byte-compiled / optimized / DLL files
+__pycache__/
+*.py[cod]
+*.class
+.pytest_cache/
+# Virtual environment
+venv/
+env/
+*.png
+.env
+# macOS 관련
+.DS_Store
+logs/
+my_log/
+my_logs/
+*.log
+dist/
+build/
+*.db
