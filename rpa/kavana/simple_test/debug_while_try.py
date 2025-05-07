@@ -17,10 +17,19 @@ MAIN
         PRINT "while"
         rpa wait seconds=3
         set count = count + 1
-        if count > 10
+        if count > 3
             break
         end_if
     end_while
+    try
+        for i = 0 to 10
+            print i
+        end_for
+    catch
+        print "catch"
+    finally
+        PRINT "try-catch-finally"
+    end_try
 
 ON_EXCEPTION
     PRINT "on_exception handler"
