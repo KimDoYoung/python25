@@ -89,7 +89,7 @@ class OcrManager(BaseManager):
                     self.executor.set_variable(to_var, region_token)
                 return x, y, w, h
 
-        self.log("WARNING", f"'{target_text}'를 찾지 못함.")
+        self.log("WARN", f"'{target_text}'를 찾지 못함.")
         if to_var and self.executor:
             self.executor.set_variable(to_var, NoneToken())
         return None

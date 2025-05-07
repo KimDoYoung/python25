@@ -6,33 +6,58 @@ from lib.core.command_preprocessor import CommandPreprocessor
 script = """
 LOAD_ENV ".env"
 include "simple_test/efriend64_data.kvs"
+
+//
+//region rg의 바닥에서부터 높이만큼의 영역 구해서 region으로 리턴
+//
+function bottom_region(rg, height)
+    SET rg_info = DUMP_ATTRS(rg)        
+    SET new_height = rg_info["y"] + rg_info["height"] - height
+    SET new_region = Region(rg_info["x"], new_height, rg_info["width"], height)
+    return new_region
+end_function
+
 function close_popups()
     //팝업제거 현재 최상단 윈도우를 찾아서
     LOG_INFO "=====================[ 팝업제거 시작]===================================="
+    RPA capture to_file=r"c:\\tmp\\popup.png"
+    SET window_list = WINDOW_LIST(process_name=PROCESS_NAME)
+    LOG_INFO "현재 위도우들----->"
+    for win_info in window_list
+        LOG_INFO f"윈도우: {win_info}"
+    end_for
+    LOG_INFO "<-----"
+    SET count = 0
     while True
         SET top_window = WINDOW_TOP(process_name=PROCESS_NAME)
         SET info = DUMP_ATTRS(top_window)
         SET 팝업윈도우영역 = WINDOW_REGION(info["hwnd"])
         LOG_INFO f"팝업윈도우영역: {팝업윈도우영역}"
-        SET 찾기영역  = REGION_OF_REGION(팝업윈도우영역, "bottom_one_third")
+        # SET 찾기영역  = REGION_OF_REGION(팝업윈도우영역, "bottom_one_third")
+        SET 찾기영역  = bottom_region(팝업윈도우영역, 50)
         LOG_INFO f"찾기영역: {찾기영역}"
         if info["title"] == "유의사항" or info["title"] == "안내" 
             SET tmp_file = FILE_TEMP_NAME(".png")
             RPA capture to_file=tmp_file 
-            for text in ["일주일", "닫기", "확인"]
-                OCR FIND text=text from_file=tmp_file area=찾기영역 to_var="found" resize=1.5
+            for text in [ "닫기", "확인"]
+                OCR FIND text=text from_file=tmp_file area=찾기영역 to_var="found" resize=2.0
                 if found != None
                     LOG_INFO f"'{text}'를 찾았습니다."
                     SET p = POINT_OF_REGION(found, "center")
                     RPA click_point location=p, after="wait:2s"
                 else
                     LOG_INFO f"'{text}'를 찾을 수 없습니다."
+                    SET count = count + 1
                 end_if
             end_for
         else
             break
         end_if
         RPA wait seconds=3
+        if count > 10
+            LOG_WARN "팝업이 10번 이상 반복되어 종료합니다."
+            break
+        end_if
     end_while
 
     LOG_INFO "=====================[ 팝업제거 종료]===================================="
@@ -66,9 +91,14 @@ end_function
 function work_0808()
     LOG_INFO "=====================[ 0808 화면 호출 시작]===================================="
     SET 화면번호위치= Point(117, 103) //화면위치
+    SET 비밀번호위치= Point(432, 201) //비밀번호위치
     RPA click_point location=화면번호위치, after="wait:1s"
-    put_text text="0808" clipboard=True //0808입력
-
+    RPA put_text text="0808" clipboard=False after="wait:2s" //0808입력
+    just close_popups()
+    
+    RPA click_point location=비밀번호위치 after="wait:1s" //0808화면 클릭
+    RPA put_text text=$HTS_ACCT_PW clipboard=False after="wait:2s" //0808입력
+    
 end_function
 
 MAIN

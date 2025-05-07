@@ -27,11 +27,9 @@ class RpaFunctions:
 
             array = []
             for window_info in window_info_list:
-                window = Window(title=window_info.title)
-                window.hwnd = window_info.hwnd
-                window.class_name = window_info.class_name
-                window_token = WindowToken(data=
-                window, status=TokenStatus.EVALUATED)
+                window = Window(title=window_info.title, hwnd=window_info.hwnd, class_name=window_info.class_name)
+                window_token = WindowToken(data=window)
+                window_token.status = TokenStatus.EVALUATED 
                 array.append(window_token)
 
             token =  ArrayToken(data=Array(array))
