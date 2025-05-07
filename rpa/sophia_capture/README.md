@@ -116,3 +116,4 @@ File
 0.3 : kavana code 스타일로 point, region등 출력
 0.4 : PySide6로 변경함.
 0.5 : scale버그 수정, F4: set save folder 메뉴추가
+0.6 : next image, prev image 버튼 생성, info에 file full path 넣기.

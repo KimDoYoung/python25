@@ -12,7 +12,7 @@ from PySide6.QtCore import Qt, QRect, QPoint, QSize
 from utils import PosUtil, RegionName, get_region, get_save_path
 
 
-VERSION = "0.5"  # Define the version
+VERSION = "0.6"  # Define the version
 
 def apply_monitor_scale(pos):
     """모니터 배율을 고려해 '물리 좌표'로 보정"""
@@ -34,42 +34,6 @@ class CustomLabel(QLabel):
 
         if not hasattr(self.parent_window, "original_image"):
             print("Error: parent_window does not have 'original_image'")
-
-    # def apply_monitor_scale(self, pos):
-    #     """모니터 배율을 고려해 '물리 좌표'로 보정"""
-    #     device_scale = QApplication.primaryScreen().devicePixelRatio()
-    #     scaled_x = pos.x() * device_scale  # 🔥 곱하기
-    #     scaled_y = pos.y() * device_scale  # 🔥 곱하기
-    #     return scaled_x, scaled_y
-    
-    # def display_pos(self, pos):
-    #     """화면 표시용 UI 좌표 반환 (DPI/배율 보정 없음)"""
-    #     return int(pos.x()), int(pos.y())
-    
-    # def image_pos(self, pos):
-    #     """원본 이미지 좌표 반환 (DPI 보정 + 배율 보정)"""
-    #     device_scale = QApplication.primaryScreen().devicePixelRatio()
-    #     phys_x = pos.x() * device_scale
-    #     phys_y = pos.y() * device_scale
-    #     image_x = int(phys_x / self.parent_window.scale_factor)
-    #     image_y = int(phys_y / self.parent_window.scale_factor)
-    #     return image_x, image_y  
-
-    # def disp_to_image_pos(self, disp_x, disp_y):
-    #     """화면 표시용 좌표(disp_x, disp_y)를 원본 이미지 좌표(image_x, image_y)로 변환"""
-    #     device_scale = QApplication.primaryScreen().devicePixelRatio()
-    #     phys_x = disp_x * device_scale
-    #     phys_y = disp_y * device_scale
-    #     image_x = int(phys_x / self.parent_window.scale_factor)
-    #     image_y = int(phys_y / self.parent_window.scale_factor)
-    #     return image_x, image_y 
-
-    # def image_to_disp_pos(self, image_x, image_y):
-    #     """원본 이미지 좌표(image_x, image_y)를 화면 표시 좌표(disp_x, disp_y)로 변환"""
-    #     device_scale = QApplication.primaryScreen().devicePixelRatio()
-    #     disp_x = int(image_x * self.parent_window.scale_factor / device_scale)
-    #     disp_y = int(image_y * self.parent_window.scale_factor / device_scale)
-    #     return disp_x, disp_y     
 
     def mouseMoveEvent(self, event):
         if self.parent_window.original_image is None:
@@ -248,37 +212,54 @@ class SophiaCapture(QMainWindow):
         self.toolbar = QToolBar("Toolbar")
         self.addToolBar(self.toolbar)
 
+        self.prev_btn = QPushButton("⬅️")  # ← 이모지
+        self.prev_btn.setToolTip("Previous Image")
+        self.prev_btn.clicked.connect(self.load_prev_image)
+        self.toolbar.addWidget(self.prev_btn)
+
+        self.next_btn = QPushButton("➡️")  # → 이모지
+        self.next_btn.setToolTip("Next Image")
+        self.next_btn.clicked.connect(self.load_next_image)
+        self.toolbar.addWidget(self.next_btn)        
+
         self.info_btn = QPushButton("Info")
+        self.next_btn.setToolTip("display image regions")
         self.info_btn.clicked.connect(self.show_image_regions)
         self.toolbar.addWidget(self.info_btn)
 
         self.zoom_in_btn = QPushButton("Zoom In")
+        self.zoom_in_btn.setToolTip("Zoom In")
         self.zoom_in_btn.clicked.connect(self.zoom_in)
         self.toolbar.addWidget(self.zoom_in_btn)
 
         self.reset_zoom_btn = QPushButton("1:1")
+        self.reset_zoom_btn.setToolTip("Reset Zoom")
         self.reset_zoom_btn.clicked.connect(self.reset_zoom)
         self.toolbar.addWidget(self.reset_zoom_btn)
 
         self.rect_capture_btn = QPushButton("Rectangle Capture")
         self.rect_capture_btn.setCheckable(True)
+        self.rect_capture_btn.setToolTip("Capture a rectangular area")
         self.rect_capture_btn.clicked.connect(self.toggle_rectangle_capture)
         self.toolbar.addWidget(self.rect_capture_btn)
 
         self.image_capture_btn = QPushButton("Image Capture")
         self.image_capture_btn.setCheckable(True)
         self.image_capture_btn.clicked.connect(self.toggle_image_capture)
+        self.image_capture_btn.setToolTip("Capture the region of image")
         self.toolbar.addWidget(self.image_capture_btn)
         self.add_toolbar_separator()
         # Mark 기능 버튼 추가
         self.mark_btn = QPushButton("Mark")
         self.mark_btn.setCheckable(True)
         self.mark_btn.clicked.connect(self.toggle_mark_mode)
+        self.mark_btn.setToolTip("Mark the clicked position with +")
         self.toolbar.addWidget(self.mark_btn)
 
         # Mark-Clear 버튼 추가
         self.mark_clear_btn = QPushButton("Clear Marks")
         self.mark_clear_btn.clicked.connect(self.clear_marks)
+        self.mark_clear_btn.setToolTip("Clear all marks")
         self.toolbar.addWidget(self.mark_clear_btn)
 
         # Cross-Cursor 버튼 추가
@@ -419,50 +400,49 @@ class SophiaCapture(QMainWindow):
             self.info_text.append(f"Region({x}, {y}, {w}, {h})")  # 원본 이미지 기준
 
     def open_image(self):
-        """ 이미지 파일 열기 (원본 보관 & 복제본 생성) """
-        """ 파일 열기 대화상자 (기본 폴더: $HOME\사진) """
-        home_path = os.path.expanduser("~")  #  사용자 홈 디렉터리
-        default_folder = os.path.join(home_path, "사진")  #  $HOME\사진 폴더 설정        
-        #  만약 "사진" 폴더가 없으면 "Pictures" 폴더 사용
+        home_path = os.path.expanduser("~")
+        default_folder = os.path.join(home_path, "사진")
         if not os.path.exists(default_folder):
             default_folder = os.path.join(home_path, "Pictures")
 
-        base_folder = os.path.join(default_folder, "SophiaCapture")  #  기본 폴더 설정
-        os.makedirs(base_folder, exist_ok=True)  #  기본 폴더 생성 (없으면 생성)
-        # 파일 열기 대화상자 실행 (기본 폴더 설정)
-        file_name, _ = QFileDialog.getOpenFileName(self, "Open Image", default_folder, "Images (*.png *.jpg *.bmp)")    
-    
-        if not file_name:
-            print("Warning: No file selected")  # 파일 선택 안 한 경우
-            return
-        image_array = np.fromfile(file_name, dtype=np.uint8)
-        self.original_image = cv2.imdecode(image_array, cv2.IMREAD_COLOR)
-        # self.original_image = cv2.imread(file_name)
-        if self.original_image is None:
-            print(f"Error: Failed to load image {file_name}")  # 이미지 로드 실패 확인
+        file_path, _ = QFileDialog.getOpenFileName(self, "Open Image", default_folder, "Images (*.png *.jpg *.bmp)")
+        if not file_path:
+            print("Warning: No file selected")
             return
 
-        print(f"Image loaded: {file_name}, Size: {self.original_image.shape[1]}x{self.original_image.shape[0]}")  # 정상 로드 확인
-        self.displayed_image = self.original_image.copy()  # 화면 표시용 복제본 생성
-        self.scale_factor = 1.0  # 화면 표시용 이미지 크기 비율 초기화
+        self.open_process(file_path)    
+
+    def open_process(self, file_path):
+        if not file_path or not os.path.exists(file_path):
+            print("Error: File does not exist.")
+            return
+
+        self.loaded_file_path = file_path  
+        image_array = np.fromfile(file_path, dtype=np.uint8)
+        self.original_image = cv2.imdecode(image_array, cv2.IMREAD_COLOR)
+
+        if self.original_image is None:
+            print(f"Error: Failed to load image {file_path}")
+            return
+
+        print(f"Image loaded: {file_path}, Size: {self.original_image.shape[1]}x{self.original_image.shape[0]}")
+        self.displayed_image = self.original_image.copy()
+        self.scale_factor = 1.0
         self.display_image()
 
-        #  창 제목 업데이트 (Full Path 표시)
-        self.setWindowTitle(f"Sophia Capture v{self.VERSION} - {file_name}")
+        self.setWindowTitle(f"Sophia Capture v{self.VERSION} - {file_path}")
 
-        #  이미지 파일명 추출 후 폴더 생성
-        image_basename = os.path.basename(file_name)  # 파일명 (abc.png)
-        image_name, _ = os.path.splitext(image_basename)  # 확장자 제거 (abc)
-        self.save_folder = os.path.join(base_folder, image_name)  # 저장 폴더 경로
-        os.makedirs(self.save_folder, exist_ok=True)  #  폴더 생성 (있으면 skip)
+        home_path = os.path.expanduser("~")
+        default_folder = os.path.join(home_path, "Pictures", "SophiaCapture")
 
-        #  캡처 이미지 번호 초기화 (0번부터 시작)
+        image_basename = os.path.basename(file_path)
+        image_name, _ = os.path.splitext(image_basename)
+        self.save_folder = os.path.join(default_folder, image_name)
+        os.makedirs(self.save_folder, exist_ok=True)
+
         self.captured_images_count = 0
-
-        #  상태바(StatusBar) 마지막 레이블을 저장 폴더로 업데이트
         self.message_label.setText(self.save_folder)
 
-        # self.display_image()
 
     def show_image_regions(self):
         """ Info 버튼 클릭 시 info_text에 Region 정보 출력 """
@@ -473,6 +453,7 @@ class SophiaCapture(QMainWindow):
         h, w, _ = self.original_image.shape
         base_region = (0, 0, w, h)
         self.info_text.append("-----> Image Region Info")
+        self.info_text.append(f"loaded image path: : {self.loaded_file_path}")
         self.info_text.append(f"base_region = Region(0, 0, {w}, {h})")
 
         for region_name in RegionName:
@@ -555,10 +536,6 @@ class SophiaCapture(QMainWindow):
 
         print(f"Pixmap Created: {self.pixmap.width()}x{self.pixmap.height()}")
 
-        # QLabel에 이미지 적용
-        # self.image_label.setPixmap(self.pixmap)
-        # self.image_label.setScaledContents(False)  # 스케일 금지
-        # self.image_label.resize(self.pixmap.size())
         # 화면 스케일 비율 감지
         scale_factor = self.devicePixelRatioF()
 
@@ -678,6 +655,37 @@ class SophiaCapture(QMainWindow):
         if folder:
             self.save_folder = folder
             self.info_text.append(f"Save folder set to: {self.save_folder}")
+#--------------------------------------------------------------------
+    def load_prev_image(self):
+        self.load_adjacent_image(-1)
+
+    def load_next_image(self):
+        self.load_adjacent_image(1)            
+
+    def load_adjacent_image(self, direction):
+        if not hasattr(self, "loaded_file_path") or not os.path.exists(self.loaded_file_path):
+            return  # 이미지가 로드되지 않았으면 아무것도 하지 않음
+
+        folder = os.path.dirname(self.loaded_file_path)
+        files = [f for f in os.listdir(folder) if f.lower().endswith(('.png', '.jpg', '.jpeg', '.bmp'))]
+        if not files:
+            return
+
+        full_paths = [os.path.join(folder, f) for f in files]
+        sorted_files = sorted(full_paths, key=lambda f: os.path.getmtime(f))
+
+        # 파일 이름 기준으로 현재 이미지 위치 찾기
+        current_file_name = os.path.basename(self.loaded_file_path)
+        current_index = next(
+            (i for i, path in enumerate(sorted_files) if os.path.basename(path) == current_file_name),
+            -1
+        )
+        if current_index == -1:
+            return
+
+        # 🔁 순환 처리
+        new_index = (current_index + direction) % len(sorted_files)        
+        self.open_process(sorted_files[new_index])
 
 
 
