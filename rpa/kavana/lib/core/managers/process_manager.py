@@ -123,7 +123,7 @@ class ProcessManager(BaseManager):
         height = rect[3] - rect[1]
         return (x, y, width, height)
     
-    def find_top_modal_window(self, process_name: str) -> Optional[WindowInfo]:
+    def find_top_modal_window_0(self, process_name: str) -> Optional[WindowInfo]:
         """주어진 프로세스 이름의 최상단 Modal 성격 창을 찾아 반환"""
         candidate_windows = []
 
@@ -152,3 +152,22 @@ class ProcessManager(BaseManager):
         top_hwnd, title, class_name = candidate_windows[-1]
         print(f"[INFO] 최상단 창: {title} (HWND: {top_hwnd})")
         return WindowInfo(top_hwnd, title, class_name)    
+    
+    def find_top_modal_window(self, process_name: str) -> Optional[WindowInfo]:
+        """주어진 프로세스 이름의 최상단 Modal 성격 창을 찾아 반환"""
+        window_list = self.get_window_info_list(process_name)
+        if not window_list:
+            self.log("WARN", f"프로세스({process_name}) 창이 없습니다.")
+            return None
+        
+        return window_list[0]  # 가장 마지막(최상단) 창을 기준으로 (혹은 활성 창을 따로 필터링해도 됨)
+
+    def find_window_by_title(self, title: str) -> Optional[WindowInfo]:
+        """특정 제목을 가진 창 반환"""
+        hwnd = win32gui.FindWindow(None, title)
+        if hwnd:
+            class_name = win32gui.GetClassName(hwnd)
+            return WindowInfo(hwnd=hwnd, title=title, class_name=class_name)
+        else:
+            self.log("WARN", f"제목({title})을 가진 창이 없습니다.")
+            return None

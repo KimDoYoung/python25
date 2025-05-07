@@ -33,6 +33,7 @@ BUILTIN_FUNCTIONS = {
     "WINDOW_LIST":(RpaFunctions.WINDOW_LIST, 1),
     "WINDOW_TOP": (RpaFunctions.WINDOW_TOP, 1),
     "WINDOW_REGION": (RpaFunctions.WINDOW_REGION, 1),
+    "WINDOW_FIND_BY_TITLE": (RpaFunctions.WINDOW_FIND_BY_TITLE, 1),
 
     # ✅ 문자열 관련 함수 추가
     "LENGTH": (StringFunctions.LENGTH, 1),

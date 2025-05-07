@@ -5,20 +5,6 @@ from lib.core.command_preprocessor import CommandPreprocessor
 # 대입
 script = """
 MAIN   
-
-    TRY
-        for i = 0 to 10
-            PRINT i
-            IF i == 1 
-                RAISE "error"
-            END_IF
-        END_FOR
-    CATCH
-        PRINT "catch"
-    FINALLY
-        PRINT "finally"
-    END_TRY
-
     while True
         try
             print "try"

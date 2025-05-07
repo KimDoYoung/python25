@@ -193,7 +193,7 @@ class RpaManager(BaseManager):
             except Exception as e:
                 self.log("WARN", f"[RPA:wait_image] 이미지 {target_image.filename} 검색 중... 아직 발견하지 못함:  {type(e).__name__} - {str(e)}")
 
-            time.sleep(0.5)
+            time.sleep(3)
         if to_var:
             self.executor.set_variable(to_var, NoneToken())
         self.log("ERROR", f"[RPA:wait_image] 이미지 {target_image.filename} {timeout}초 내에 찾을 수 없음.")
@@ -321,7 +321,7 @@ class RpaManager(BaseManager):
                 else:
                     result_token = result_list[0]  # 첫 번째 결과만 사용
             else:
-                result_token = TokenUtil.array_to_array_token([])  # 비어 있는 list
+                result_token = NoneToken() #TokenUtil.array_to_array_token([])  # 비어 있는 list
             
             if to_var:
                 self.executor.set_variable(to_var, result_token)
@@ -339,7 +339,7 @@ class RpaManager(BaseManager):
         except Exception as e:
             super().log("WARN", f"[RPA:find_image] 이미지 {target_img.filename} 찾기 실패: {str(e)}")
             if to_var:
-                result_token = TokenUtil.array_to_array_token([])
+                result_token = NoneToken()
                 self.executor.set_variable(to_var, result_token)
             return None
 

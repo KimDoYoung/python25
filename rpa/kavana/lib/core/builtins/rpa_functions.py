@@ -1,5 +1,6 @@
 
 from lib.core.datatypes.array import Array
+from lib.core.datatypes.region import Region
 from lib.core.datatypes.window import Window
 from lib.core.managers.process_manager import ProcessManager
 from lib.core.token import ArrayToken, NoneToken, Token, TokenStatus
@@ -13,7 +14,7 @@ class RpaFunctions:
     @staticmethod
     def set_executor(executor_instance):
         RpaFunctions.executor = executor_instance
-
+    
     @staticmethod
     def WINDOW_LIST(process_name:str=None) -> Token:
         """특정 디렉토리의 파일 목록 반환"""
@@ -40,7 +41,27 @@ class RpaFunctions:
             if RpaFunctions.executor:
                 RpaFunctions.executor.log_command("ERROR", f"WINDOW_LIST ERROR: {e}")
             return Token(data=Array([]), type=TokenType.ARRAY)  # 오류 시 빈 리스트 반환
-
+        
+    @staticmethod
+    def WINDOW_FIND_BY_TITLE(title:str) -> Token:
+        """특정 제목을 가진 창 반환"""
+        try:
+            pm = ProcessManager(executor=RpaFunctions.executor)
+            window_info = pm.find_window_by_title(title)
+            if window_info:
+                window = Window(title=window_info.title)
+                window.hwnd = window_info.hwnd
+                window.class_name = window_info.class_name
+                token = WindowToken(data=window)
+                token.status = TokenStatus.EVALUATED
+                return token
+            else:
+                return NoneToken()  # 창이 없을 경우 None 반환
+        except Exception as e:
+            if RpaFunctions.executor:
+                RpaFunctions.executor.log_command("ERROR", f"WINDOW_FIND_BY_TITLE ERROR: {e}")
+            return NoneToken()
+        
     @staticmethod    
     def WINDOW_TOP(process_name:str=None) -> Token:
         """특정 프로세스의 최상위 창 반환"""
@@ -48,9 +69,7 @@ class RpaFunctions:
             pm = ProcessManager(executor=RpaFunctions.executor)
             top_window = pm.find_top_modal_window(process_name)
             if top_window:
-                window = Window(title=top_window.title)
-                window.hwnd = top_window.hwnd
-                window.class_name = top_window.class_name
+                window = Window(title=top_window.title, hwnd=top_window.hwnd, class_name=top_window.class_name)
                 token =  WindowToken(data=window)
                 token.status = TokenStatus.EVALUATED
                 return token
@@ -67,7 +86,7 @@ class RpaFunctions:
         try:
             pm = ProcessManager(executor=RpaFunctions.executor)
             x,y,w,h = pm.get_window_region(hwnd)
-            token = RegionToken(data=(x, y, w, h))
+            token = RegionToken(data=Region(x, y, w, h))
             token.status = TokenStatus.EVALUATED
             return token
         except Exception as e:

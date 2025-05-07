@@ -25,8 +25,6 @@ class OcrCommand(BaseCommand):
         "read": {
             "keys": ["from_var", "from_file", "area", "to_var"],
             "overrides": {
-                "from_var": {"required": True},
-                "from_file": {"required": True}
             },
             "rules": {
                 "mutually_exclusive": [
@@ -36,15 +34,12 @@ class OcrCommand(BaseCommand):
             }
         },
         "find": {
-            "keys": ["from_var", "from_file", "area", "to_var", "text"],
+            "keys": [ "area", "to_var", "text", "from_var", "from_file", "resize"],
             "overrides": {
-                "from_var": {"required": True},
-                "from_file": {"required": True}
             },
             "rules": {
-                "mutually_exclusive": [
-                    ["from_file", "from_var"]
-                ],
+                "mutually_exclusive": ["from_file", "from_var"],
+                
                 "required_together": []
             }
         },
