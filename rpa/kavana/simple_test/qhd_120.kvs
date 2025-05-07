@@ -1,4 +1,5 @@
-CONST image_base_dir="C:\\Users\\USER\\Pictures\\efriend_plus_qhd125"
+CONST image_base_dir=r"C:\\Users\\USER\\Pictures\\efriend_plus_qhd125"
+CONST image_base_dir_source=r"C:\\Users\\USER\\Pictures\\efriend_plus_qhd125\\source"
 CONST program_path="C:\\eFriend Plus x64\\efriendplus\\efriendplus.exe"
 CONST process_name="efplusmain.exe"
 CONST cert_mark=f"{image_base_dir}\\인증서마크.png"

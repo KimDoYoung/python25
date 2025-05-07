@@ -9,7 +9,7 @@ from lib.core.token import NoneToken, StringToken, TokenStatus
 from lib.core.token_custom import RegionToken
 from lib.core.token_type import TokenType
 from lib.core.token_util import TokenUtil
-
+from rapidfuzz import fuzz
 class OcrManager(BaseManager):
     def __init__(self, **kwargs):
         super().__init__(kwargs.get("executor", None))
@@ -33,6 +33,7 @@ class OcrManager(BaseManager):
         return func()
 
     def read(self):
+        ''' OCR READ 명령어 처리: 이미지에서 텍스트를 추출합니다. '''
         img = self._get_image_from_file_or_var()
         img = self._preprocess_image(img)
 
@@ -53,10 +54,42 @@ class OcrManager(BaseManager):
 
         return text
 
+    def _is_similar_substring(self,ocr_text: str, target: str, threshold: int = 70, margin: int = 1) -> bool:
+        """
+        OCR 텍스트에서 target 문자열이 포함되어 있다고 판단할 수 있는지 유사도로 확인.
+        
+        Parameters:
+            ocr_text (str): OCR에서 추출된 문자열
+            target (str): 찾고 싶은 기준 문자열
+            threshold (int): 유사도 기준 값 (0~100)
+            margin (int): 슬라이딩 윈도우 여유 길이 (오타 고려)
+
+        Returns:
+            bool: 포함된 것으로 판단되면 True, 아니면 False
+        """
+        max_len = len(ocr_text) - len(target) + 1
+        if max_len < 1:
+            return False
+
+        for i in range(max_len):
+            window = ocr_text[i:i + len(target) + margin]
+            score = fuzz.ratio(window.strip(), target)
+            if score >= threshold:
+                self.log("INFO", f"'{window.strip()}'가 '{target}'과 유사도 {score}%로 포함됨")
+                return True
+
+        return False
+
+    
     def find(self):
+        ''' 
+            OCR FIND 명령어 처리 : 특정 텍스트를 찾아서 Region반환, 못찾으면 None반환
+            fuzzy 비교를 함
+        '''
         target_text = self.options.get("text")
         area = self.options.get("area")
         to_var = self.options.get("to_var")
+        similarity = self.options.get("similarity", 70)
 
         if not target_text:
             self.raise_error("FIND 명령에는 text 옵션이 필요합니다.")
@@ -75,7 +108,7 @@ class OcrManager(BaseManager):
         for res in results:
             text_found = res[1]
             box = res[0]
-            if target_text in text_found:
+            if self._is_similar_substring(ocr_text=text_found, target=target_text, threshold=similarity):
                 (x1, y1), (x2, y2), *_ = box
                 x = int(min(x1, x2)) + offset_x
                 y = int(min(y1, y2)) + offset_y
@@ -95,6 +128,7 @@ class OcrManager(BaseManager):
         return None
 
     def get_all(self):
+        ''' OCR GET_ALL 명령어 처리: 이미지에서 모든 텍스트를 추출합니다. '''
         img = self._get_image_from_file_or_var()
         img = self._preprocess_image(img)
         area = self.options.get("area")
@@ -176,7 +210,8 @@ class OcrManager(BaseManager):
         from_var = self.options.get("from_var")
 
         if from_file:
-            img = cv2.imread(from_file)
+            # img = cv2.imread(from_file) # cv2.imread는 한글 경로에서 오류 발생
+            img = cv2.imdecode(np.fromfile(from_file, dtype=np.uint8), cv2.IMREAD_COLOR)
             if img is None:
                 self.raise_error(f"이미지 파일을 열 수 없습니다: {from_file}")
             return img

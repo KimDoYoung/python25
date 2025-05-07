@@ -1,0 +1,9 @@
+//
+//region rg의 바닥에서부터 높이만큼의 영역 구해서 region으로 리턴
+//
+function bottom_region(rg, height)
+    SET rg_info = DUMP_ATTRS(rg)        
+    SET new_height = rg_info["y"] + rg_info["height"] - height
+    SET new_region = Region(rg_info["x"], new_height, rg_info["width"], height)
+    return new_region
+end_function
