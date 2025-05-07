@@ -198,6 +198,12 @@ class CommandParser:
                 block_body.append({"cmd": f"{cmd}_BLOCK", "body": [{"cmd": cmd, "args": args}] + nested_block})
                 i = new_index + 1
                 continue
+            # ✅ 중첩된 TRY 블록도 허용하도록 추가
+            if cmd == "TRY":
+                try_block, new_index = self.parse_try_block(ppLines, i)
+                block_body.append(try_block)
+                i = new_index + 1
+                continue
 
             # ✅ 일반 명령어 추가
             block_body.append({"cmd": cmd, "args": args})

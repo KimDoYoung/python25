@@ -5,6 +5,7 @@ from lib.core.command_preprocessor import CommandPreprocessor
 # 대입
 script = """
 MAIN   
+    set count = 0
     while True
         try
             print "try"

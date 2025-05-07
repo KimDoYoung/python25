@@ -154,7 +154,7 @@ class RpaManager(BaseManager):
             super().log("WARN", "[RPA:wait] 대기 중단됨 (사용자 인터럽트)")
             raise
 
-        self.log("INFO", "[RPA:wait] 대기 완료")
+        self.log("INFO", f"[RPA:wait] {seconds} 대기 완료")
 
     def wait_image(self):
         """RPA 명령어: find_image - 특정 이미지가 화면에 나타날 때까지 대기 그리고 click"""
