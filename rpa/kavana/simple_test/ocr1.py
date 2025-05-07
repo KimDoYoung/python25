@@ -14,7 +14,7 @@ MAIN`
     LOG_INFO "image_base_dir_source: {image_base_dir_source}"
     SET area1 = Region(923, 906, 716, 45)
     SET src_file = f"{image_base_dir_source}\\팝업들.png"
-    OCR find text="일주일동안" from_file=src_file, area=area1 to_var="r1" resize=1.5 gray=True, similarity=60
+    OCR find text="일주일동안"  area=area1 to_var="r1" resize=1.5 gray=True, similarity=60
     LOG_INFO f"OCR FIND RESULT: {r1}"
     CONST ocr_info = {
         "gray": True,

@@ -2,6 +2,7 @@ from typing import List
 import cv2
 import numpy as np
 import easyocr
+import pyautogui
 from lib.core.datatypes.kavana_datatype import String
 from lib.core.datatypes.region import Region
 from lib.core.managers.base_manager import BaseManager
@@ -95,7 +96,13 @@ class OcrManager(BaseManager):
             self.raise_error("FIND 명령에는 text 옵션이 필요합니다.")
 
         # 만약 from_var와 from_file이 모두 비어 있으면 screen capture를 해서 그것을 임시파일로 저장하고 from_file에 임시파일패스를 넣는다.
-        ImageManager()    
+        if not self.options.get("from_var") and not self.options.get("from_file"):
+            screenshot = pyautogui.screenshot()
+            image_path = self._get_temp_file_path(suffix=".png", prefix="screenshot_")
+            screenshot.save(image_path)
+            self.options["from_file"] = image_path
+            self.log("INFO", f"스크린샷을 저장했습니다: {image_path}")
+
 
         img = self._get_image_from_file_or_var()
         img = self._preprocess_image(img)

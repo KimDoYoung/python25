@@ -476,11 +476,11 @@ class RpaManager(BaseManager):
             self.log("ERROR", f"[RPA:get_text] 텍스트 복사 중 오류 발생: {e}")
             self.raise_error(f"[RPA:get_text] 텍스트 복사 중 오류 발생: {e}")
     
-    def _get_temp_file_path(self, suffix=".png", prefix="tmp_", dir=None):
-        """임시 파일 경로를 생성하고 반환 (파일 생성은 안 함)"""
-        tmp_fd, tmp_path = tempfile.mkstemp(suffix=suffix, prefix=prefix, dir=dir)
-        os.close(tmp_fd)  # 파일 디스크립터는 닫아줌 (파일은 그대로 있음)
-        return tmp_path
+    # def _get_temp_file_path(self, suffix=".png", prefix="tmp_", dir=None):
+    #     """임시 파일 경로를 생성하고 반환 (파일 생성은 안 함)"""
+    #     tmp_fd, tmp_path = tempfile.mkstemp(suffix=suffix, prefix=prefix, dir=dir)
+    #     os.close(tmp_fd)  # 파일 디스크립터는 닫아줌 (파일은 그대로 있음)
+    #     return tmp_path
 
     def capture(self):
         """RPA 명령어: capture - 화면 또는 특정 영역을 이미지로 캡처 (파일 저장 또는 변수 저장)"""

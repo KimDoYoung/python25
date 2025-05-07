@@ -1,3 +1,5 @@
+import os
+import tempfile
 import threading
 #TODO:  모든 command는 result를 반환해야하지 않을까?
 #TODO: option들을 체크하는 로직에 포함되어야할 문자들을 체크해야한다.
@@ -40,3 +42,9 @@ class BaseManager:
         else:
             print(f"[ERROR] {message}")  # 기본 오류 출력
         raise RuntimeError(message)
+
+    def _get_temp_file_path(self, suffix=".png", prefix="tmp_", dir=None):
+        """임시 파일 경로를 생성하고 반환 (파일 생성은 안 함)"""
+        tmp_fd, tmp_path = tempfile.mkstemp(suffix=suffix, prefix=prefix, dir=dir)
+        os.close(tmp_fd)  # 파일 디스크립터는 닫아줌 (파일은 그대로 있음)
+        return tmp_path
