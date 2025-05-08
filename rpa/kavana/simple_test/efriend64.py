@@ -41,22 +41,27 @@ function close_popup_window()
     SET 찾기영역  = bottom_region(팝업윈도우영역, 50)
     SET allow_titles = ["유의사항", "안내"]
     SET title = TRIM(info["title"])
-    if CONTAINS(allow_titles, title)
-        //찾기영역에서 닫기버튼을 찾으면 클릭
-        RPA click_image area=찾기영역 from_file=닫기버튼 to_var="found" after="wait:1s"
-        if found == None
-            RPA click_image area=찾기영역 from_file=확인버튼 to_var="found" after="wait:1s"
-            if found == None
-                LOG_INFO f"'{title}' 팝업의 닫기 또는 확인 버튼을 찾을 수 없습니다."
-            else
-                LOG_INFO f"'{title}' 팝업의 확인 버튼을 찾았습니다."
-            end_if
-        else
-            LOG_INFO f"'{title}' 팝업의 닫기 버튼을 찾았습니다."
-        end_if
-    else
-        LOG_INFO f"'{title}' 팝업이 아닙니다."
+    if title == "유의사항"
+        LOG_INFO f"'{title}' 팝업을 찾았습니다."
+        RPA click_point location=Point(1916, 1377) after="wait:2s" // 확인버튼 클릭
     end_if
+    //if CONTAINS(allow_titles, title)
+    //    //찾기영역에서 닫기버튼을 찾으면 클릭
+    //    LOG_INFO f"찾기영역역: {찾기영역}"
+    //    RPA click_image area=찾기영역 from_file=닫기버튼 to_var="found" after="wait:1s"
+    //    if found == None
+    //        RPA click_image area=찾기영역 from_file=확인버튼 to_var="found" after="wait:1s"
+    //        if found == None
+    //            LOG_INFO f"'{title}' 팝업의 닫기 또는 확인 버튼을 찾을 수 없습니다."
+    //        else
+    //            LOG_INFO f"'{title}' 팝업의 확인 버튼을 찾았습니다."
+    //        end_if
+    //    else
+    //        LOG_INFO f"'{title}' 팝업의 닫기 버튼을 찾았습니다."
+    //    end_if
+    //else
+    //    LOG_INFO f"'{title}' 팝업이 아닙니다."
+    //end_if
     LOG_INFO "=====================[ Close Popup Window]===================================="
 end_function
 
@@ -111,8 +116,7 @@ end_function
 
 function virtual_screen_close()
     LOG_INFO "=====================[ 가상화면 종료 시작]===================================="
-    //RPA click_point location=Point(3523, 1956) after="wait:1s"
-    //RPA click_point location=Point(1854, 1083) after="wait:1s"
+    RPA wait seconds=(3)
     SET 설정메뉴=Point(35, 57) // 설정메뉴 
     SET points= [  Point(96, 162), Point(595, 159), Point(609, 493) ]
     SET 닫기버튼위치 =  Point(1848, 1078) // 닫기 확인
@@ -133,7 +137,14 @@ function close_efriend_hts()
     RPA click_point location=종료확인, after="wait:1s"
     LOG_INFO "=====================[ eFriend HTS 종료 ]===================================="
 end_function   
-
+function save_file_name()
+    SET save_folder = f"{IMAGE_PATH}\\capture"
+    if dir_exists(save_folder) == False
+        just DIR_CREATE(save_folder)
+    end_if
+    SET time_stamp = YMD_FORMAT(now(), "%Y-%m-%d_%H%M%S")
+    return f"{save_folder}\\efriend_{time_stamp}.png"
+end_function
 function work_0808()
     LOG_INFO "=====================[ 0808 화면 호출 시작]===================================="
     SET 화면번호위치= Point(117, 103) //화면위치
@@ -144,8 +155,70 @@ function work_0808()
     
     RPA click_point location=비밀번호위치 after="wait:1s" //0808화면 클릭
     SET password = TO_STR($HTS_ACCT_PW)
-    RPA put_text text=password clipboard=False after="wait:2s" //0808입력
+    RPA put_text text=password clipboard=False  //pw입력
+    RPA key_in keys=["enter"], after="wait:3s" // 엔터키입력
     
+    RPA capture to_file=save_file_name()
+
+    RPA click_point location= Point(451, 915) click_type="right" after="wait:1s" //0808화면 우클릭
+    OCR FIND text="파일로 보내기" to_var="found" preprocess=False
+    if found != None
+        SET p = POINT_OF_REGION(found, "center")
+        RPA click_point location=p, after="wait:1s" // 파일로 보내기 클릭
+        LOG_INFO "파일로 보내기 클릭"
+        OCR FIND text="Csv로 저장" to_var="found" preprocess=False
+        if found != None
+            SET p = POINT_OF_REGION(found, "center")
+            RPA click_point location=p, after="wait:1s" // Csv로 저장 클릭
+            LOG_INFO "Csv로 저장 클릭"
+            SET file_name = f"{RESULT_PATH}\\0808.csv"
+            RPA put_text text=file_name clipboard=True // 파일명입력
+            RPA key_in keys=["enter"], after="wait:1s" // 엔터키입력
+            LOG_INFO "0808 화면 종료"
+        else
+            LOG_INFO "Csv로 저장 찾을 수 없습니다."
+        end_if
+    else
+        LOG_INFO "파일로 보내기 찾을 수 없습니다."
+    end_if
+end_function
+
+function work_0801()
+    LOG_INFO "=====================[ 0801 화면 호출 시작]===================================="
+    SET 화면번호위치= Point(117, 103) //화면위치
+    SET 비밀번호위치= Point(432, 201) //비밀번호위치
+    RPA click_point location=화면번호위치, after="wait:1s"
+    RPA put_text text="0801" clipboard=False  //0808입력
+    just close_popup_window()
+    
+    //RPA click_point location=비밀번호위치 after="wait:1s" //0808화면 클릭
+    SET password = TO_STR($HTS_ACCT_PW)
+    RPA put_text text=password clipboard=False  //0808입력
+    RPA key_in keys=["enter"], after="wait:3s" // 엔터키입력
+
+    RPA capture to_file=save_file_name()
+    RPA click_point location=Point(530, 567) click_type="right" after="wait:1s" //0801화면 우클릭    
+
+    OCR FIND text="파일로 보내기" to_var="found" preprocess=False
+    if found != None
+        SET p = POINT_OF_REGION(found, "center")
+        RPA click_point location=p, after="wait:1s" // 파일로 보내기 클릭
+        LOG_INFO "파일로 보내기 클릭"
+        OCR FIND text="Csv로 저장" to_var="found" preprocess=False
+        if found != None
+            SET p = POINT_OF_REGION(found, "center")
+            RPA click_point location=p, after="wait:1s" // Csv로 저장 클릭
+            LOG_INFO "Csv로 저장 클릭"
+            SET file_name = f"{RESULT_PATH}\\0801.csv"
+            RPA put_text text=file_name clipboard=True // 파일명입력
+            RPA key_in keys=["enter"], after="wait:1s" // 엔터키입력
+            LOG_INFO "0801 화면 종료"
+        else
+            LOG_INFO "Csv로 저장 찾을 수 없습니다."
+        end_if
+    else
+        LOG_INFO "파일로 보내기 찾을 수 없습니다."
+    end_if
 end_function
 
 MAIN
@@ -156,6 +229,7 @@ MAIN
     LOG_INFO f"HTS_PROGRAM: {HTS_PROGRAM}"
     LOG_INFO f"PROCESS_NAME: {PROCESS_NAME}"
     LOG_INFO f"IMAGE_PATH: {IMAGE_PATH}"
+    LOG_INFO f"RESULT_PATH: {RESULT_PATH}"
     LOG_INFO "--------------------------------------------"
     RPA open_app from_var="efriend", process_name=process_name, focus=True
     RPA wait seconds=10
@@ -192,13 +266,16 @@ MAIN
         LOG_INFO "팝업이 제거되었습니다."
     end_if
     //가상화면 모두 닫기
-    RPA wait seconds=(3)
     JUST virtual_screen_close()
     //0808화면 호출
     just work_0808()
+    //가상화면 모두 닫기
+    JUST virtual_screen_close()
+    //0801화면 호출
+    just work_0801()
     
     //대기 
-    RPA wait seconds=(60*3)
+    RPA wait seconds=(60*1)
     
     //종료
     JUST close_efriend_hts()

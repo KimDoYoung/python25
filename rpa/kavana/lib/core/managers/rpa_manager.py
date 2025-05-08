@@ -208,7 +208,7 @@ class RpaManager(BaseManager):
         location = self.options.get("location")
         click_count = int(self.options.get("click_count", 1))
         click_type = self.options.get("click_type", "left").lower()
-        duration = float(self.options.get("duration", 0.2))  # duration은 기본 0초 (즉시 클릭)
+        duration = float(self.options.get("duration", 0.5))  # duration은 기본 0초 (즉시 클릭)
         if location:
             x,y = location
         # 좌표 로그
