@@ -86,16 +86,16 @@ class Logger:
         self.logger.addHandler(console_handler)
 
     def debug(self, message):
-        self.logger.debug("🐛 " + message)
+        self.logger.debug("🐛 " + str(message))
 
     def info(self, message):
-        self.logger.info("ℹ️ " + message)
+        self.logger.info("ℹ️ " + str(message))
 
     def warn(self, message):
-        self.logger.warning("⚠️ " + message)
+        self.logger.warning("⚠️ " + str(message))
 
     def error(self, message):
-        self.logger.error("❌ " + message)
+        self.logger.error("❌ " + str(message))
 
     @classmethod
     def reset_instance(cls):

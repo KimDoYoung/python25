@@ -315,16 +315,36 @@ class CommandExecutor:
         else:
             raise RuntimeError(f"로그 명령어 실행 실패: LOG_{level.upper()}")
 
+    # def raise_command(self, message):
+    #     """예외 발생을 위한 헬퍼 함수"""
+    #     raise_command = self.command_map.get("RAISE")
+    #     if raise_command:
+    #         tokenMsg = StringToken(data=String(message), type=TokenType.STRING)
+    #         tokenErrorCode = Token(data=Integer(1), type=TokenType.INTEGER)
+    #         raise_command.execute([tokenMsg, tokenErrorCode], self)
+    #     else:
+    #         raise RuntimeError("RAISE 명령어 실행 실패")
     def raise_command(self, message):
         """예외 발생을 위한 헬퍼 함수"""
-        raise_command = self.command_map.get("RAISE")
-        if raise_command:
-            tokenMsg = StringToken(data=String(message), type=TokenType.STRING)
-            tokenErrorCode = Token(data=Integer(1), type=TokenType.INTEGER)
-            raise_command.execute([tokenMsg, tokenErrorCode], self)
-        else:
-            raise RuntimeError("RAISE 명령어 실행 실패")
-        
+        if getattr(self, "_handling_exception", False):
+            print("예외 처리 중 예외가 발생하여 중단:", message)
+            return
+
+        self._handling_exception = True  # 플래그 설정
+
+        try:
+            raise_command = self.command_map.get("RAISE")
+            if raise_command:
+                tokenMsg = StringToken(data=String(message), type=TokenType.STRING)
+                tokenErrorCode = Token(data=Integer(1), type=TokenType.INTEGER)
+                raise_command.execute([tokenMsg, tokenErrorCode], self)
+            else:
+                raise RuntimeError("RAISE 명령어 실행 실패")
+        except Exception as e:
+            print("RAISE 명령 실행 중 내부 오류:", e)
+        finally:
+            self._handling_exception = False  # 플래그 해제
+
     def set_last_error(self, value:str):
         """시스템 변수 설정"""
         last_error_token = StringToken(data=String(value), type=TokenType.STRING)

@@ -47,6 +47,7 @@ class RpaManager(BaseManager):
         func = method_map.get(self.command.lower())
         if not func:
             self.raise_error(f"RPA 명령어에서 지원하지 않는 sub명령어: {self.command}")
+            return None
 
         result = func()  # 실제 실행
 
@@ -268,6 +269,7 @@ class RpaManager(BaseManager):
                 result_token = TokenUtil.region_to_token(location)
                 if to_var:
                     self.executor.set_variable(to_var, result_token)
+                pyautogui.click(center.x, center.y)    
                 self.log("INFO", f"[RPA:click_image] {target_img.filename} 이미지 클릭 완료: {center}")
                 if after:
                     self._after_action(location, after)

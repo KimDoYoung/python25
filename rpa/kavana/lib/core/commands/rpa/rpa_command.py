@@ -157,11 +157,11 @@ class RpaCommand(BaseCommand):
         sub_command = args[0].data.value.lower()
         options, _ = self.extract_all_options(args, 1)
 
-        option_map, rules = self.get_option_spec(sub_command)
-        option_values = self.parse_and_validate_options(options, option_map, executor)
-        self.check_option_rules(sub_command, option_values, rules)
         
         try:
+            option_map, rules = self.get_option_spec(sub_command)
+            option_values = self.parse_and_validate_options(options, option_map, executor)
+            self.check_option_rules(sub_command, option_values, rules)
             manager = RpaManager(command=sub_command, **option_values, executor=executor)
             manager.execute()
         except KavanaRpaError as e:

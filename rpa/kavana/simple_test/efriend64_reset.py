@@ -20,7 +20,9 @@ MAIN
     RPA wait seconds=10
     RPA wait_image area=인증서영역 , from_file=인증서창_확인 after="wait:5s"
     RPA click_point location=Point(1657, 1417) after="wait:3s" //취소버튼
-    RPA click_point location=Point(1925, 1342) after="wait:3s" //확인
+    //RPA click_point location=Point(1925, 1342) after="wait:3s" //확인
+    SET btn = f"{IMAGE_PATH}\\인증서확인.png"
+    RPA click_image area=인증서영역, from_file=btn after="wait:5s"
     RPA click_point location= Point(2184, 493)//종료
     
     LOG_INFO "=========================================================="
@@ -28,9 +30,9 @@ MAIN
     LOG_INFO "=========================================================="
     
     ON_EXCEPTION
+        //JUST Close_efriend_hts()
         LOG_ERROR "예외 발생"
         LOG_ERROR f">>> {$exception_message} exit code: {$exit_code}"
-        JUST Close_efriend_hts()
     END_EXCEPTION
 END_MAIN
 """
