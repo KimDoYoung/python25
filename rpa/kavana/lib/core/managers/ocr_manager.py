@@ -139,15 +139,21 @@ class OcrManager(BaseManager):
 
     def get_all(self):
         ''' OCR GET_ALL 명령어 처리: 이미지에서 모든 텍스트를 추출합니다. '''
-        img = self._get_image_from_file_or_var()
-        img = self._preprocess_image(img)
         area = self.options.get("area")
         to_var = self.options.get("to_var")
-        resize_factor = self.options.get("resize", 1.0)
+        preprocess = self.options.get("preprocess")
+        resize = self.options.get("resize", 1.0)
+
+        img = self._get_image_from_file_or_var()
+        img = self._preprocess_image(img)
+
 
         offset_x = offset_y = 0
         if area:
-            x, y, w, h = self._parse_area(area, resize_factor)
+            if preprocess:
+                x, y, w, h = self._parse_area(area, factor=resize)
+            else:
+                x, y, w, h = self._parse_area(area)
             img = img[y:y+h, x:x+w]
             offset_x, offset_y = x, y
 

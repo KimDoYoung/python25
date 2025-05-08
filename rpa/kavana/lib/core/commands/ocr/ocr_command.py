@@ -7,7 +7,7 @@ from lib.core.managers.ocr_manager import OcrManager  # OCR 처리를 담당하�
 class OcrCommand(BaseCommand):
     '''OCR 명령어 해석'''
     OPTION_DEFINITIONS = {
-        "preprocess": {"default": False, "allowed_types": [TokenType.BOOLEAN]},
+        "preprocess": {"default": True, "allowed_types": [TokenType.BOOLEAN]},
         #---------전처리 옵션------------------
         "gray": {"default": False, "allowed_types": [TokenType.BOOLEAN]},
         "threshold": {"default": "adaptive", "allowed_types": [TokenType.STRING]},

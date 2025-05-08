@@ -97,7 +97,7 @@ class RpaCommand(BaseCommand):
             }
         },
         "click_image": {
-            "keys": ["area", "after", "from_var", "from_file", "grayscale", "confidence"],
+            "keys": ["area", "after", "from_var", "from_file", "to_var", "grayscale", "confidence"],
             "overrides": {},
             "rules": {}
         },

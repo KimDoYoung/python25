@@ -8,17 +8,69 @@ LOAD_ENV ".env"
 include "simple_test/efriend64_data.kvs"
 include "simple_test/common_functions.kvs"
 
+function virtual_screen_close2()
+    CONST 가상화면호출버튼_위치= Point(3522, 1956)
+    CONST 가상화면닫기팝업이미지=f"{IMAGE_PATH}\\가상화면닫기확인.png"
+    CONST 가상화면_닫기_버튼_위치=Point(1860, 1085)
+    LOG_INFO "====> 가상화면 닫기 버튼 클릭"
+    RPA click_point location=가상화면호출버튼_위치, after="wait:2s"
+    RPA find_image aeea=팝업영역, from_file=가상화면닫기팝업이미지 to_var="found" 
+    if found != None
+        LOG_INFO "가상화면 닫기 팝업을 찾았습니다."
+        RPA click_point location=가상화면_닫기_버튼_위치
+    end_if
+end_function
+
+//타이틀의 팝업이 있으면 닫기
+function close_popup_window()
+    LOG_INFO "=====================[ Close Popup Window]===================================="
+    SET window_list = WINDOW_LIST(process_name=PROCESS_NAME)
+    LOG_INFO "현재 위도우들----->"
+    for win in window_list
+        SET win_info = DUMP_ATTRS(win)
+        SET title1 = win_info["title"]
+        LOG_INFO f"윈도우: [{title1}]"
+    end_for
+    LOG_INFO "<-----"    
+    SET 닫기버튼=f"{IMAGE_PATH}\\닫기버튼.png"
+    SET 확인버튼=f"{IMAGE_PATH}\\확인버튼.png"
+    SET top_window = WINDOW_TOP(process_name=PROCESS_NAME)
+    SET info = DUMP_ATTRS(top_window)
+    SET 팝업윈도우영역 = WINDOW_REGION(info["hwnd"])
+    LOG_INFO f"팝업윈도우영역: {팝업윈도우영역}"
+    SET 찾기영역  = bottom_region(팝업윈도우영역, 50)
+    SET allow_titles = ["유의사항", "안내"]
+    SET title = TRIM(info["title"])
+    if CONTAINS(allow_titles, title)
+        //찾기영역에서 닫기버튼을 찾으면 클릭
+        RPA click_image area=찾기영역 from_file=닫기버튼 to_var="found" after="wait:1s"
+        if found == None
+            RPA click_image area=찾기영역 from_file=확인버튼 to_var="found" after="wait:1s"
+            if found == None
+                LOG_INFO f"'{title}' 팝업의 닫기 또는 확인 버튼을 찾을 수 없습니다."
+            else
+                LOG_INFO f"'{title}' 팝업의 확인 버튼을 찾았습니다."
+            end_if
+        else
+            LOG_INFO f"'{title}' 팝업의 닫기 버튼을 찾았습니다."
+        end_if
+    else
+        LOG_INFO f"'{title}' 팝업이 아닙니다."
+    end_if
+    LOG_INFO "=====================[ Close Popup Window]===================================="
+end_function
 
 function close_popups()
+    SET success = False
     //팝업제거 현재 최상단 윈도우를 찾아서
     LOG_INFO "=====================[ 팝업제거 시작]===================================="
     RPA capture to_file=r"c:\\tmp\\popup.png"
     SET window_list = WINDOW_LIST(process_name=PROCESS_NAME)
-    LOG_INFO "현재 위도우들----->"
-    for win_info in window_list
-        LOG_INFO f"윈도우: {win_info}"
-    end_for
-    LOG_INFO "<-----"
+    //LOG_INFO "현재 위도우들----->"
+    //for win_info in window_list
+    //    LOG_INFO f"윈도우: {win_info}"
+    //end_for
+    //LOG_INFO "<-----"
     SET count = 0
     while True
         SET top_window = WINDOW_TOP(process_name=PROCESS_NAME)
@@ -29,30 +81,32 @@ function close_popups()
         SET 찾기영역  = bottom_region(팝업윈도우영역, 50)
         LOG_INFO f"찾기영역: {찾기영역}"
         if info["title"] == "유의사항" or info["title"] == "안내" 
-            SET tmp_file = FILE_TEMP_NAME(".png")
-            RPA capture to_file=tmp_file 
-            for text in [ "닫기", "확인"]
-                OCR FIND text=text from_file=tmp_file area=찾기영역 to_var="found" resize=2.0
+            for text in [ "닫기", "확인", "확 인", "확 민", "닫 기"]
+                OCR FIND text=text  area=찾기영역 to_var="found" preprocess=False
                 if found != None
                     LOG_INFO f"'{text}'를 찾았습니다."
                     SET p = POINT_OF_REGION(found, "center")
-                    RPA click_point location=p, after="wait:2s"
+                    RPA click_point location=p, after="wait:2s" // 팝업의 닫기 또는 확인 버튼 클릭
+                    just virtual_screen_close()
+                    set success = True
                 else
                     LOG_INFO f"'{text}'를 찾을 수 없습니다."
                     SET count = count + 1
                 end_if
             end_for
         else
+            LOG_INFO "팝업이 아닙니다."
             break
         end_if
         RPA wait seconds=3
-        if count > 10
-            LOG_WARN "팝업이 10번 이상 반복되어 종료합니다."
+        if count > 5
+            LOG_WARN "팝업이 5번 이상 반복되어 종료합니다."
             break
         end_if
     end_while
 
     LOG_INFO "=====================[ 팝업제거 종료]===================================="
+    return success
 end_function
 
 function virtual_screen_close()
@@ -85,11 +139,12 @@ function work_0808()
     SET 화면번호위치= Point(117, 103) //화면위치
     SET 비밀번호위치= Point(432, 201) //비밀번호위치
     RPA click_point location=화면번호위치, after="wait:1s"
-    RPA put_text text="0808" clipboard=False after="wait:2s" //0808입력
-    just close_popups()
+    RPA put_text text="0808" clipboard=False  //0808입력
+    just close_popup_window()
     
     RPA click_point location=비밀번호위치 after="wait:1s" //0808화면 클릭
-    RPA put_text text=$HTS_ACCT_PW clipboard=False after="wait:2s" //0808입력
+    SET password = TO_STR($HTS_ACCT_PW)
+    RPA put_text text=password clipboard=False after="wait:2s" //0808입력
     
 end_function
 
@@ -111,7 +166,7 @@ MAIN
     LOG_INFO f"현재화면 저장 파일명: {tmp_file}"
     RPA capture to_file=tmp_file
     //IMAGE clip from_file=tmp_file area=인증서영역 to_var="image1"
-    OCR FIND text=사용자명 from_file=tmp_file area=인증서영역 to_var="found_user_name_area"
+    OCR FIND text=사용자명 from_file=tmp_file area=인증서영역 to_var="found_user_name_area" preprocess=False
     if found_user_name_area == None
         RAISE_ERROR "사용자명을 찾을 수 없습니다."
     else
@@ -130,7 +185,12 @@ MAIN
     LOG_INFO "HTS 메인화면이 뜸"
     //팝업제거 
     RPA wait seconds=(3)
-    JUST close_popups()
+    SET popup_close =  close_popups()
+    if popup_close == False
+        LOG_INFO "팝업이 없습니다."
+    else
+        LOG_INFO "팝업이 제거되었습니다."
+    end_if
     //가상화면 모두 닫기
     RPA wait seconds=(3)
     JUST virtual_screen_close()
