@@ -41,15 +41,20 @@ class OcrManager(BaseManager):
         ''' OCR READ 명령어 처리: 이미지에서 텍스트를 추출합니다. '''
         area = self.options.get("area")
         to_var = self.options.get("to_var")
+        resize = float(self.options.get("resize", 1.0))
+        preprocess = self.options.get("preprocess", True)        
 
         # Get image (from file, variable, or screenshot)
         img = self._get_image()
-        img = self._preprocess_image(img)
+        if preprocess:
+            img = self._preprocess_image(img)
 
         # Process region of interest if specified
+        # offset_x = offset_y = 0
         if area:
-            x, y, w, h = self._parse_area(area)
+            x, y, w, h = self._parse_area(area, factor=resize if preprocess else 1.0)
             img = img[y:y+h, x:x+w]
+            # offset_x, offset_y = x, y
 
         # Extract text from image
         results = self.reader.readtext(img)
@@ -72,6 +77,8 @@ class OcrManager(BaseManager):
         target_text = self.options.get("text")
         area = self.options.get("area")
         to_var = self.options.get("to_var")
+        resize = float(self.options.get("resize", 1.0))
+        preprocess = self.options.get("preprocess", True)
         similarity = float(self.options.get("similarity", 70))
 
         if not target_text:
@@ -79,12 +86,13 @@ class OcrManager(BaseManager):
 
         # Get image (from file, variable, or screenshot)
         img = self._get_image()
-        img = self._preprocess_image(img)
+        if preprocess:
+            img = self._preprocess_image(img)
 
         # Process region of interest if specified
         offset_x = offset_y = 0
         if area:
-            x, y, w, h = self._parse_area(area)
+            x, y, w, h = self._parse_area(area, factor=resize if preprocess else 1.0)
             img = img[y:y+h, x:x+w]
             offset_x, offset_y = x, y
 
