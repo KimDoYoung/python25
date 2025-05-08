@@ -140,8 +140,8 @@ class StringFunctions:
             b = sub in s
             return TokenUtil.boolean_to_boolean_token(b)
         elif isinstance(s, List):
-            value_array = [token.data.value for token in s]
-            b = sub in value_array
+            value_array = [token.data.value if hasattr(token, "data") and hasattr(token.data, "value") else token for token in s]
+            b = sub in value_array        
             return TokenUtil.boolean_to_boolean_token(b)
         elif isinstance(s, Dict):
             b = sub in s.keys()

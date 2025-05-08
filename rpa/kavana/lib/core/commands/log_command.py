@@ -1,4 +1,5 @@
 import re
+from lib.core.datatypes.kavana_datatype import KavanaDataType
 from lib.core.exceptions.kavana_exception import KavanaValueError
 from lib.core.logger import Logger
 from lib.core.commands.base_command import BaseCommand
@@ -38,7 +39,14 @@ class BaseLogCommand(BaseCommand):
                 
                 # ✅ 평가 후 문자열 반환
                 result_token = evaluator.evaluate(tokens)
-                return str(result_token.data.value)
+                if isinstance(result_token, Token):
+                    return(result_token.data.string)
+                elif isinstance(result_token, KavanaDataType):
+                    return result_token.string
+                else:
+                    raise KavanaValueError(f"지원되지 않는 타입: {type(result_token)}", match.start(), match.end())
+                #return str(result_token.data.string) if isinstance(result_token, Token) else str(result_token.string)                                    
+                # return str(result_token.data.value) if isinstance(result_token, Token) else str(result_token.string)
             except Exception as e:
                 return f"{{ERROR: {e}}}"  # 오류 발생 시 그대로 출력
 
