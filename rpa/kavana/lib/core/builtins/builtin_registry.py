@@ -25,10 +25,8 @@ BUILTIN_FUNCTIONS = {
     "POINT_OF_REGION": (RegionPointFunctions.POINT_OF_REGION, 2),
     "REGION_OF_REGION": (RegionPointFunctions.REGION_OF_REGION, 2),
     "IS_POINT_IN_REGION": (RegionPointFunctions.IS_POINT_IN_REGION, 2),
-    "POINT_MOVE_NORTH": (RegionPointFunctions.POINT_MOVE_NORTH, 2),
-    "POINT_MOVE_SOUTH": (RegionPointFunctions.POINT_MOVE_SOUTH, 2),
-    "POINT_MOVE_EAST": (RegionPointFunctions.POINT_MOVE_EAST, 2),
-    "POINT_MOVE_WEST": (RegionPointFunctions.POINT_MOVE_WEST, 2),
+    "POINT_MOVE": (RegionPointFunctions.POINT_MOVE, 2),
+    "POINT_TO_REGION": (RegionPointFunctions.POINT_TO_REGION, 3),
     # ✅ RPA 관련 함수 추가
     "WINDOW_LIST":(RpaFunctions.WINDOW_LIST, 1),
     "WINDOW_TOP": (RpaFunctions.WINDOW_TOP, 1),

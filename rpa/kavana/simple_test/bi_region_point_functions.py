@@ -15,11 +15,16 @@ MAIN
     print POINT_OF_REGION(r, "center")
     print REGION_OF_REGION(r, "top_left")
     print REGION_OF_REGION(r, "top-left")
-    SET p1 = Point(100, 200)
-    PRINT POINT_MOVE_NORTH(p1, 10)
-    PRINT POINT_MOVE_SOUTH(p1, 10)
-    PRINT POINT_MOVE_EAST(p1, 10)
-    PRINT POINT_MOVE_WEST(p1, 10)
+
+    SET p2 = Point(100, 100)
+    SET p3 = POINT_MOVE(p2, "N:10, E:10")
+    PRINT p3
+    SET p4 = POINT_MOVE(p3, "D:10, L:10")
+    print p4
+
+    SET rg1 = POINT_TO_REGION(p2, 10, 10)
+    print rg1
+
 END_MAIN
 """
 #---------------------------

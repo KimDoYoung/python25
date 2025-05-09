@@ -44,3 +44,15 @@ def extract_amounts(text: str) -> dict:
     return result
 
 ```
+## EasyOCR
+
+- EasyOCR은 PyTorch 기반으로 사전학습된 딥러닝 모델을 사용합니다.
+- 따라서 실제 "학습 튜닝"은 모델을 다시 학습(Finetuning) 하거나, 후처리 정제를 추가하는 방식으로 접근해야 합니다.
+- EasyOCR은 내부적으로 CRNN + CTC 기반 구조를 사용하므로, 학습 파이프라인은 다음과 같이 구성됩니다:
+
+1. dataset 준비 (이미지 + 텍스트 라벨)
+2. label converter 설정 (korean + financial terms)
+3. 사전 학습된 모델에서 fine-tune
+4. train.py 실행하여 재학습
+- 💡 이 부분은 공식 EasyOCR 레포를 clone 후, training 디렉토리에서 조정할 수 있습니다.
+- 학습에 GPU 필요.

@@ -10,7 +10,7 @@
     },
     "github.copilot.chat.commitMessageGeneration.instructions": [
         {
-            "text": "한글과 영어로,짧게, 파일명,클래스명을 반드시 포함하여 작성해 주세요."
+            "text": "한글로 작성된 커밋 메시지를 생성해줘",
         }
     ],
     "chat.mcp.discovery.enabled": true,

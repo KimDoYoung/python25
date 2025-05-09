@@ -90,22 +90,34 @@ class RegionPointFunctions:
             return TokenUtil.region_to_token((x, y + height // 2, width, height // 2))
         else:
             raise KavanaValueError(f"Unknown region name: {region_name}")
-
-    def POINT_MOVE_NORTH(p: Tuple[int,int], distance: int) -> PointToken:
-        """Point p를 북쪽으로 distance 만큼 이동시킨 PointToken 반환"""
-        x, y = p
-        return TokenUtil.xy_to_point_token(x, y - distance)
-
-    def POINT_MOVE_SOUTH(p: Tuple[int,int], distance: int) -> PointToken:
-        """Point p를 남쪽으로 distance 만큼 이동시킨 PointToken 반환"""
-        x, y = p
-        return TokenUtil.xy_to_point_token(x, y + distance)
-    def POINT_MOVE_EAST(p: Tuple[int,int], distance: int) -> PointToken:
-        """Point p를 동쪽으로 distance 만큼 이동시킨 PointToken 반환"""
-        x, y = p
-        return TokenUtil.xy_to_point_token(x + distance, y)
-    def POINT_MOVE_WEST(p: Tuple[int,int], distance: int) -> PointToken:
-        """Point p를 서쪽으로 distance 만큼 이동시킨 PointToken 반환"""
-        x, y = p
-        return TokenUtil.xy_to_point_token(x - distance, y)
     
+    @staticmethod    
+    def POINT_MOVE(p: Tuple[int,int], move_str:str) -> RegionToken:
+        """ 
+            p를 move_str 만큼 이동시킨 PointToken 반환
+            move_str는 "N:30, S:20, E:10, W:5" 형식으로 주어짐
+            N: 북쪽, S: 남쪽, E: 동쪽, W: 서쪽
+            U: 위쪽, D: 아래쪽, L: 왼쪽, R: 오른쪽
+        """
+        x, y = p
+        # move_dict = {}
+        for move in move_str.split(","):
+            direction, distance = move.split(":")
+            if direction.strip() not in ["N", "S", "E", "W", "U", "D", "L", "R"]:
+                raise KavanaValueError(f"POINT_MOVE:Invalid direction: {direction.strip()}")
+            if not distance.strip().isdigit():
+                raise KavanaValueError(f"POINT_MOVE:Invalid distance: {distance.strip()}")
+            if direction.strip() == "N" or direction.strip() == "U":
+                y -= int(distance.strip())
+            elif direction.strip() == "S" or direction.strip() == "D":
+                y += int(distance.strip())
+            elif direction.strip() == "E" or direction.strip() == "R":
+                x += int(distance.strip())
+            elif direction.strip() == "W" or direction.strip() == "L":
+                x -= int(distance.strip())
+        return TokenUtil.xy_to_point_token(x, y)
+    
+    def POINT_TO_REGION(p: Tuple[int,int], width: int, height:int)->RegionToken:
+        """Point p를 중심으로 width, height 크기의 RegionToken 반환"""
+        x, y = p
+        return TokenUtil.region_to_token((x - width // 2, y - height // 2, width, height))
