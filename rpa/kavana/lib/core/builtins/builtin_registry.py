@@ -27,11 +27,15 @@ BUILTIN_FUNCTIONS = {
     "IS_POINT_IN_REGION": (RegionPointFunctions.IS_POINT_IN_REGION, 2),
     "POINT_MOVE": (RegionPointFunctions.POINT_MOVE, 2),
     "POINT_TO_REGION": (RegionPointFunctions.POINT_TO_REGION, 3),
+    "POINTS_TO_REGION": (RegionPointFunctions.POINTS_TO_REGION, 2),
     # ✅ RPA 관련 함수 추가
     "WINDOW_LIST":(RpaFunctions.WINDOW_LIST, 1),
     "WINDOW_TOP": (RpaFunctions.WINDOW_TOP, 1),
     "WINDOW_REGION": (RpaFunctions.WINDOW_REGION, 1),
     "WINDOW_FIND_BY_TITLE": (RpaFunctions.WINDOW_FIND_BY_TITLE, 1),
+    "MONITOR_LIST": (RpaFunctions.MONITOR_LIST, 0),
+    "SNAP_SCREEN_INFO": (RpaFunctions.SNAP_SCREEN_INFO, 2),
+    "SNAP_CHANGED_REGION": (RpaFunctions.SNAP_CHANGED_REGION, 2),
 
     # ✅ 문자열 관련 함수 추가
     "LENGTH": (StringFunctions.LENGTH, 1),

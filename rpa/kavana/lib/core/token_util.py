@@ -253,7 +253,8 @@ class TokenUtil:
         result_token = HashMapToken(data=hash_map)
         result_token.status = TokenStatus.EVALUATED
         return result_token    
-
+    
+#TODO: list_to_array_token과 array_to_array_token 통합
     @staticmethod
     def list_to_array_token(data: list) -> ArrayToken:
         """list → ArrayToken 변환"""

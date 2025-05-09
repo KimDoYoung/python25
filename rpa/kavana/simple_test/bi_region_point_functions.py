@@ -23,8 +23,10 @@ MAIN
     print p4
 
     SET rg1 = POINT_TO_REGION(p2, 10, 10)
-    print rg1
-    
+    print "POINT_TO_REGION", rg1
+    SET rg2 = POINTS_TO_REGION(POINT(8,43), POINT(3829,1914))
+    print "POINTS_TO_REGION", rg2
+
 END_MAIN
 """
 #---------------------------

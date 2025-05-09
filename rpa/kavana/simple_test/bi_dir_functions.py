@@ -7,7 +7,22 @@ script = """
 MAIN
     SET home_dir = DIR("사용자홈")
     SET pictures_dir = DIR("사진")
-    pRINT f"HOME: {home_dir}, 사진: {pictures_dir}"
+    SET temp_dir = DIR("임시")
+    SET desktop_dir = DIR("바탕화면")
+    SET documents_dir = DIR("문서")
+    SET downloads_dir = DIR("다운로드")
+    SET appdata_dir = DIR("앱데이터")
+    SET cwd_dir = DIR("현재")   
+    PRINT "사용자홈:", home_dir
+    PRINT "사진:", pictures_dir
+    PRINT "임시:", temp_dir
+    PRINT "바탕화면:", desktop_dir
+    PRINT "문서:", documents_dir
+    PRINT "다운로드:", downloads_dir
+    PRINT "앱데이터:", appdata_dir
+    PRINT "현재:", cwd_dir
+    PRINT "-----------------"
+
     SET dirs = DIR_LIST("C:/tmp")
     for file in dirs:
         print file["name"], file["is_directory"], file["size"], file["modified_time"]

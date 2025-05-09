@@ -117,7 +117,19 @@ class RegionPointFunctions:
                 x -= int(distance.strip())
         return TokenUtil.xy_to_point_token(x, y)
     
+    @staticmethod
     def POINT_TO_REGION(p: Tuple[int,int], width: int, height:int)->RegionToken:
         """Point p를 중심으로 width, height 크기의 RegionToken 반환"""
         x, y = p
         return TokenUtil.region_to_token((x - width // 2, y - height // 2, width, height))
+    
+    @staticmethod
+    def POINTS_TO_REGION(p1: Tuple[int,int], p2: Tuple[int,int]) -> RegionToken:
+        """두 점 p1, p2를 연결하는 직사각형의 RegionToken 반환"""
+        x1, y1 = p1
+        x2, y2 = p2
+        x = min(x1, x2)
+        y = min(y1, y2)
+        width = abs(x1 - x2)
+        height = abs(y1 - y2)
+        return TokenUtil.region_to_token((x, y, width, height))

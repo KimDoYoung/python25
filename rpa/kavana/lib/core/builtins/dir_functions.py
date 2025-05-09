@@ -24,7 +24,7 @@ class DirFunctions:
             directory = os.path.expanduser("~")
         elif name == "Pictures" or name == "사진":
             directory = str(Path.home() / "Pictures")
-        elif name == "temp":
+        elif name == "temp" or name == "임시":
             directory = tempfile.gettempdir()
         elif name == "desktop" or name == "바탕화면":
             directory = str(Path.home() / "Desktop")
