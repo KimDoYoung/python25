@@ -294,7 +294,6 @@ class TokenUtil:
     @staticmethod
     def region_to_token(region: tuple[int, int, int, int]) -> RegionToken:
         """Region을 RegionToken으로 변환"""
-        from lib.core.datatypes.kavana_datatype import KavanaDataType
         from lib.core.exceptions.kavana_exception import KavanaTypeError
 
         if not isinstance(region, tuple) or len(region) != 4:
@@ -309,8 +308,6 @@ class TokenUtil:
     @staticmethod
     def xy_to_point_token(x,y) -> PointToken:
         """x,y를 PointToken으로 변환"""
-        from lib.core.datatypes.kavana_datatype import KavanaDataType
-        from lib.core.exceptions.kavana_exception import KavanaTypeError
 
         p = Point(x,y)
 
@@ -321,7 +318,6 @@ class TokenUtil:
     @staticmethod
     def integer_to_integer_token(data: int) -> Token:
         """정수를 IntegerToken으로 변환"""
-        from lib.core.datatypes.kavana_datatype import KavanaDataType
         from lib.core.exceptions.kavana_exception import KavanaTypeError
 
         if not isinstance(data, int):
@@ -334,7 +330,6 @@ class TokenUtil:
     @staticmethod
     def boolean_to_boolean_token(data: bool) -> Token:
         """Boolean을 BooleanToken으로 변환"""
-        from lib.core.datatypes.kavana_datatype import KavanaDataType
         from lib.core.exceptions.kavana_exception import KavanaTypeError
 
         if not isinstance(data, bool):
@@ -347,7 +342,6 @@ class TokenUtil:
     @staticmethod
     def array_to_array_token(items: list) -> ArrayToken:
         """ Token 리스트를 ArrayToken으로 변환"""
-        from lib.core.datatypes.kavana_datatype import KavanaDataType
         from lib.core.exceptions.kavana_exception import KavanaTypeError
 
         array_obj = Array([])
