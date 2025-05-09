@@ -112,7 +112,7 @@ class RpaFunctions:
                     "height": m.height,
                     "x": m.x,
                     "y": m.y,
-                    "is_primary": m.is_primary
+                    "is_primary": p
                 }
                 info_token = TokenUtil.dict_to_hashmap_token(info)
                 array.append(info_token)

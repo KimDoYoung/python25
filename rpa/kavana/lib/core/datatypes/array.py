@@ -61,20 +61,6 @@ class Array(KavanaDataType):
             else:
                 raise KavanaIndexError("2차원 배열의 인덱스가 범위를 벗어났습니다")
 
-    # def get(self, row, col=None):
-    #     if col is None:
-    #         if 0 <= row < len(self.value):
-    #             return self.value[row]
-    #         else:
-    #             raise KavanaIndexError("배열의 인덱스를 벗어났습니다(get)")
-    #     else:
-    #         sublist = self.value[row]
-    #         if not isinstance(sublist, list):
-    #             raise KavanaTypeError("2차원 배열이 아닙니다(get)")
-    #         if 0 <= col < len(sublist):
-    #             return sublist[col]
-    #         else:
-    #             raise KavanaIndexError("2차원 배열의 인덱스를 벗어났습니다(get)")
 
     def get(self, row):
         if 0 <= row < len(self.value):
@@ -99,3 +85,12 @@ class Array(KavanaDataType):
 
     def __repr__(self):
         return f"[{', '.join(repr(v) for v in self.value)}]"
+    #-------------------------- iterable --------------------------
+    def __iter__(self):
+        return iter(self.value)
+
+    def __getitem__(self, index):
+        return self.value[index]
+
+    def __len__(self):
+        return len(self.value)

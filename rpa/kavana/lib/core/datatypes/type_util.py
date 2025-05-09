@@ -4,8 +4,8 @@ def deep_primitive(value):
     from lib.core.token import Token
     if isinstance(value, KavanaDataType):
         return deep_primitive(value.primitive)
-    if isinstance(value, Token):
-        return value.data.string if hasattr(value.data, "string") else str(value.data)
+    # if isinstance(value, Token):
+    #     return value.data.string if hasattr(value.data, "string") else str(value.data)
     elif isinstance(value, list):
         return [deep_primitive(v) for v in value]
     elif isinstance(value, dict):

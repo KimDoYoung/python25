@@ -177,7 +177,9 @@ class CommandExecutor:
             elif  self.find_index(args, TokenType.IN) != -1: # for i in range(1,10)
                 loop_var_name, iterable = self.parse_for_in_args(args)
                 for t in iterable:
-                    if isinstance(t, int):
+                    if isinstance(t, Token):
+                        loop_var_token = Token(data=t.data, type=t.type)
+                    elif isinstance(t, int):
                         loop_var_token = Token(data=Integer(t), type=TokenType.INTEGER)
                     elif isinstance(t, str):
                         loop_var_token = StringToken(data=String(t), type=TokenType.STRING)
@@ -187,10 +189,8 @@ class CommandExecutor:
                         loop_var_token = ArrayToken(data=t, type=TokenType.ARRAY)
                     elif isinstance(t, dict):
                         loop_var_token = TokenUtil.dict_to_hashmap_token(t)
-                    elif isinstance(t, Token):
-                        loop_var_token = Token(data=t.data, type=t.type)
                     else:
-                        raise CommandExecutionError(f"FOR IN 문에서 지원하지 않는 타입입니다: {type(t)}")
+                        raise CommandExecutionError(f"FOR IN 문에서 지원하지 않는 타입(Not Iterable)입니다: {type(t)}")
 
                     self.variable_manager.set_variable(loop_var_name, loop_var_token)
                     try:
@@ -268,8 +268,8 @@ class CommandExecutor:
         list_token = self.eval_express(iterable_express)
         if list_token.type != TokenType.ARRAY:
             raise CommandExecutionError("FOR 문의 IN 다음은 리스트여야 합니다.", args[0].line, args[0].column)
-        iterable = list_token.data.primitive
-        # iterable = list_token.data
+        #iterable = list_token.data.primitive
+        iterable = list_token.data
         return loop_var.data.value, iterable
 
 
