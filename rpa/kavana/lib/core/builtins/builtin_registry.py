@@ -101,6 +101,7 @@ BUILTIN_FUNCTIONS = {
     "PATH_DIRNAME": (PathFunctions.PATH_DIRNAME, 1),
 
     # ✅ 디렉토리 관련 함수 추가
+    "DIR": (DirFunctions.DIR, 1),
     "DIR_LIST": (DirFunctions.DIR_LIST, 1),
     "DIR_EXISTS": (DirFunctions.DIR_EXISTS, 1),
     "DIR_CREATE": (DirFunctions.DIR_CREATE, 1),

@@ -1,5 +1,7 @@
 from datetime import datetime
 import os
+from pathlib import Path
+import tempfile
 from lib.core.datatypes.kavana_datatype import Boolean
 from lib.core.datatypes.array import Array
 from lib.core.token import Token, TokenType,  String
@@ -12,6 +14,40 @@ class DirFunctions:
     @staticmethod
     def set_executor(executor_instance):
         DirFunctions.executor = executor_instance
+
+    @staticmethod
+    def DIR(name: str) -> Token:
+        """디렉토리 경로 반환"""
+        name = name.lower()
+        
+        if name in ("~", "home","사용자홈","사용자","userhome"):
+            directory = os.path.expanduser("~")
+        elif name == "Pictures" or name == "사진":
+            directory = str(Path.home() / "Pictures")
+        elif name == "temp":
+            directory = tempfile.gettempdir()
+        elif name == "desktop" or name == "바탕화면":
+            directory = str(Path.home() / "Desktop")
+        elif name == "documents" or name == "문서":
+            directory = str(Path.home() / "Documents")
+        elif name == "downloads" or name == "다운로드":
+            directory = str(Path.home() / "Downloads")
+        elif name == "appdata" or name == "앱데이터":
+            directory = os.environ.get("APPDATA", "")
+        elif name == "cwd" or name == "current" or name == "현재":
+            directory = os.getcwd()
+        else:
+            # 기본은 직접 지정한 경로로 취급
+            directory = os.path.abspath(os.path.expanduser(name))        
+        try:
+            if os.path.isdir(directory):
+                return Token(data=String(directory), type=TokenType.STRING)
+            else:
+                DirFunctions.executor.log_command("ERROR", f"DIR: {directory} is not a directory.")
+                return Token(data=String(""), type=TokenType.STRING)
+        except Exception as e:
+            DirFunctions.executor.log_command("ERROR", f"DIR: Error getting directory: {e}")
+            return Token(data=String(""), type=TokenType.STRING)
 
     @staticmethod
     def DIR_LIST(directory: str) -> Token:
@@ -28,7 +64,8 @@ class DirFunctions:
                     "size": os.path.getsize(file_path) if os.path.isfile(file_path) else 0,
                     "modified_time": datetime.fromtimestamp(os.path.getmtime(file_path)).strftime('%Y-%m-%d %H:%M:%S'),
                 }
-                file_info_list.append(file_info)            
+                file_info_token = TokenUtil.dict_to_hashmap_token(file_info)
+                file_info_list.append(file_info_token)            
             return TokenUtil.array_to_array_token(file_info_list)  
         except Exception as e:
             DirFunctions.executor.log_command("ERROR", f"DIR_LIST: Error listing directory: {e}") 

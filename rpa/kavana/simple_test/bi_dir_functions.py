@@ -5,6 +5,9 @@ from lib.core.command_preprocessor import CommandPreprocessor
 # 대입
 script = """
 MAIN
+    SET home_dir = DIR("사용자홈")
+    SET pictures_dir = DIR("사진")
+    pRINT f"HOME: {home_dir}, 사진: {pictures_dir}"
     SET dirs = DIR_LIST("C:/tmp")
     for file in dirs:
         print file["name"], file["is_directory"], file["size"], file["modified_time"]
