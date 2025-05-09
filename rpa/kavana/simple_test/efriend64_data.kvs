@@ -2,7 +2,7 @@
 CONST HTS_PROGRAM="C:\\eFriend Plus x64\\efriendplus\\efriendplus.exe"
 CONST PROCESS_NAME="efplusmain.exe"
 CONST IMAGE_PATH="C:\\Users\\PC\\Pictures\\efreind_uhd_175"
-CONST RESULT_PATH=f"{IMAGE_PATH}\\result"
+CONST RESULT_PATH=f"{IMAGE_PATH}\\result\\{TODAY}"
 SET efriend = Application(HTS_PROGRAM, PROCESS_NAME)
 JUST DIR_CREATE(RESULT_PATH)
 //-----------------------------------------------------

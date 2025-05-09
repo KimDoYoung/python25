@@ -20,6 +20,7 @@ class RpaCommand(BaseCommand):
         "grayscale": {"default": True, "allowed_types": [TokenType.BOOLEAN]},
         "confidence": {"default": 0.8, "allowed_types": [TokenType.FLOAT], "min": 0.0, "max": 1.0},
         "area": {"required": False, "allowed_types": [TokenType.REGION]},
+        "name": {"required": True, "allowed_types": [TokenType.REGION]},
         "timeout": {"default": 10, "allowed_types": [TokenType.INTEGER]},
         "x": {"required": False, "allowed_types": [TokenType.INTEGER]},
         "y": {"required": False, "allowed_types": [TokenType.INTEGER]},
@@ -39,6 +40,7 @@ class RpaCommand(BaseCommand):
         "locations": {"required": False, "allowed_types": [TokenType.ARRAY]},
         "multi" :{"default": False, "allowed_types": [TokenType.BOOLEAN]},
         "clipboard":{"default": False, "allowed_types": [TokenType.BOOLEAN]},
+        "turtle": {"default": False, "allowed_types": [TokenType.BOOLEAN]},
     }
 
 
@@ -86,7 +88,7 @@ class RpaCommand(BaseCommand):
             "rules": {}
         },
         "click_point": {
-            "keys": ["x", "y", "location","after", "click_type", "click_count", "duration"],
+            "keys": ["x", "y", "location","after", "click_type", "click_count", "duration","speed","turtle"],
             "overrides": {
             },
             "rules": {
@@ -96,8 +98,14 @@ class RpaCommand(BaseCommand):
                 "required_together": [["x", "y"]]
             }
         },
+        "click_region": {
+            "keys": ["name", "after", "click_type", "click_count", "duration","speed","turtle"],
+            "overrides": {
+            },
+            "rules": {}
+        },
         "click_image": {
-            "keys": ["area", "after", "from_var", "from_file", "to_var", "grayscale", "confidence"],
+            "keys": ["area", "after", "from_var", "from_file", "to_var", "grayscale", "confidence", "duration","speed","turtle"],
             "overrides": {},
             "rules": {}
         },
@@ -113,7 +121,7 @@ class RpaCommand(BaseCommand):
             }
         },
         "move_mouse": {
-            "keys": ["x", "y", "location", "locations", "duration", "relative","after"],
+            "keys": ["x", "y", "location", "locations",  "relative","after","speed"],
             "overrides": {},
             "rules": {
                 "mutually_exclusive": [

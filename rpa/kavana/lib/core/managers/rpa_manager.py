@@ -34,6 +34,7 @@ class RpaManager(BaseManager):
             "wait_image": self.wait_image,
             "click_point": self.click_point,
             "click_image": self.click_image,
+            "click_region": self.click_region,
             "find_image": self.find_image,
             "move_mouse": self.move_mouse,
             "key_in": self.key_in,
@@ -199,7 +200,15 @@ class RpaManager(BaseManager):
             self.executor.set_variable(to_var, NoneToken())
         self.log("ERROR", f"[RPA:wait_image] 이미지 {target_image.filename} {timeout}초 내에 찾을 수 없음.")
         return None
-
+    
+    def click_region(self):
+        """RPA 명령어: click_region - 지정된 영역에서 클릭 수행"""
+        region = self.options.get("name")
+        x,y,w,h =  region
+        center = ((x + w) // 2, y + h // 2)
+        self.options["location"] = center
+        return self.click_point()
+    
     def click_point(self):
         """RPA 명령어: click_point - 주어진 좌표에서 마우스 클릭 수행"""
 
@@ -209,6 +218,8 @@ class RpaManager(BaseManager):
         click_count = int(self.options.get("click_count", 1))
         click_type = self.options.get("click_type", "left").lower()
         duration = float(self.options.get("duration", 0.5))  # duration은 기본 0초 (즉시 클릭)
+        speed = float(self.options.get("speed", 0.5))  # speed는 기본 0.5초 (사람처럼 클릭)
+        turtle = self.options.get("turtle", False)
         if location:
             x,y = location
         # 좌표 로그
@@ -218,9 +229,15 @@ class RpaManager(BaseManager):
         if click_type not in ("left", "right", "double"):
             self.raise_error(f"지원되지 않는 click_type: {click_type} (left|right|double만 가능)")
 
+        # 이동
+        now_x, now_y = pyautogui.position()
+        if turtle :
+            mid_x, mid_y = x, now_y
+            # 거북이 모드: 현재 위치에서 클릭 위치까지 이동
+            pyautogui.moveTo(mid_x, mid_y, duration=speed)
+        pyautogui.moveTo(x, y, duration=speed)
+        
         # 클릭 수행
-        pyautogui.moveTo(x, y, duration=duration if click_count == 1 else 0)
-
         if click_type == "double":
             pyautogui.doubleClick(x, y)
         elif click_type == "right":
@@ -354,6 +371,7 @@ class RpaManager(BaseManager):
         location = self.options.get("location", None)
         locations = self.options.get("locations", None)
         duration = float(self.options.get("duration", 0.5))
+        speed = float(self.options.get("speed", 0.5))
         relative = self.options.get("relative", False)
         after = self.options.get("after", None)
 
@@ -366,13 +384,13 @@ class RpaManager(BaseManager):
             y += current_y
             self.log("DEBUG", f"[RPA] 상대 이동 → 기준: ({current_x}, {current_y}) → 목적지: ({x}, {y})")
 
-        self.log("INFO", f"[RPA] 마우스 이동 → ({x}, {y}), duration={duration}s")
+        self.log("INFO", f"[RPA] 마우스 이동 → ({x}, {y}), duration={speed}s")
         if locations:
             for pt in locations:
                 x,y = pt
-                pyautogui.moveTo(x, y, duration=duration)    
+                pyautogui.moveTo(x, y, duration=speed)    
         else:
-            pyautogui.moveTo(x, y, duration=duration)
+            pyautogui.moveTo(x, y, duration=speed)
         if after:
             self._after_action(None, after)
         return

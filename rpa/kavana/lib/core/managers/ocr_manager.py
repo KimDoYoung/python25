@@ -98,7 +98,7 @@ class OcrManager(BaseManager):
 
         # Find text in image
         results = self.reader.readtext(img)
-
+        scale_factor = resize if preprocess else 1.0
         for res in results:
             text_found = res[1]
             box = res[0]
@@ -106,10 +106,10 @@ class OcrManager(BaseManager):
             if self._is_similar_substring(ocr_text=text_found, target=target_text, threshold=similarity):
                 # Calculate region coordinates
                 (x1, y1), (x2, y2), *_ = box
-                x = int(min(x1, x2)) + offset_x
-                y = int(min(y1, y2)) + offset_y
-                w = int(abs(x2 - x1))
-                h = int(abs(box[2][1] - y1))
+                x = int(min(x1, x2)/scale_factor) + offset_x
+                y = int(min(y1, y2)/scale_factor) + offset_y
+                w = int(abs(x2 - x1)/scale_factor)
+                h = int(abs(box[2][1] - y1)/scale_factor)
 
                 self.log("INFO", f"'{target_text}' 영역: {x}, {y}, {w}, {h}")
                 
