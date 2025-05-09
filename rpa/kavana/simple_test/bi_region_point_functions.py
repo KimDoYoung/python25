@@ -24,7 +24,7 @@ MAIN
 
     SET rg1 = POINT_TO_REGION(p2, 10, 10)
     print rg1
-
+    
 END_MAIN
 """
 #---------------------------
