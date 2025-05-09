@@ -12,7 +12,7 @@ from PySide6.QtCore import Qt, QRect, QPoint, QSize
 from utils import PosUtil, RegionName, get_region, get_save_path
 
 
-VERSION = "0.6"  # Define the version
+VERSION = "0.7"  # Define the version
 
 def apply_monitor_scale(pos):
     """모니터 배율을 고려해 '물리 좌표'로 보정"""
@@ -208,6 +208,13 @@ class SophiaCapture(QMainWindow):
         set_save_folder_action.triggered.connect(self.set_save_folder_dialog)
         action_menu.addAction(set_save_folder_action)  # ✅ 최하단에 추가        
 
+        # set save folder
+        explore_folder_action = QAction("Open Save Folder", self)
+        explore_folder_action.setShortcut("F9")
+        explore_folder_action.triggered.connect(self.explore_folder_action)
+        action_menu.addAction(explore_folder_action)  # ✅ 최하단에 추가        
+
+
         # (요구사항 2) 툴바 설정
         self.toolbar = QToolBar("Toolbar")
         self.addToolBar(self.toolbar)
@@ -248,13 +255,13 @@ class SophiaCapture(QMainWindow):
         self.image_capture_btn.clicked.connect(self.toggle_image_capture)
         self.image_capture_btn.setToolTip("Capture the region of image")
         self.toolbar.addWidget(self.image_capture_btn)
-        self.add_toolbar_separator()
         # Mark 기능 버튼 추가
         self.mark_btn = QPushButton("Mark")
         self.mark_btn.setCheckable(True)
         self.mark_btn.clicked.connect(self.toggle_mark_mode)
         self.mark_btn.setToolTip("Mark the clicked position with +")
         self.toolbar.addWidget(self.mark_btn)
+        self.add_toolbar_separator()
 
         # Mark-Clear 버튼 추가
         self.mark_clear_btn = QPushButton("Clear Marks")
@@ -332,24 +339,39 @@ class SophiaCapture(QMainWindow):
             self.is_first_show = False
 
     def toggle_rectangle_capture(self):
-        """ Rectangle Capture 모드 ON/OFF (Image Capture가 켜져 있으면 끔) """
+        """Rectangle Capture 모드 ON/OFF"""
         self.rect_capture_mode = not self.rect_capture_mode
-        if self.rect_capture_mode:
-            self.image_capture_mode = False  # Image Capture OFF
-            self.image_capture_btn.setChecked(False)  # 버튼 UI 동기화
 
-        self.rect_capture_btn.setChecked(self.rect_capture_mode)  # 현재 상태 반영
-        self.status_label.setText("Rectangle Capture ON" if self.rect_capture_mode else "")
+        if self.rect_capture_mode:
+            # 다른 모드 OFF
+            self.image_capture_mode = False
+            self.mark_mode = False
+            self.image_capture_btn.setChecked(False)
+            self.mark_btn.setChecked(False)
+            self.image_label.setCursor(Qt.ArrowCursor)
+            self.status_label.setText("Rectangle Capture ON")
+        else:
+            self.status_label.setText("")
+
+        self.rect_capture_btn.setChecked(self.rect_capture_mode)
 
     def toggle_image_capture(self):
-        """ Image Capture 모드 ON/OFF (Rectangle Capture가 켜져 있으면 끔) """
+        """Image Capture 모드 ON/OFF"""
         self.image_capture_mode = not self.image_capture_mode
-        if self.image_capture_mode:
-            self.rect_capture_mode = False  # Rectangle Capture OFF
-            self.rect_capture_btn.setChecked(False)  # 버튼 UI 동기화
 
-        self.image_capture_btn.setChecked(self.image_capture_mode)  # 현재 상태 반영
-        self.status_label.setText("Image Capture ON" if self.image_capture_mode else "")
+        if self.image_capture_mode:
+            # 다른 모드 OFF
+            self.rect_capture_mode = False
+            self.mark_mode = False
+            self.rect_capture_btn.setChecked(False)
+            self.mark_btn.setChecked(False)
+            self.image_label.setCursor(Qt.ArrowCursor)
+            self.status_label.setText("Image Capture ON")
+        else:
+            self.status_label.setText("")
+
+        self.image_capture_btn.setChecked(self.image_capture_mode)
+
 
     def process_selection(self, rect):
         """ 선택된 영역을 원본 이미지 좌표로 변환 후 저장 """
@@ -412,7 +434,7 @@ class SophiaCapture(QMainWindow):
 
         self.open_process(file_path)    
 
-    def open_process(self, file_path):
+    def open_process(self, file_path, change_save_folder=True):
         if not file_path or not os.path.exists(file_path):
             print("Error: File does not exist.")
             return
@@ -432,13 +454,14 @@ class SophiaCapture(QMainWindow):
 
         self.setWindowTitle(f"Sophia Capture v{self.VERSION} - {file_path}")
 
-        home_path = os.path.expanduser("~")
-        default_folder = os.path.join(home_path, "Pictures", "SophiaCapture")
+        if change_save_folder:
+            home_path = os.path.expanduser("~")
+            default_folder = os.path.join(home_path, "Pictures", "SophiaCapture")
 
-        image_basename = os.path.basename(file_path)
-        image_name, _ = os.path.splitext(image_basename)
-        self.save_folder = os.path.join(default_folder, image_name)
-        os.makedirs(self.save_folder, exist_ok=True)
+            image_basename = os.path.basename(file_path)
+            image_name, _ = os.path.splitext(image_basename)
+            self.save_folder = os.path.join(default_folder, image_name)
+            os.makedirs(self.save_folder, exist_ok=True)
 
         self.captured_images_count = 0
         self.message_label.setText(self.save_folder)
@@ -611,17 +634,24 @@ class SophiaCapture(QMainWindow):
         self.image_label.repaint()      
 
     def toggle_mark_mode(self):
-        """ Mark 모드 ON/OFF """
-        # self.mark_mode = not getattr(self, "mark_mode", False)
+        """Mark 모드 ON/OFF"""
         self.mark_mode = not self.mark_mode
         self.mark_btn.setChecked(self.mark_mode)
-        print(f"Mark Mode: {self.mark_mode}")
+
         if self.mark_mode:
-            print("Mark mode ON: Cursor changed to Cross")  
-            self.image_label.setCursor(Qt.CrossCursor)  # 🔹 커서를 십자로 변경
+            # 다른 모드 OFF
+            self.rect_capture_mode = False
+            self.image_capture_mode = False
+            self.rect_capture_btn.setChecked(False)
+            self.image_capture_btn.setChecked(False)
+            self.status_label.setText("Mark Mode ON")
+            self.image_label.setCursor(Qt.CrossCursor)
+            print("Mark mode ON: Cursor changed to Cross")
         else:
-            print("Mark mode OFF: Cursor reset to Default")  
-            self.image_label.setCursor(Qt.ArrowCursor)  # 🔹 기본 커서로 변경
+            self.status_label.setText("")
+            self.image_label.setCursor(Qt.ArrowCursor)
+            print("Mark mode OFF: Cursor reset to Default")
+
     #------------------------------------------------------------------
     def save_info_to_file(self):
         """ info_text 내용을 파일로 저장 """
@@ -655,6 +685,18 @@ class SophiaCapture(QMainWindow):
         if folder:
             self.save_folder = folder
             self.info_text.append(f"Save folder set to: {self.save_folder}")
+            self.message_label.setText(self.save_folder)
+
+    def explore_folder_action(self):
+        ''' 선택된 저장 폴더를 탐색기에서 열기 '''
+        if not self.save_folder:
+            QMessageBox.warning(self, "Warning", "저장 폴더가 설정되지 않았습니다.")
+            return
+        if not os.path.exists(self.save_folder):
+            QMessageBox.warning(self, "Warning", "저장 폴더가 존재하지 않습니다.")
+            return
+        os.startfile(self.save_folder)  # Windows에서 폴더 열기
+
 #--------------------------------------------------------------------
     def load_prev_image(self):
         self.load_adjacent_image(-1)
@@ -685,7 +727,7 @@ class SophiaCapture(QMainWindow):
 
         # 🔁 순환 처리
         new_index = (current_index + direction) % len(sorted_files)        
-        self.open_process(sorted_files[new_index])
+        self.open_process(sorted_files[new_index], change_save_folder=False)  # 저장 폴더 변경 안 함
 
 
 

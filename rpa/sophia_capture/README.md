@@ -117,3 +117,4 @@ File
 0.4 : PySide6로 변경함.
 0.5 : scale버그 수정, F4: set save folder 메뉴추가
 0.6 : next image, prev image 버튼 생성, info에 file full path 넣기.
+0.7 : next,prev image변경시 save_folder 유지, F9 : save_folder 탐색기에서 열기
