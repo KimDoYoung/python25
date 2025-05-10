@@ -103,9 +103,9 @@ class RpaFunctions:
             monitors = get_monitors()
             array = []
             for i, m in enumerate(monitors):
-                p = ""
+                p = False
                 if m.is_primary:
-                    p = "Primary"
+                    p = True
                 info = {
                     "name": m.name,
                     "width": m.width,
@@ -174,7 +174,19 @@ class RpaFunctions:
         changed_blocks = []
         before_array =[]
         for b in before:
-            before_array.append(b.data.primitive)
+            hash = b.data.get("hash").data.value
+            x = b.data.get("x").data.value
+            y = b.data.get("y").data.value
+            w = b.data.get("w").data.value
+            h = b.data.get("h").data.value
+            dict = {
+                "hash": hash,
+                "x": x,
+                "y": y,
+                "w": w,
+                "h": h
+            }
+            before_array.append(dict)
 
         for b, a in zip(before_array, after):
             if b["hash"] != a["hash"]:
