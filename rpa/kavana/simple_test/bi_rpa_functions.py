@@ -15,10 +15,11 @@ MAIN
         end_if
     end_for
     print screen_region
-    set before_snap = SNAP_SCREEN_INFO(screen_region, "10x5")
+    set screen_region = Region(5, 3, 1783, 1243)
+    set before_snap = SNAP_SCREEN_HASH(screen_region, "30x20")
     print "스크린 스냅정보저장됨"
     rpa wait seconds=5
-    set changed_region = SNAP_CHANGED_REGION(before_snap, screen_region, "10x5")
+    set changed_region = SNAP_CHANGED_REGION(before_snap, screen_region, "30x20")
     print "변경된 영역:", changed_region
 
 END_MAIN

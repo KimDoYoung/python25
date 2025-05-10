@@ -11,6 +11,8 @@ from lib.core.token import ArrayToken, NoneToken, Token, TokenStatus
 from lib.core.token_custom import RegionToken, WindowToken
 from lib.core.token_type import TokenType
 from lib.core.token_util import TokenUtil
+from datetime import datetime
+from lib.core.utils.rpa_image_util import RpaImageUtil  # RpaImageUtil 모듈 import 추가
 
 
 class RpaFunctions:
@@ -124,35 +126,9 @@ class RpaFunctions:
             return NoneToken()
 
     @staticmethod
-    def screen_image_split_and_hash(region: tuple, grid_shape: str) -> list[dict]:
-        """Region 영역을 grid 단위로 나누고 각 조각의 해시값 계산"""
-        x, y, w, h = region
-        cols, rows = map(int, grid_shape.lower().split("x"))  # 예: "10x5"
-        tile_w, tile_h = w // cols, h // rows
-
-        full_image = pyautogui.screenshot(region=(x, y, w, h))
-        blocks = []
-
-        for row in range(rows):
-            for col in range(cols):
-                cx = col * tile_w
-                cy = row * tile_h
-                tile = full_image.crop((cx, cy, cx + tile_w, cy + tile_h))
-                tile_hash = str(imagehash.average_hash(tile))
-                blocks.append({
-                    "hash": tile_hash,
-                    "x": x + cx,
-                    "y": y + cy,
-                    "w": tile_w,
-                    "h": tile_h
-                })
-        
-        return blocks
-
-    @staticmethod
-    def SNAP_SCREEN_INFO(region:tuple, grid_shape:str) -> Token:
-        """Region 영역을 grid 단위로 나누고 각 조각의 해시값 계산"""
-        info_list = RpaFunctions.screen_image_split_and_hash(region, grid_shape)
+    def SNAP_SCREEN_HASH(region:tuple, grid_shape:str) -> Token:
+        """Region 영역을 grid 단위로 나누고 각 조각의 해시값 계산 : grid_shape 10x5"""
+        info_list = RpaImageUtil.screen_image_split_and_hash(region, grid_shape)
         array = []
         for info in info_list:
             token = TokenUtil.dict_to_hashmap_token(info)
@@ -165,7 +141,7 @@ class RpaFunctions:
     def SNAP_CHANGED_REGION(before:list[dict], region:tuple, grid_shape:str) -> Token:
         """변경된 영역을 찾아서 Region 객체로 반환"""
 
-        after = RpaFunctions.screen_image_split_and_hash(region, grid_shape)
+        after = RpaImageUtil.screen_image_split_and_hash(region, grid_shape)
         if len(before) != len(after):
             if RpaFunctions.executor:
                 RpaFunctions.executor.log_command("ERROR", "비교할 타일 개수가 같지 않습니다.")
@@ -187,18 +163,10 @@ class RpaFunctions:
                 "h": h
             }
             before_array.append(dict)
+        r_dict = RpaImageUtil.changed_region_by_hash(before_array, after)
+        x = r_dict.get("x")
+        y = r_dict.get("y")
+        w = r_dict.get("w")
+        h = r_dict.get("h")
 
-        for b, a in zip(before_array, after):
-            if b["hash"] != a["hash"]:
-                changed_blocks.append(a)
-
-        if not changed_blocks:
-            return TokenUtil.region_to_token((0,0,0,0))
-
-        # 변화된 블록들을 포함하는 최소 bounding box 계산
-        min_x = min(block["x"] for block in changed_blocks)
-        min_y = min(block["y"] for block in changed_blocks)
-        max_x = max(block["x"] + block["w"] for block in changed_blocks)
-        max_y = max(block["y"] + block["h"] for block in changed_blocks)
-
-        return TokenUtil.region_to_token((min_x, min_y, max_x - min_x, max_y - min_y))
+        return TokenUtil.region_to_token((x,y,w,h))

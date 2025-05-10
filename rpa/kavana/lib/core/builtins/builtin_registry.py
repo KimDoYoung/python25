@@ -34,7 +34,7 @@ BUILTIN_FUNCTIONS = {
     "WINDOW_REGION": (RpaFunctions.WINDOW_REGION, 1),
     "WINDOW_FIND_BY_TITLE": (RpaFunctions.WINDOW_FIND_BY_TITLE, 1),
     "MONITOR_LIST": (RpaFunctions.MONITOR_LIST, 0),
-    "SNAP_SCREEN_INFO": (RpaFunctions.SNAP_SCREEN_INFO, 2),
+    "SNAP_SCREEN_HASH": (RpaFunctions.SNAP_SCREEN_HASH, 2),
     "SNAP_CHANGED_REGION": (RpaFunctions.SNAP_CHANGED_REGION, 2),
 
     # ✅ 문자열 관련 함수 추가
