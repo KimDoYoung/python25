@@ -6,13 +6,13 @@ import cv2
 import numpy as np
 from PySide6.QtWidgets import (QApplication, QMainWindow, QLabel, QFileDialog, 
                                QScrollArea, QVBoxLayout, QWidget, QToolBar, QPushButton, 
-                               QTextEdit, QStatusBar, QHBoxLayout, QSplitter, QRubberBand, QSizePolicy, QMessageBox)
+                               QTextEdit, QStatusBar, QHBoxLayout, QSplitter, QRubberBand, QSizePolicy, QMessageBox, QLineEdit)
 from PySide6.QtGui import QPixmap, QImage, QFont, QIcon, QCursor, QAction
 from PySide6.QtCore import Qt, QRect, QPoint, QSize
 from utils import PosUtil, RegionName, get_region, get_save_path
 
 
-VERSION = "0.7"  # Define the version
+VERSION = "0.8"  # Define the version
 
 def apply_monitor_scale(pos):
     """모니터 배율을 고려해 '물리 좌표'로 보정"""
@@ -139,7 +139,9 @@ class SophiaCapture(QMainWindow):
         self.mark_mode = False # on :클릭시 포인트에 + 표시
         self.cross_cursor_mode = False # on : 마우스 커서가 + 라인
         self.mark_list = []  # 저장된 마크 리스트 + 리스트
-
+        #사용자 region그리기
+        self.drawn_rect_label = None  # 사각형 표시용 QLabel
+        self.last_drawn_region = None  # (x, y, w, h)        
 
         self.setWindowTitle(f"Sophia Capture v{self.VERSION}")  # 창 제목 설정
 
@@ -239,10 +241,16 @@ class SophiaCapture(QMainWindow):
         self.zoom_in_btn.clicked.connect(self.zoom_in)
         self.toolbar.addWidget(self.zoom_in_btn)
 
+        self.zoom_out_btn = QPushButton("Zoom Out")
+        self.zoom_out_btn.setToolTip("Zoom Out")
+        self.zoom_out_btn.clicked.connect(self.zoom_out)
+        self.toolbar.addWidget(self.zoom_out_btn)
+
         self.reset_zoom_btn = QPushButton("1:1")
         self.reset_zoom_btn.setToolTip("Reset Zoom")
         self.reset_zoom_btn.clicked.connect(self.reset_zoom)
         self.toolbar.addWidget(self.reset_zoom_btn)
+
 
         self.rect_capture_btn = QPushButton("Rectangle Capture")
         self.rect_capture_btn.setCheckable(True)
@@ -274,6 +282,24 @@ class SophiaCapture(QMainWindow):
         self.cross_cursor_btn.setCheckable(True)
         self.cross_cursor_btn.clicked.connect(self.toggle_cross_cursor)
         self.toolbar.addWidget(self.cross_cursor_btn)        
+
+        # seperator
+        self.add_toolbar_separator()
+        # 🔹 Region 입력창
+        self.region_input = QLineEdit()
+        self.region_input.setPlaceholderText("x,y,w,h")
+        self.region_input.setFixedWidth(150)
+        self.toolbar.addWidget(self.region_input)
+
+        # 🔹 Draw 버튼
+        self.draw_btn = QPushButton("Draw")
+        self.draw_btn.clicked.connect(self.draw_custom_region)
+        self.toolbar.addWidget(self.draw_btn)
+
+        # 🔹 Remove 버튼
+        self.remove_btn = QPushButton("Remove")
+        self.remove_btn.clicked.connect(self.remove_custom_region)
+        self.toolbar.addWidget(self.remove_btn)        
 
         # (요구사항 2) 중앙 레이아웃 설정
         self.central_widget = QWidget()
@@ -512,6 +538,27 @@ class SophiaCapture(QMainWindow):
         self.scroll_area.setWidgetResizable(False)
         self.scroll_area.update()
 
+    def zoom_out(self):
+        """ 이미지 축소 (QLabel 크기 업데이트 포함) """
+        if self.original_image is None:
+            print("Error: zoom_out() called but original_image is None")
+            return
+
+        self.scale_factor /= 1.2
+        print(f"Zoom Out: New Scale Factor = {self.scale_factor}")
+
+        self.display_image()
+        self.update_marks()
+
+        #  QPixmap이 존재할 때만 QLabel 크기 조정
+        if not self.pixmap.isNull():
+            new_size = self.pixmap.size()
+            self.image_label.resize(new_size)
+            print(f"Zoom Out: QLabel New Size = {new_size.width()}x{new_size.height()}")
+
+        self.scroll_area.setWidgetResizable(False)
+        self.scroll_area.update()
+
     def update_marks(self):
         """ 기존 마크 좌표를 현재 scale_factor에 맞게 변환 """
         for mark, image_x, image_y in self.mark_list:
@@ -729,7 +776,68 @@ class SophiaCapture(QMainWindow):
         new_index = (current_index + direction) % len(sorted_files)        
         self.open_process(sorted_files[new_index], change_save_folder=False)  # 저장 폴더 변경 안 함
 
+#---------------------------------------------------------------
+# 사용자 region 그리기
+#---------------------------------------------------------------
+    def draw_custom_region(self):
+        """ 입력된 좌표(x,y,w,h)로 사각형을 표시 """
+        if self.original_image is None:
+            QMessageBox.warning(self, "경고", "이미지가 먼저 로드되어야 합니다.")
+            return
 
+        text = self.region_input.text().strip()
+        try:
+            x, y, w, h = map(int, text.split(","))
+        except ValueError:
+            QMessageBox.warning(self, "입력 오류", "x,y,w,h 형식으로 입력하세요 (예: 100,200,50,50)")
+            return
+
+        if w <= 0 or h <= 0:
+            QMessageBox.warning(self, "입력 오류", "너비와 높이는 양수여야 합니다.")
+            return
+
+        # 기존 사각형 제거
+        self.remove_custom_region()
+
+        # UI 위치로 변환
+        disp_x, disp_y = PosUtil.image_to_disp_pos(x, y, self.scale_factor)
+        disp_w = int(w * self.scale_factor)
+        disp_h = int(h * self.scale_factor)
+
+        # 빨간 사각형 라벨 생성
+        self.drawn_rect_label = QLabel(self.image_label)
+        self.drawn_rect_label.setGeometry(disp_x, disp_y, disp_w, disp_h)
+        self.drawn_rect_label.setStyleSheet("border: 2px solid red;")
+        self.drawn_rect_label.setAttribute(Qt.WA_TransparentForMouseEvents)
+        self.drawn_rect_label.show()
+
+        print(f"사각형 표시됨: ({x}, {y}, {w}, {h})")
+
+            
+    def draw_region_from_last(self):
+        """ 저장된 좌표로 사각형 다시 그림 (스케일 반영) """
+        if not self.last_drawn_region:
+            return
+
+        x, y, w, h = self.last_drawn_region
+        self.remove_drawn_region()
+
+        disp_x, disp_y = PosUtil.image_to_disp_pos(x, y, self.scale_factor)
+        disp_w = int(w * self.scale_factor)
+        disp_h = int(h * self.scale_factor)
+
+        self.drawn_rect_label = QLabel(self.image_label)
+        self.drawn_rect_label.setGeometry(disp_x, disp_y, disp_w, disp_h)
+        self.drawn_rect_label.setStyleSheet("border: 2px solid red;")
+        self.drawn_rect_label.setAttribute(Qt.WA_TransparentForMouseEvents)
+        self.drawn_rect_label.show()
+
+    def remove_custom_region(self):
+        """ 그려진 사각형 제거 """
+        if self.drawn_rect_label:
+            self.drawn_rect_label.deleteLater()
+            self.drawn_rect_label = None
+            print("사각형 제거됨")
 
 if __name__ == "__main__":
     print("Starting SophiaCapture...")  # 프로그램 시작 확인
