@@ -838,6 +838,8 @@ class SophiaCapture(QMainWindow):
         if self.drawn_rect_label:
             self.drawn_rect_label.deleteLater()
             self.drawn_rect_label = None
+            self.region_input.clear()  # 입력창 초기화
+            self.last_drawn_region = None  # 마지막 그려진 영역 초기화
             print("사각형 제거됨")
 
 if __name__ == "__main__":
