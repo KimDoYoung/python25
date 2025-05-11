@@ -444,7 +444,7 @@ class SophiaCapture(QMainWindow):
         elif self.rect_capture_mode:
             # 화면 좌표 기준 (정확한 값 출력)
             self.info_text.append("-----> ")
-            self.info_text.append(f"Retangle({x}, {y}, {x+w}, {y + h})")  # 오른쪽/아래쪽 좌표를 포함하도록
+            self.info_text.append(f"Rectangle({x}, {y}, {x+w}, {y + h})")  # 오른쪽/아래쪽 좌표를 포함하도록
             self.info_text.append(f"Region({x}, {y}, {w}, {h})")  # 원본 이미지 기준
 
     def open_image(self):
@@ -786,8 +786,9 @@ class SophiaCapture(QMainWindow):
             return
 
         text = self.region_input.text().strip()
+
         try:
-            x, y, w, h = map(int, text.split(","))
+            x, y, w, h = PosUtil.extract_x_y_w_h(text) # map(int, text.split(","))
         except ValueError:
             QMessageBox.warning(self, "입력 오류", "x,y,w,h 형식으로 입력하세요 (예: 100,200,50,50)")
             return
@@ -799,18 +800,18 @@ class SophiaCapture(QMainWindow):
         # 기존 사각형 제거
         self.remove_custom_region()
 
-        # UI 위치로 변환
-        disp_x, disp_y = PosUtil.image_to_disp_pos(x, y, self.scale_factor)
-        disp_w = int(w * self.scale_factor)
-        disp_h = int(h * self.scale_factor)
+        # 좌상단/우하단 원본 이미지 좌표 → 표시용 좌표 변환
+        ui_x1, ui_y1 = PosUtil.image_to_disp_pos(x, y, self.scale_factor)
+        ui_x2, ui_y2 = PosUtil.image_to_disp_pos(x + w, y + h, self.scale_factor)
 
-        # 빨간 사각형 라벨 생성
+        disp_w = ui_x2 - ui_x1
+        disp_h = ui_y2 - ui_y1
+
         self.drawn_rect_label = QLabel(self.image_label)
-        self.drawn_rect_label.setGeometry(disp_x, disp_y, disp_w, disp_h)
+        self.drawn_rect_label.setGeometry(ui_x1, ui_y1, disp_w, disp_h)
         self.drawn_rect_label.setStyleSheet("border: 2px solid red;")
         self.drawn_rect_label.setAttribute(Qt.WA_TransparentForMouseEvents)
         self.drawn_rect_label.show()
-
         print(f"사각형 표시됨: ({x}, {y}, {w}, {h})")
 
             

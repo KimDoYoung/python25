@@ -1,5 +1,6 @@
 from enum import Enum
 import os
+import re
 from typing import Optional, Tuple
 from PySide6.QtWidgets import QApplication
 
@@ -103,3 +104,28 @@ class PosUtil:
         disp_x = int(image_x * scale_factor / device_scale)
         disp_y = int(image_y * scale_factor / device_scale)
         return disp_x, disp_y
+
+    @staticmethod
+    def extract_x_y_w_h(text: str) -> tuple[int, int, int, int]:
+        """
+        문자열에서 (x, y, w, h) 형태의 Region 정보를 추출하여 반환
+        - Region(1,2,3,4) → (1,2,3,4)
+        - Rectangle(1,2,3,4) → (x, y, w=x2-x, h=y2-y)
+        - 1,2,3,4 → (1,2,3,4)
+        """
+        numbers = re.findall(r"\d+", text)
+        if len(numbers) != 4:
+            raise ValueError("숫자 4개가 포함된 문자열이 아닙니다.")
+
+        x1, y1, x2, y2 = map(int, numbers)
+
+        if "rectangle" in text.lower():
+            x = x1
+            y = y1
+            w = x2 - x1
+            h = y2 - y1
+            if w <= 0 or h <= 0:
+                raise ValueError("Rectangle 좌표가 올바르지 않습니다.")
+            return (x, y, w, h)
+
+        return (x1, y1, x2, y2)
