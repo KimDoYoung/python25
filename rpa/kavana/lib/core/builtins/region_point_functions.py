@@ -19,6 +19,25 @@ class RegionPointFunctions:
         RegionPointFunctions.executor = executor_instance
 
     @staticmethod
+    def DEVIDE_REGION_BY_POINT(region: Tuple[int, int, int, int], point: Tuple[int, int], name:str) -> Token:
+        """Region을 Point로 나누기"""
+        x,y,w,h = region
+        point_x, point_y = point
+        if name.lower() == "left":
+            result_region = (x, y, point_x - x, h)
+        elif name.lower() == "right":
+            result_region = (point_x, y, w - (point_x - x), h)
+        elif name.lower() == "top":
+            result_region = (x, y, w, point_y - y)
+        elif name.lower() == "bottom":
+            result_region = (x, point_y, w, h - (point_y - y))
+        else:
+            raise KavanaValueError(f"DEVIDE_REGION_BY_POINT: 잘못된 영역이름입니다.: {name}")
+        
+        result_token = TokenUtil.region_to_token(result_region)
+        return result_token
+
+    @staticmethod
     def IS_POINT_IN_REGION(p: Tuple[int,int], region: Tuple[int, int, int, int]) -> Token:
         """Point p가 Region에 포함되는지 여부를 반환"""
         x, y, width, height = region

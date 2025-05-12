@@ -5,21 +5,18 @@ from lib.core.command_preprocessor import CommandPreprocessor
 # 대입
 script = """
 MAIN
-    set i = 0
-    while i < 10
-        try
+    try
+        for i = 0 to 5
             print i
-            set i = i + 1
-            if i == 5
-                break
-            end_if
-        catch
-            print f"{i} 예외 발생"
-        finally
-            print f"{i} finally 블록 실행"
-        end_try
-    end_while
-    print f"루프 종료 {i}"
+        end_for
+    catch
+        print "catch"
+    finally
+        PRINT "try-catch-finally"
+    end_try
+    ON_EXCEPTION
+        PRINT "on_exception handler"
+    END_EXCEPTION
 
 END_MAIN
 """

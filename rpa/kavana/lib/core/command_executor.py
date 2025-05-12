@@ -88,7 +88,7 @@ class CommandExecutor:
         
     def execute(self, command):
         cmd = command["cmd"]
-    
+
         if cmd == "TRY_BLOCK":
             try:
                 ExceptionRegistry.set_in_try_block(True)  # TRY 블록 시작 
@@ -100,15 +100,30 @@ class CommandExecutor:
                         message = message_token.data.value
                         raise RuntimeError(message)  # 또는 custom 예외
                     self.execute(sub_command)  # 일반 명령어는 그대로 실행
+            except (BreakException, ContinueException) as flow_control_ex:
+                # Flow control 예외는 상위로 전파해야 함
+                ExceptionRegistry.set_in_try_block(False)
+                # finally 블록 실행 
+                for sub_command in command["finally"]:
+                    self.execute(sub_command)
+                # 원래 예외 다시 던지기
+                raise flow_control_ex
             except Exception as e:
                 self.set_last_error(str(e))
                 for sub_command in command["catch"]:
                     self.execute(sub_command)
-            finally:
+                # 일반 예외의 경우 finally 블록 여기서 실행
                 for sub_command in command["finally"]:
                     self.execute(sub_command)
+            else:
+                # 예외가 발생하지 않은 경우만 여기서 finally 블록 실행
+                for sub_command in command["finally"]:
+                    self.execute(sub_command)
+            finally:
+                # finally 블록에서는 상태만 초기화
                 ExceptionRegistry.set_in_try_block(False)  # TRY 블록 종료 후 상태 초기화    
-            return
+            return        
+        
 
         # ✅ IF 문 처리
         if cmd == "IF_BLOCK":

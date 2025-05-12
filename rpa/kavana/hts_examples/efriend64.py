@@ -174,17 +174,20 @@ function work_0808()
     RPA capture to_file=save_file_name()
     
     //팝업이 뜨는 영역을 찾는다. 속도를 위해서 30x20으로 나눈다.
-    SET 메뉴팝업전화면_정보 = SNAP_SCREEN_HASH(메인화면_client영역, "30x20")
+    //SET 메뉴팝업전화면_정보 = SNAP_SCREEN_HASH(메인화면_client영역, "30x20")
     RPA click_point location= Point(451, 915) click_type="right" after="wait:1s" //0808화면 우클릭
-    SET changed_region = SNAP_CHANGED_REGION(메뉴팝업전화면_정보, 메인화면_client영역, "30x20")
-    LOG_INFO f"스냅으로 찾은 변경영역 changed_region: {changed_region}"
+    //SET changed_region = SNAP_CHANGED_REGION(메뉴팝업전화면_정보, 메인화면_client영역, "30x20")
+    //LOG_INFO f"스냅으로 찾은 변경영역 changed_region: {changed_region}"
 
-    OCR FIND text="파일로 보내기" area=changed_region to_var="found" preprocess=False
+    OCR FIND text="파일로 보내기"  to_var="found" resize=1.5
     if found != None
         SET p = POINT_OF_REGION(found, "center")
+        
         RPA click_point location=p, after="wait:1s" turtle=True speed=1.0 // 파일로 보내기 클릭
         LOG_INFO "파일로 보내기 클릭"
-        OCR FIND text="Csv로 저장" to_var="found" preprocess=False
+        SET find_region = DEVIDE_REGION_BY_POINT(메인화면_client영역, p, "right")
+
+        OCR FIND text="Csv로 저장"  to_var="found" resize=1.5
         if found != None
             SET p = POINT_OF_REGION(found, "center")
             RPA click_point location=p, after="wait:1s" // Csv로 저장 클릭
@@ -194,7 +197,7 @@ function work_0808()
             RPA key_in keys=["enter"], after="wait:1s" // 엔터키입력
             LOG_INFO "0808 화면 종료"
         else
-            LOG_INFO "Csv로 저장 찾을 수 없습니다."
+            LOG_WARN "Csv로 저장 찾을 수 없습니다."
         end_if
     else
         LOG_INFO "파일로 보내기 찾을 수 없습니다."
@@ -328,7 +331,6 @@ MAIN
         LOG_ERROR "HTS 메인화면이 뜨지 않음"
         RAISE "HTS 메인화면이 뜨지 않음"
     end_if
-    //RPA focus_app from_var="efriend"
 
     LOG_INFO "HTS 메인화면이 뜸"
     //팝업제거 

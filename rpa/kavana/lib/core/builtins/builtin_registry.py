@@ -9,7 +9,6 @@ from .string_functions import StringFunctions
 from .numeric_functions import NumericFunctions
 #TODO builtin함수에 default인자를 줄 수 없나? 인자가 1개 생략되면 default가 적용
 #TODO 여러개의 인자를 보낼때, 즉 정해지지 않은 인자갯수 path_join
-#TODO set a = -1 
 #TODO " 안에 " 를 처리
 BUILTIN_FUNCTIONS = {
     # ✅ 데이터타입관련 함수 추가
@@ -28,6 +27,7 @@ BUILTIN_FUNCTIONS = {
     "POINT_MOVE": (RegionPointFunctions.POINT_MOVE, 2),
     "POINT_TO_REGION": (RegionPointFunctions.POINT_TO_REGION, 3),
     "POINTS_TO_REGION": (RegionPointFunctions.POINTS_TO_REGION, 2),
+    "DEVIDE_REGION_BY_POINT": (RegionPointFunctions.DEVIDE_REGION_BY_POINT, 2),
     # ✅ RPA 관련 함수 추가
     "WINDOW_LIST":(RpaFunctions.WINDOW_LIST, 1),
     "WINDOW_TOP": (RpaFunctions.WINDOW_TOP, 1),
