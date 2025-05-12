@@ -210,7 +210,16 @@ function work_0801()
         LOG_INFO "`파일로 보내기` 텍스트를 찾을 수 없습니다."
     end_if
 end_function
-
+function close_cert_popup()
+    SET cert_popup = WINDOW_FIND_BY_TITLE("인증서 만료공지")
+    if cert_popup != None
+        SET info = DUMP_ATTRS(cert_popup)
+        LOG_INFO f"인증서 만료 팝업을 찾았습니다. {info}"
+        RPA click_point location=Point(2175, 1127) after="wait:2s" // 확인버튼 클릭
+        RPA wait seconds=3
+        RPA click_point location=Point(2175, 1127) after="wait:2s" // 확인버튼 클릭
+    end_if
+end_function
 MAIN
     LOG_INFO "=========================================================="
     LOG_INFO "eFriend HTS 프로그램 시작"
@@ -223,7 +232,7 @@ MAIN
     LOG_INFO "--------------------------------------------"
     RPA open_app from_var="efriend", process_name=process_name, focus=True
     RPA wait seconds=10
-    RPA wait_image area=인증서영역 , from_file=인증서창_확인 after="wait:5s"
+    RPA wait_image area=인증서영역 , from_file=인증서창_확인 after="wait:5s" timeout=60*3
     LOG_INFO "인증서창 확인됨..."
     RPA click_point location=하드디스크_위치, after="wait:2s"
     SET tmp_file = FILE_TEMP_NAME(".png")
@@ -242,6 +251,9 @@ MAIN
     RPA click_point location=패스워드입력위치, after="wait:2s" // 패스워드위치클릭
     RPA put_text text=$HTS_PASSWORD // 패스워드입력
     RPA key_in keys=["enter"], after="wait:5s" // 엔터키입력
+    //인증서 만료 팝업이 뜨면 확인 클릭
+    just close_cert_popup()
+
     LOG_INFO "HTS 메인이 뜰때까지 기다린다...."
     RPA wait seconds=(60)
     RPA focus_app from_var="efriend"

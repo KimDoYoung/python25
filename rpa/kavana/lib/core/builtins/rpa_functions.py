@@ -54,7 +54,7 @@ class RpaFunctions:
             pm = ProcessManager(executor=RpaFunctions.executor)
             window_info = pm.find_window_by_title(title)
             if window_info:
-                window = Window(title=window_info.title, hwnd=window_info.hwnd, class_name=window)
+                window = Window(title=window_info.title, hwnd=window_info.hwnd, class_name=window_info.class_name)
                 token = WindowToken(data=window)
                 token.status = TokenStatus.EVALUATED
                 return token
