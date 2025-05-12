@@ -210,6 +210,8 @@ function work_0801()
         LOG_INFO "`파일로 보내기` 텍스트를 찾을 수 없습니다."
     end_if
 end_function
+
+//인증서 만료 팝업이 뜨면 확인 클릭
 function close_cert_popup()
     SET cert_popup = WINDOW_FIND_BY_TITLE("인증서 만료공지")
     if cert_popup != None
