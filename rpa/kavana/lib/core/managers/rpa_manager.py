@@ -352,7 +352,6 @@ class RpaManager(BaseManager):
             
             if after and found_regions:
                 self._after_action(found_regions[0], after)
-            
             return found_regions
 
         except Exception as e:

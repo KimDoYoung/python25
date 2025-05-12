@@ -97,45 +97,28 @@ function close_popups()
     return success
 end_function
 
-// 메뉴동작이 가능한지 체크
-function menu_clickable()
-    // 설정 풀다운의 서브메뉴가 뜨는 곳의 이미지를 저장해서 설정버튼이 동작하는지 체크한다.
-    SET dummy_point = Point(3661, 224)
+function virtual_screen_close()
+    LOG_INFO "=====================[ 가상화면 종료 시작]===================================="
     SET 설정메뉴=Point(35, 57) // 설정메뉴 
+    SET points= [  Point(96, 162), Point(595, 159), Point(609, 493) ]
+    SET 닫기버튼위치 =  Point(1848, 1078) // 닫기 확인
     SET check_region = Region(52, 192, 127, 120)
-
-    RPA click_point location=dummy_point, after="wait:1s" speed=0.7
+    // 설정 풀다운의 서브메뉴가 뜨는 곳의 이미지를 저장해서 설정버튼이 동작하는지 체크한다.
     Image clip area=check_region to_var="image1"
     RPA wait seconds=1
     RPA click_point location=설정메뉴, after="wait:1s" speed=0.7
     Image clip area=check_region to_var="image2"
     if image1 != image2
         LOG_INFO "설정메뉴가 열렸습니다."
-        SET result = True
     else
         LOG_INFO "설정메뉴가 열리지 않았습니다."
         LOG_INFO "팝업이 떠 있다고 가정하고 팝업을 닫습니다"
-        SET result = False
-    end_if
-    return result
-end_function
-
-function virtual_screen_close()
-    LOG_INFO "=====================[ 가상화면 종료 시작]===================================="
-    SET 설정메뉴=Point(35, 57) // 설정메뉴 
-    SET points= [  Point(96, 162), Point(595, 159), Point(609, 493) ]
-    SET 닫기버튼위치 =  Point(1848, 1078) // 닫기 확인
-    while True
-        if menu_clickable() == True
-            RPA move_mouse locations=points, after="wait:1s" speed=0.7
-            RPA click_point location=points[2], after="wait:1s"  speed=0.7
-            RPA click_point location=닫기버튼위치 after="wait:1s" speed=0.7
-            break
-        end_if
         just close_popups()
-        
-    end_while
+    end_if
 
+    RPA move_mouse locations=points, after="wait:1s" speed=0.7
+    RPA click_point location=points[2], after="wait:1s"  speed=0.7
+    RPA click_point location=닫기버튼위치 after="wait:1s" speed=0.7
     LOG_INFO "=====================[ 가상화면 종료]===================================="
 end_function 
 
@@ -172,14 +155,9 @@ function work_0808()
     RPA key_in keys=["enter"], after="wait:3s" // 엔터키입력
     
     RPA capture to_file=save_file_name()
-    
-    //팝업이 뜨는 영역을 찾는다. 속도를 위해서 30x20으로 나눈다.
-    SET 메뉴팝업전화면_정보 = SNAP_SCREEN_HASH(메인화면_client영역, "30x20")
-    RPA click_point location= Point(451, 915) click_type="right" after="wait:1s" //0808화면 우클릭
-    SET changed_region = SNAP_CHANGED_REGION(메뉴팝업전화면_정보, 메인화면_client영역, "30x20")
-    LOG_INFO f"스냅으로 찾은 변경영역 changed_region: {changed_region}"
 
-    OCR FIND text="파일로 보내기" area=changed_region to_var="found" preprocess=False
+    RPA click_point location= Point(451, 915) click_type="right" after="wait:1s" //0808화면 우클릭
+    OCR FIND text="파일로 보내기" to_var="found" preprocess=False
     if found != None
         SET p = POINT_OF_REGION(found, "center")
         RPA click_point location=p, after="wait:1s" turtle=True speed=1.0 // 파일로 보내기 클릭
@@ -304,56 +282,10 @@ MAIN
     just close_cert_popup()
 
     LOG_INFO "HTS 메인이 뜰때까지 기다린다...."
-    //RPA wait seconds=(60)
-    SET i = 0
-    while i < 10
-        try
-            JUST PROCESS_FOCUS(PROCESS_NAME)
-            RPA find_image area=Region(3286, 1784, 542, 172), from_file=로고 to_var="found1" 
-            if found1 != None
-                LOG_INFO "로고 이미지를 발견했습니다"
-                break
-            else
-                LOG_INFO f"not found,HTS 메인화면이 뜨지 않음 {i+1}회차"
-                RPA wait seconds=10
-                SET i = i + 1
-            end_if
-        catch
-            LOG_INFO f"catch HTS 메인화면이 뜨지 않음 {i+1}회차"
-            RPA wait seconds=(10)
-            SET i = i + 1
-        end_try
-    end_while
-    if i == 10
-        LOG_ERROR "HTS 메인화면이 뜨지 않음"
-        RAISE "HTS 메인화면이 뜨지 않음"
-    end_if
-    //RPA focus_app from_var="efriend"
+    RPA wait seconds=(60)
+    RPA focus_app from_var="efriend"
 
     LOG_INFO "HTS 메인화면이 뜸"
-    //팝업제거 
-    RPA wait seconds=(3)
-    SET popup_close =  close_popups()
-    if popup_close == False
-        LOG_INFO "팝업이 없습니다."
-    else
-        LOG_INFO "팝업이 제거되었습니다."
-    end_if
-    //가상화면 모두 닫기
-    JUST virtual_screen_close()
-    
-    //0808화면 호출
-    just work_0808()
-    
-    //가상화면 모두 닫기
-    JUST virtual_screen_close()
-
-    //0801화면 호출
-    just work_0801()
-    
-   
-    //종료
-    JUST close_efriend_hts()
     
     LOG_INFO "=========================================================="
     LOG_INFO ">>> eFriend HTS 종료"
