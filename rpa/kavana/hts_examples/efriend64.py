@@ -112,6 +112,7 @@ end_function
 
 function close_efriend_hts()
     LOG_INFO "=====================[ eFriend HTS 종료 시작]===================================="
+    just virtual_screen_close()
     SET 설정=Point(35, 57) // 설정메뉴
     SET 종료=Point(84, 1202) // 종료메뉴
     SET 종료확인=Point(1764, 1219) //종료확인
@@ -222,6 +223,17 @@ function close_cert_popup()
         RPA click_point location=Point(2175, 1127) after="wait:2s" // 확인버튼 클릭
     end_if
 end_function
+
+function check_already_running_and_quit()
+    SET is_running = PROCESS_IS_RUNNING(PROCESS_NAME)
+    if is_running == True
+        LOG_INFO f"{PROCESS_NAME} 프로세스가 이미 실행중입니다. 종료합니다."
+        JUST PROCESS_FOCUS(PROCESS_NAME)
+        RPA wait seconds=3
+        JUST close_efriend_hts()
+        RPA wait seconds=3
+    end_if
+end_function    
 MAIN
     LOG_INFO "=========================================================="
     LOG_INFO "eFriend HTS 프로그램 시작"
@@ -232,6 +244,7 @@ MAIN
     LOG_INFO f"IMAGE_PATH: {IMAGE_PATH}"
     LOG_INFO f"RESULT_PATH: {RESULT_PATH}"
     LOG_INFO "--------------------------------------------"
+    JUST check_already_running_and_quit()
     RPA open_app from_var="efriend", process_name=process_name, focus=True
     RPA wait seconds=10
     RPA wait_image area=인증서영역 , from_file=인증서창_확인 after="wait:5s" timeout=60*3
@@ -278,10 +291,7 @@ MAIN
     //0801화면 호출
     just work_0801()
     
-    //마지막에 가상화면 모두 닫기
-    JUST virtual_screen_close() 
-    RPA wait seconds=(10)
-    
+   
     //종료
     JUST close_efriend_hts()
     

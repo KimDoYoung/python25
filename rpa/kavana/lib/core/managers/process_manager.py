@@ -2,6 +2,7 @@ import psutil
 from time import sleep
 import win32gui
 import win32process
+import win32con
 from dataclasses import dataclass
 from typing import List, Optional
 
@@ -62,6 +63,82 @@ class ProcessManager(BaseManager):
                     proc.wait(timeout=3)
             except (psutil.NoSuchProcess, psutil.AccessDenied):
                 continue
+
+    # def bring_process_to_front(self,target_name):
+    #     for proc in psutil.process_iter(['pid', 'name']):
+    #         if proc.info['name'] and target_name.lower() in proc.info['name'].lower():
+    #             pid = proc.info['pid']
+
+    #             def enum_window_callback(hwnd, _):
+    #                 try:
+    #                     _, found_pid = win32process.GetWindowThreadProcessId(hwnd)
+    #                     if found_pid == pid:
+    #                         win32gui.ShowWindow(hwnd, win32con.SW_RESTORE)  # 최소화돼있을 경우 복원
+    #                         win32gui.SetForegroundWindow(hwnd)
+    #                         return False  # 더 이상 반복할 필요 없음
+    #                 except Exception:
+    #                     pass
+    #                 return True
+
+    #             win32gui.EnumWindows(enum_window_callback, None)
+    #             return True
+    #     return False
+
+    def bring_process_to_foreground(self, process_name):
+        """
+        특정 프로세스 이름으로 윈도우를 찾아 최상단으로 가져옵니다.
+        
+        Args:
+            process_name (str): 찾을 프로세스 이름 (예: 'hts.exe' 또는 'hts')
+        
+        Returns:
+            bool: 프로세스를 찾아 최상단으로 가져왔으면 True, 실패했으면 False
+        """
+        # 프로세스 이름에 .exe가 없으면 추가
+        if not process_name.lower().endswith('.exe'):
+            process_name += '.exe'
+        
+        target_pids = []
+        
+        # 해당 이름의 프로세스 PID 찾기
+        for proc in psutil.process_iter(['pid', 'name']):
+            try:
+                if proc.info['name'].lower() == process_name.lower():
+                    target_pids.append(proc.info['pid'])
+            except (psutil.NoSuchProcess, psutil.AccessDenied, psutil.ZombieProcess):
+                pass
+        
+        if not target_pids:
+            self.executor.log_command("WARN", f"프로세스 '{process_name}'를 찾을 수 없습니다.")
+            return False
+        
+        # 각 윈도우 열거
+        def enum_windows_callback(hwnd, result):
+            if not win32gui.IsWindowVisible(hwnd):
+                return True
+            
+            _, found_pid = win32process.GetWindowThreadProcessId(hwnd)
+            if found_pid in target_pids:
+                # 윈도우가 최소화되어 있으면 복원
+                if win32gui.IsIconic(hwnd):
+                    win32gui.ShowWindow(hwnd, win32con.SW_RESTORE)
+                
+                # 윈도우를 최상단으로 가져오기
+                win32gui.SetForegroundWindow(hwnd)
+                window_title = win32gui.GetWindowText(hwnd)
+                self.executor.log_command("INFO",f"윈도우 '{window_title}' (PID: {found_pid})를 최상단으로 가져왔습니다.")
+                result.append(hwnd)
+                return False  # 첫 번째 찾은 윈도우만 처리
+            return True
+        
+        result = []
+        win32gui.EnumWindows(enum_windows_callback, result)
+        
+        if result:
+            return True
+        else:
+            self.executor.log_command("ERROR", f"프로세스 '{process_name}'의 윈도우를 찾을 수 없습니다.")
+            return False
 
     def get_window_info_list(self, process_name: str = None) -> List[WindowInfo]:
         """✅ 프로세스 이름 없으면 전체 창, 있으면 해당 프로세스만 반환"""

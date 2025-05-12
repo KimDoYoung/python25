@@ -197,3 +197,25 @@ class RpaFunctions:
             if RpaFunctions.executor:
                 RpaFunctions.executor.log_command("ERROR", f"PROCESS_IS_RUNNING ERROR: {e}")
             return NoneToken()
+    
+    def PROCESS_KILL(process_name:str) -> Token:
+        """특정 프로세스 종료, 리턴 boolean token"""
+        try:
+            pm = ProcessManager(executor=RpaFunctions.executor)
+            pm.kill_process_by_name(process_name)
+            return TokenUtil.boolean_to_boolean_token(True)
+        except Exception as e:
+            if RpaFunctions.executor:
+                RpaFunctions.executor.log_command("ERROR", f"PROCESS_KILL ERROR: {e}")
+            return TokenUtil.boolean_to_boolean_token(False)
+        
+    def PROCESS_FOCUS(process_name:str) -> Token:
+        """특정 프로세스 포커스"""
+        try:
+            pm = ProcessManager(executor=RpaFunctions.executor)
+            b = pm.bring_process_to_foreground(process_name)
+            return TokenUtil.boolean_to_boolean_token(b)
+        except Exception as e:
+            if RpaFunctions.executor:
+                RpaFunctions.executor.log_command("ERROR", f"PROCESS_FOCUS ERROR: {e}")
+            return TokenUtil.boolean_to_boolean_token(False)

@@ -38,6 +38,8 @@ BUILTIN_FUNCTIONS = {
     "SNAP_CHANGED_REGION": (RpaFunctions.SNAP_CHANGED_REGION, 2),
     "PROCESS_LIST": (RpaFunctions.PROCESS_LIST, 0),
     "PROCESS_IS_RUNNING": (RpaFunctions.PROCESS_IS_RUNNING, 1),
+    "PROCESS_KILL": (RpaFunctions.PROCESS_KILL, 1),
+    "PROCESS_FOCUS": (RpaFunctions.PROCESS_FOCUS, 1),
 
     # ✅ 문자열 관련 함수 추가
     "LENGTH": (StringFunctions.LENGTH, 1),

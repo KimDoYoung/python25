@@ -20,6 +20,8 @@ MAIN
     end_for
     if PROCESS_IS_RUNNING("efplusmain.exe")
         print "efplusmain.exe is running"
+        rpa wait seconds=5
+        JUST PROCESS_FOCUS("efplusmain.exe")
     else
         print "efplusmain.exe is not running"
     end_if
