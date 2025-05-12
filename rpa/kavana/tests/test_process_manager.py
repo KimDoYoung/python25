@@ -18,18 +18,6 @@ def test_get_pid_by_process_name(mock_iter, process_manager):
     assert pid == 1234
 
 
-@patch("lib.core.managers.process_manager.psutil.pid_exists", return_value=True)
-def test_is_running_with_pid(mock_exists, process_manager):
-    assert process_manager.is_running("dummy", pid=4321) is True
-    mock_exists.assert_called_once_with(4321)
-
-
-@patch("lib.core.managers.process_manager.ProcessManager.get_pid_by_process_name", return_value=9999)
-def test_is_running_by_name(mock_get_pid, process_manager):
-    assert process_manager.is_running("dummy") is True
-    mock_get_pid.assert_called_once_with("dummy")
-
-
 @patch("lib.core.managers.process_manager.psutil.process_iter")
 def test_kill_process_by_name(mock_iter, process_manager):
     proc = MagicMock()

@@ -5,8 +5,8 @@ from lib.core.command_preprocessor import CommandPreprocessor
 # 대입
 script = """
 LOAD_ENV ".env"
-include "simple_test/efriend64_data.kvs"
-include "simple_test/common_functions.kvs"
+include "hts_examples/efriend64_data.kvs"
+include "hts_examples/common_functions.kvs"
 
 function virtual_screen_close2()
     CONST 가상화면호출버튼_위치= Point(3522, 1956)

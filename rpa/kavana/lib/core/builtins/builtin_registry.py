@@ -36,6 +36,8 @@ BUILTIN_FUNCTIONS = {
     "MONITOR_LIST": (RpaFunctions.MONITOR_LIST, 0),
     "SNAP_SCREEN_HASH": (RpaFunctions.SNAP_SCREEN_HASH, 2),
     "SNAP_CHANGED_REGION": (RpaFunctions.SNAP_CHANGED_REGION, 2),
+    "PROCESS_LIST": (RpaFunctions.PROCESS_LIST, 0),
+    "PROCESS_IS_RUNNING": (RpaFunctions.PROCESS_IS_RUNNING, 1),
 
     # ✅ 문자열 관련 함수 추가
     "LENGTH": (StringFunctions.LENGTH, 1),

@@ -170,3 +170,30 @@ class RpaFunctions:
         h = r_dict.get("h")
 
         return TokenUtil.region_to_token((x,y,w,h))
+    
+    def PROCESS_LIST() -> Token:
+        """현재 실행 중인 프로세스 리스트 반환"""
+        try:
+            pm = ProcessManager(executor=RpaFunctions.executor)
+            process_list = pm.get_process_list()
+            array = []
+            for process in process_list:
+                token = TokenUtil.dict_to_hashmap_token(process)
+                array.append(token)
+            token = TokenUtil.array_to_array_token(array)
+            return token
+        except Exception as e:
+            if RpaFunctions.executor:
+                RpaFunctions.executor.log_command("ERROR", f"PROCESS_LIST ERROR: {e}")
+            return NoneToken()
+    
+    def PROCESS_IS_RUNNING(process_name:str) -> Token:
+        """특정 프로세스가 실행 중인지 확인"""
+        try:
+            pm = ProcessManager(executor=RpaFunctions.executor)
+            is_running = pm.is_running(process_name)
+            return TokenUtil.boolean_to_boolean_token(is_running)
+        except Exception as e:
+            if RpaFunctions.executor:
+                RpaFunctions.executor.log_command("ERROR", f"PROCESS_IS_RUNNING ERROR: {e}")
+            return NoneToken()

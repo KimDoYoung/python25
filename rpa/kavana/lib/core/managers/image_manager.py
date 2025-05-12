@@ -2,6 +2,7 @@ import tempfile
 from PIL import ImageFilter, ImageOps, ImageDraw, ImageFont
 import cv2
 import numpy as np
+import pyautogui
 from lib.core.datatypes.image import Image
 from lib.core.exceptions.kavana_exception import KavanaValueError
 from lib.core.managers.base_manager import BaseManager
@@ -83,6 +84,20 @@ class ImageManager(BaseManager):
 
     def clip(self):
         area = self.options.get("area")
+        from_var = self.options.get("from_var")
+        from_file = self.options.get("from_file")
+        area = self.options.get("area")
+        # from_var과 from_file 모두 없으면 화면캡쳐해서 임시파일로 저장한 후 from_file로 사용
+        if not from_var and not from_file:
+            if not area:
+                self.raise_error("IMAGE clip: area 파라미터가 필요합니다.")
+            screenshot = pyautogui.screenshot()
+            temp_file = tempfile.NamedTemporaryFile(delete=False, suffix=".png")
+            from_file = temp_file.name
+            screenshot.save(from_file)
+            temp_file.close()
+            self.options["from_file"] = from_file
+
         my_img = self._get_my_image_type()
 
         if not area:

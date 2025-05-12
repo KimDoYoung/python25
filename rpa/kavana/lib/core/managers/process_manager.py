@@ -21,6 +21,16 @@ class ProcessManager(BaseManager):
         super().__init__(executor)
         self.processes = {}  # 실행 중인 프로세스 저장 (이름: PID)
 
+    def get_process_list(self) -> List[dict]:
+        """✅ 현재 실행 중인 프로세스 목록 반환"""
+        process_list = []
+        for proc in psutil.process_iter(attrs=["pid", "name", "username"]):
+            try:
+                process_list.append(proc.info)
+            except (psutil.NoSuchProcess, psutil.AccessDenied):
+                continue
+        return process_list
+
     def get_pid_by_process_name(self, name: str) -> Optional[int]:
         """✅ 특정 프로세스 이름으로 PID 찾기"""
         for proc in psutil.process_iter(attrs=["pid", "name"]):
@@ -31,11 +41,16 @@ class ProcessManager(BaseManager):
                 continue
         return None
 
-    def is_running(self, name: str, pid: int = None) -> bool:
+
+    def is_running(self, name: str) -> bool:
         """✅ 특정 프로세스가 실행 중인지 확인"""
-        if pid:
-            return psutil.pid_exists(pid)
-        return bool(self.get_pid_by_process_name(name))
+        for proc in psutil.process_iter(attrs=["pid", "name"]):
+            try:
+                if proc.info["name"].lower() == name.lower():
+                    return True
+            except (psutil.NoSuchProcess, psutil.AccessDenied):
+                continue
+        return False
 
     def kill_process_by_name(self, name: str) -> None:
         """프로세스 강제 종료"""

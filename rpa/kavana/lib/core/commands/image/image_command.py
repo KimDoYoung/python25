@@ -49,7 +49,7 @@ class ImageCommand(BaseCommand):
             }
         },
         "clip": {
-            "keys": ["from_var", "from_file", "to_var", "to_file", "area"],
+            "keys": ["to_var", "to_file", "area"],
             "rules": {
                 "mutually_exclusive": [
                     ["from_file", "from_var"],
