@@ -27,7 +27,7 @@ BUILTIN_FUNCTIONS = {
     "POINT_MOVE": (RegionPointFunctions.POINT_MOVE, 2),
     "POINT_TO_REGION": (RegionPointFunctions.POINT_TO_REGION, 3),
     "POINTS_TO_REGION": (RegionPointFunctions.POINTS_TO_REGION, 2),
-    "DEVIDE_REGION_BY_POINT": (RegionPointFunctions.DEVIDE_REGION_BY_POINT, 2),
+    "REGION_DEVIDE_BY_POINT": (RegionPointFunctions.REGION_DEVIDE_BY_POINT, 2),
     # ✅ RPA 관련 함수 추가
     "WINDOW_LIST":(RpaFunctions.WINDOW_LIST, 1),
     "WINDOW_TOP": (RpaFunctions.WINDOW_TOP, 1),

@@ -185,7 +185,7 @@ function work_0808()
         
         RPA click_point location=p, after="wait:1s" turtle=True speed=1.0 // 파일로 보내기 클릭
         LOG_INFO "파일로 보내기 클릭"
-        SET find_region = DEVIDE_REGION_BY_POINT(메인화면_client영역, p, "right")
+        SET find_region = REGION_DEVIDE_BY_POINT(메인화면_client영역, p, "right")
 
         OCR FIND text="Csv로 저장"  to_var="found" resize=1.5
         if found != None

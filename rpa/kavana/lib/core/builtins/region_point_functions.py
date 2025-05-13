@@ -19,7 +19,7 @@ class RegionPointFunctions:
         RegionPointFunctions.executor = executor_instance
 
     @staticmethod
-    def DEVIDE_REGION_BY_POINT(region: Tuple[int, int, int, int], point: Tuple[int, int], name:str) -> Token:
+    def REGION_DEVIDE_BY_POINT(region: Tuple[int, int, int, int], point: Tuple[int, int], name:str) -> Token:
         """Region을 Point로 나누기"""
         x,y,w,h = region
         point_x, point_y = point
