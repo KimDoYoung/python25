@@ -12,7 +12,7 @@ from PySide6.QtCore import Qt, QRect, QPoint, QSize
 from utils import PosUtil, RegionName, get_region, get_save_path
 
 
-VERSION = "0.8"  # Define the version
+VERSION = "0.9"
 
 def apply_monitor_scale(pos):
     """모니터 배율을 고려해 '물리 좌표'로 보정"""
@@ -418,7 +418,7 @@ class SophiaCapture(QMainWindow):
 
         # 원본 이미지 기준으로 좌표 확인
         h_img, w_img, _ = self.original_image.shape
-        if x < 0 or y < 0 or x + w > w_img or y + h > h_img:
+        if x < 0 or y < 0 or x + w > w_img or y + h > h_img or (w < 5 and h < 5):
             print("Error: Selection out of bounds")  # 선택 영역이 이미지 범위를 초과하는 경우
             return
 
@@ -434,7 +434,7 @@ class SophiaCapture(QMainWindow):
             ret, buffer = cv2.imencode(ext, cropped)
             if ret:
                 buffer.tofile(save_path)  #  한글 경로 지원
-                self.info_text.append("-----> ")
+                self.info_text.append(f"----->Region({x}, {y}, {w}, {h})")
                 self.info_text.append(f"{save_path} saved")
                 self.captured_images_count += 1
             else:

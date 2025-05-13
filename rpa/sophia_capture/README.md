@@ -119,3 +119,4 @@ File
 0.6 : next image, prev image 버튼 생성, info에 file full path 넣기.
 0.7 : next,prev image변경시 save_folder 유지, F9 : save_folder 탐색기에서 열기
 0.8 : zoom in추가, 사용자 region그리기
+0.9 : image자를때 region도 표시, w,h < 10pixel이하는 무시함.
