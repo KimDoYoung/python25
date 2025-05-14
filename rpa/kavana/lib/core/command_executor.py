@@ -15,6 +15,7 @@ from lib.core.commands.database.db_commander import DbCommander
 from lib.core.commands.endfunction_command import EndFunctionCommand
 from lib.core.commands.exit_command import ExitCommand
 from lib.core.commands.function_command import FunctionCommand
+from lib.core.commands.html_command import HtmlCommand
 from lib.core.commands.image.image_command import ImageCommand
 from lib.core.commands.just_command import JustCommand
 from lib.core.commands.log_command import LogConfigCommand, LogDebugCommand, LogErrorCommand, LogInfoCommand, LogWarnCommand
@@ -73,6 +74,7 @@ class CommandExecutor:
             # ocr, browser(selenium), image
             "OCR" : OcrCommand(),
             "BROWSER" : BrowserCommand(),
+            "HTML" : HtmlCommand(),
             "IMAGE" : ImageCommand(),
             
         }

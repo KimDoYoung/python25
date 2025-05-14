@@ -12,7 +12,7 @@ MAIN
     SET URL="https://law.kofia.or.kr//service/revisionNotice/revisionNoticeListframe.do"
     BROWSER OPEN url=URL
     BROWSER WAIT seconds=5
-    BROWSER EXTRACT select="tr" select_by="css" within=".brdComList tbody"  to_var="tr_list"
+    BROWSER EXTRACT select="tr"  within=".brdComList tbody"  to_var="tr_list"
 
     for item in tr_list:
         LOG_INFO "{item}"

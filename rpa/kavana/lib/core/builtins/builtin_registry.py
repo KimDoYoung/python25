@@ -59,6 +59,7 @@ BUILTIN_FUNCTIONS = {
     "TO_INT" : (StringFunctions.TO_INT, 1),
     "TO_FLOAT" : (StringFunctions.TO_FLOAT, 1),
     "TO_STR" : (StringFunctions.TO_STR, 1),
+    "REG_EX" : (StringFunctions.REG_EX, 2),
 
     # ✅ 숫자 관련 함수 추가
     "RANDOM": (NumericFunctions.RANDOM, 2),

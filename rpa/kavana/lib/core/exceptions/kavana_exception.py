@@ -91,3 +91,7 @@ class KavanaOcrError(KavanaException):
 class KavanaBrowserError(KavanaException):
     """Browser 관련 오류"""
     pass
+
+class KavanaHtmlError(KavanaException):
+    """HTML 관련 오류"""
+    pass

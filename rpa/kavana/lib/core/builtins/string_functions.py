@@ -255,3 +255,26 @@ class StringFunctions:
         else:
             StringFunctions.executor.log_command("ERROR", "TO_STR() 함수는 문자열, 정수, 실수, 불리언, 배열과 해쉬맵만 받을 수 있습니다")
             raise KavanaTypeError("TO_STR() 함수는 문자열, 정수, 실수, 불리언, 배열과 해쉬맵만 받을 수 있습니다")
+        
+    @staticmethod
+    def REG_EX(s: str, pattern: str) -> Token:
+        """
+        문자열에서 정규 표현식 패턴을 찾아서 일치되는 것 문자열 리턴 없으면 None리턴
+        
+        Args:
+            s (str): 검색할 문자열.
+            pattern (str): 정규 표현식 패턴.
+        
+        Returns:
+            Token: 패턴에 해당하는 문자열 리턴
+        """
+        import re
+        if isinstance(s, str) and isinstance(pattern, str):
+            match = re.search(pattern, s)
+            if match:
+                return StringToken(data=String(match.group()), type=TokenType.STRING)
+            else:
+                return StringToken(data=String(""), type=TokenType.STRING)
+        StringFunctions.executor.log_command("ERROR", "형식은 REG_EX(문자열, 정규표현식)입니다")
+        raise KavanaTypeError("형식은 REG_EX(문자열, 정규표현식)입니다")
+

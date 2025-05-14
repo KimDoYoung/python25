@@ -51,7 +51,7 @@ class HttpCommand(BaseCommand):
     OPTION_DEFINITIONS = {
         "url": {"required": True, "allowed_types": [TokenType.STRING]},
         "headers": {"required": False, "allowed_types": [TokenType.INTEGER]},
-        "params": {"required": False, "allowed_types": [TokenType.STRING]},
+        "params": {"required": False, "allowed_types": [TokenType.HASH_MAP]},
         "body": {"required": False, "allowed_types": [TokenType.BOOLEAN]},
         "content_type": {"required": False, "allowed_types": [TokenType.STRING]},
         "verify_ssl": {"required": False, "allowed_types": [TokenType.BOOLEAN]},
@@ -71,9 +71,10 @@ class HttpCommand(BaseCommand):
             }
         },
         "post": {
-            "keys": ["url", "headers", "params", "body", "content_type", "verify_ssl", "timeout"],
+            "keys": ["url", "headers", "params", "body", "content_type", "verify_ssl", "timeout", "to_var"],
             "overrides": {
-                "url": {"required": True}
+                "url": {"required": True},
+                "to_var": {"required": True}
             },
             "rules": {}
         },
