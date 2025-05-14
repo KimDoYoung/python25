@@ -62,7 +62,7 @@ class BrowserCommand(BaseCommand):
         "wait": {
             "keys": ["select", "until", "select_by", "timeout", "seconds"],
             "overrides": {
-                "select": {"required": True},
+                "select": {"required": False},
                 "until": {"required": False},
                 "select_by": {"required": False},
                 "timeout": {"required": False},

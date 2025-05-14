@@ -13,8 +13,12 @@ class SqliteDbCommander(DbCommander):
         if self.conn:
             self.conn.close()
         self.path = kwargs.get("path")
-        self.conn = sqlite3.connect(self.path)
-        self.conn.row_factory = sqlite3.Row
+        try:
+            
+            self.conn = sqlite3.connect(self.path)
+            self.conn.row_factory = sqlite3.Row
+        except sqlite3.Error as e:
+            raise Exception(f"SQLite connection error: {e}")
 
     def query(self, sql):            
         cur = self.conn.cursor()

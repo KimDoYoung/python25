@@ -504,7 +504,7 @@ def work_800100() -> str:
     time.sleep(1)
     return saved_file_path    
 
-def work_500086() -> str:
+def work_500086(is_pm:bool=False) -> str:
     ''' 500086 등록잔량서비스'''
     log.info("화면번호 입력 500086 입력 후 엔터")
     mouse_move_and_click(1760, 50, wait_seconds=1)
@@ -542,6 +542,8 @@ def work_500086() -> str:
     #-------- Rename file------------
     default_filename = get_text_from_input_field()
     screen_no = "500086"
+    if is_pm:
+        screen_no = "500086N"
     saved_file_path = os.path.join(Config.SAVE_AS_PATH1, f"{todayYmd()}_{screen_no}.{default_filename.rsplit('.', 1)[-1]}")
     put_keys(f'H:ctrl+a | P:delete | W:"{saved_file_path}" | P:enter')
     time.sleep(1)
@@ -684,7 +686,7 @@ def esafe_auto_work():
     filename = work_800100()
     saved_files.append(filename)
     log.info(">>> 800100 일자별 일정현황 종료")
-    #-------------------------800100 일자별 일정현황
+    #-------------------------500086 등록잔량서비스
     log.info(">>> 500086 등록잔량서비스 시작")
     close_all_tabs_via_context_menu((460,85), pngimg('context_menu'), pngimg('all_tab_close'))
     filename = work_500086()
@@ -818,7 +820,14 @@ def esafe_auto_work_pm():
     filenames = work_500068_tab1_pm()
     saved_files.extend(filenames)
     log.info(">>> 500068 기준가 신규등록 종료")
-    
+    #-------------------------500086 등록잔량서비스
+    log.info(">>> 500086 오후작업 등록잔량서비스 시작")
+    close_all_tabs_via_context_menu((460,85), pngimg('context_menu'), pngimg('all_tab_close'))
+    filename = work_500086(is_pm=True)
+    saved_files.append(filename)
+    log.info(">>> 500086 오후작업 등록잔량서비스 종료")
+
+
     # 프로그램 종료
     mouse_move_and_click(1901, 16, wait_seconds=1)
     time.sleep(2)

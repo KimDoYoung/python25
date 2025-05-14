@@ -9,7 +9,7 @@ warnings.filterwarnings("ignore", category=UserWarning)
 def main():
     base_dir = os.path.expanduser("~/Pictures/OCR_TEST")
     print(f"Base directory is set to: {base_dir}")
-    image_path = os.path.join(base_dir, f"image_a.png")
+    image_path = os.path.join(base_dir, f"image_00.png")
 
     # config = '--oem 3 --psm 3 -l kor+eng'
     # config = '--oem 3 --psm 6 -l kor'

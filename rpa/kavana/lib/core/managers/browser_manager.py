@@ -199,10 +199,11 @@ class BrowserManager(BaseManager):
 
         # 값 추출
         results = []
+        value = None
         for el in elements:
             try:
                 if attr == "text":
-                    value = el.text
+                    value = el.get_attribute("outerHTML")
                 else:
                     value = el.get_attribute(attr)
                 if value:

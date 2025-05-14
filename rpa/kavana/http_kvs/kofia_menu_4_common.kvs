@@ -1,0 +1,28 @@
+function create_db()
+    SET DB_DIR = f"{$REPOSITORY_DIR}\\DB\\KOFIA" 
+    CALL DIR_CREATE(DB_DIR)
+    SET DB_NAME = f"{DB_DIR}\\kofia_menu_4.db"
+    LOG_INFO f"DB_NAME: {DB_NAME}"
+    DB connect path=DB_NAME
+    DB execute sql="""
+        CREATE TABLE IF NOT EXISTS menu_4 (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            seq INTEGER NOT NULL,
+            title TEXT,
+            gubun TEXT,
+            start_date TEXT,
+            end_date TEXT,
+            summary TEXT,
+            upd_time DATETIME DEFAULT CURRENT_TIMESTAMP
+        )
+    """    
+    DB execute sql="""
+        CREATE TABLE IF NOT EXISTS menu_4_attaches (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            parent_id INTEGER NOT NULL,
+            save_folder TEXT,
+            save_name TEXT
+        )
+    """    
+
+end_function

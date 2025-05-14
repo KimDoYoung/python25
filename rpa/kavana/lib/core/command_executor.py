@@ -54,6 +54,7 @@ class CommandExecutor:
             "EXIT" : ExitCommand(),
             "RAISE" : RaiseCommand(),
             "JUST"  : JustCommand(),
+            "CALL"  : JustCommand(),
             # log 관련 명령어
             "LOG_CONFIG" : LogConfigCommand(),
             "LOG_DEBUG" : LogDebugCommand(),
