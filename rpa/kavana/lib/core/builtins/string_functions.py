@@ -1,3 +1,4 @@
+import re
 from typing import Any, Dict, List, Union
 
 from lib.core.datatypes.kavana_datatype import Boolean, Float, Integer, String
@@ -278,3 +279,29 @@ class StringFunctions:
         StringFunctions.executor.log_command("ERROR", "형식은 REG_EX(문자열, 정규표현식)입니다")
         raise KavanaTypeError("형식은 REG_EX(문자열, 정규표현식)입니다")
 
+    @staticmethod
+    def MAKE_SQL(sql_template: str, data: dict) -> str:
+        # 1. ? 개수 파악
+        placeholders = re.findall(r'\?', sql_template)
+        num_params = len(placeholders)
+
+        # 2. 필요한 데이터만 앞에서부터 추출
+        values = list(data.values())[:num_params]
+
+        # 3. escape 포함한 SQL 값 포맷 함수
+        def sql_format(val):
+            if val is None:
+                return "NULL"
+            elif isinstance(val, (int, float)):
+                return str(val)
+            else:
+                # 문자열 escape 처리
+                escaped = str(val).replace("'", "''")
+                return f"'{escaped}'"
+
+        # 4. 각 ? 자리에 순서대로 대입
+        formatted_values = [sql_format(v) for v in values]
+        for val in formatted_values:
+            sql_template = sql_template.replace("?", val, 1)
+
+        return StringToken(data=String(sql_template), type=TokenType.STRING)

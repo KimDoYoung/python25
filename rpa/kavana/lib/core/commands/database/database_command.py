@@ -216,16 +216,10 @@ class DatabaseCommand(BaseCommand):
         db_commander.connect(**option_values)
 
     def _store_query_result(self, result, to_var, executor):
-        result_array = Array()
+        result_array = []
         for row in result:
-            converted = {k: TokenUtil.primitive_to_kavana(v) for k, v in row.items()}
-            row_map = HashMap(value=converted)
-            hashmap_token = HashMapToken(row_map)
-            hashmap_token.status = TokenStatus.EVALUATED
-            result_array.append(hashmap_token)
-
-        result_array_token = ArrayToken(result_array)
-        result_array_token.element_type = TokenType.HASH_MAP
-        result_array_token.type = TokenType.ARRAY
-        result_array_token.status = TokenStatus.EVALUATED
-        executor.set_variable(to_var, result_array_token)
+            converted = {k: v for k, v in row.items()}
+            row_token = TokenUtil.dict_to_hashmap_token(converted)
+            result_array.append(row_token)
+        result_token = TokenUtil.array_to_array_token(result_array)
+        executor.set_variable(to_var, result_token)

@@ -50,15 +50,27 @@ class HttpCommand(BaseCommand):
     ''' HTTP 명령어 해석'''
     OPTION_DEFINITIONS = {
         "url": {"required": True, "allowed_types": [TokenType.STRING]},
-        "headers": {"required": False, "allowed_types": [TokenType.INTEGER]},
+        "headers": {"required": False, "allowed_types": [TokenType.HASH_MAP]},
         "params": {"required": False, "allowed_types": [TokenType.HASH_MAP]},
         "body": {"required": False, "allowed_types": [TokenType.BOOLEAN]},
         "content_type": {"required": False, "allowed_types": [TokenType.STRING]},
         "verify_ssl": {"required": False, "allowed_types": [TokenType.BOOLEAN]},
         "timeout": {"default": 10, "allowed_types": [TokenType.INTEGER]},
-        "to_var": {"required": True, "allowed_types": [TokenType.STRING]},
+        "to_var": {"required": False, "allowed_types": [TokenType.STRING]},
+        "to_file": {"required": False, "allowed_types": [TokenType.STRING]},
+        "to_dir": {"required": False, "allowed_types": [TokenType.STRING]},
     }
     COMMAND_SPECS = {
+        "download": {
+            "keys": ["url", "headers", "to_file", "to_dir", "to_var"],
+            "overrides": {
+                "url": {"required": True},
+            },
+            "rules": {
+                "mutually_exclusive": [],
+                "required_together": []
+            }
+        },
         "get": {
             "keys": ["url", "headers", "params", "content_type", "verify_ssl", "timeout", "to_var"],
             "overrides": {
@@ -114,17 +126,18 @@ class HttpCommand(BaseCommand):
 
         try:
             manager = HttpManager(command=sub_command, **option_values, executor=executor)
-            response = manager.execute()
-            if response is None:
-                response = ""
-            var_name = option_values.get("to_var")
-            if var_name:
-                if isinstance(response, str):
-                    result_token = StringToken(data=String(response), type=TokenType.STRING)
-                elif isinstance(response, dict):
-                    result_token = TokenUtil.dict_to_hashmap_token(response)
-                else:
-                    raise KavanaHttpError(f"지원하지 않는 HTTP 응답 타입: {type(response)}")
-                executor.set_variable(var_name, result_token)            
+            manager.execute()
+            # response = manager.execute()
+            # if response is None:
+            #     response = ""
+            # var_name = option_values.get("to_var")
+            # if var_name:
+            #     if isinstance(response, str):
+            #         result_token = StringToken(data=String(response), type=TokenType.STRING)
+            #     elif isinstance(response, dict):
+            #         result_token = TokenUtil.dict_to_hashmap_token(response)
+            #     else:
+            #         raise KavanaHttpError(f"지원하지 않는 HTTP 응답 타입: {type(response)}")
+            #     executor.set_variable(var_name, result_token)            
         except KavanaHttpError as e:
             raise KavanaHttpError(f"HTTP `{sub_command}` 명령어 처리 중 오류 발생: {str(e)}") from e

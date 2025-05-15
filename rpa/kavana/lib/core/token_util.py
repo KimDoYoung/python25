@@ -2,12 +2,15 @@
 from datetime import date, datetime
 import re
 from typing import Any, List
+from lib.core.datatypes.application import Application
 from lib.core.datatypes.hash_map import HashMap
 from lib.core.datatypes.image import Image
 from lib.core.datatypes.kavana_datatype import Boolean, Float, Integer, KavanaDataType, NoneType, String
 from lib.core.datatypes.array import Array
 from lib.core.datatypes.point import Point
+from lib.core.datatypes.rectangle import Rectangle
 from lib.core.datatypes.region import Region
+from lib.core.datatypes.window import Window
 from lib.core.datatypes.ymd_time import Ymd, YmdTime
 from lib.core.exceptions.kavana_exception import DataTypeError, KavanaSyntaxError, KavanaValueError
 from lib.core.token import ArrayToken, HashMapToken, NoneToken, StringToken, Token, TokenStatus
@@ -362,3 +365,51 @@ class TokenUtil:
 
         result = ImageToken(data=image)
         return result
+    
+    @staticmethod
+    def token_to_python_primitive(token :Token) -> Any:
+        """토큰을 파이썬 기본값으로 변환"""
+        return TokenUtil.tokendata_to_python_primitive(token.data)
+    
+    @staticmethod
+    def tokendata_to_python_primitive(data: KavanaDataType) -> Any:
+        """KavanaDataType을 파이썬 기본값으로 변환"""
+        if isinstance(data, (Integer, Float, Boolean, String, NoneType)):
+            return data.value
+        elif isinstance(data, (Ymd, YmdTime)):
+            return data.value
+        elif isinstance(data, (Point, Region, Rectangle)):
+            return data.value
+        elif isinstance(data, Application):
+            return {
+                "pid" : data.pid,
+                "process_name" : data.process_name,
+                "path" : data.path
+        }
+        elif isinstance(data, Window):
+            return {
+                "title" : data.title,
+                "hwnd" : data.hwnd,
+                "class_name" : data.class_name
+        }
+        elif isinstance(data, Image):
+            return {
+                "path" : data.path,
+                "data" : data.data,
+                "height" : data.height,
+                "width" : data.width                    
+            }
+        elif isinstance(data, Array):
+            result = []
+            for item_token in data.value:
+                v = TokenUtil.token_to_python_primitive(item_token)
+                result.append(v)
+            return result
+        elif isinstance(data, HashMap):
+            result = {}
+            for key, value in data.value.items():
+                v = TokenUtil.token_to_python_primitive(value)
+                result[key] = v
+            return result
+        else:
+            raise KavanaValueError(f"TokenUtil. tokendata to primitive 지원하지 않는 데이터 타입입니다: {type(data)}")

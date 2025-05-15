@@ -6,6 +6,10 @@ from lib.core.command_preprocessor import CommandPreprocessor
 script = """
 MAIN
     CONST pi = 3.14
+    CONST age = 10
+    SET d = [{
+        "pid": age
+    }]
     SET i = (10 + 20) * 30
     SET f = 12.34
     SET s = "Hello"

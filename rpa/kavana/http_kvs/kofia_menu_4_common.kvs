@@ -1,13 +1,19 @@
+CONST DB_DIR = f"{$REPOSITORY_DIR}\\DB\\KOFIA" 
+CONST DB_NAME = f"{DB_DIR}\\kofia_menu_4.db"
+CONST DOWNLOAD_DIR = f"{$REPOSITORY_DIR}\\Download\\KOFIA\\menu_4"
+
+CALL DIR_CREATE(DB_DIR)
+CALL DIR_CREATE(DOWNLOAD_DIR)
+
 function create_db()
-    SET DB_DIR = f"{$REPOSITORY_DIR}\\DB\\KOFIA" 
     CALL DIR_CREATE(DB_DIR)
-    SET DB_NAME = f"{DB_DIR}\\kofia_menu_4.db"
     LOG_INFO f"DB_NAME: {DB_NAME}"
     DB connect path=DB_NAME
     DB execute sql="""
         CREATE TABLE IF NOT EXISTS menu_4 (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
-            seq INTEGER NOT NULL,
+            ui_seq INTEGER NOT NULL,
+            real_seq INTEGER NOT NULL,
             title TEXT,
             gubun TEXT,
             start_date TEXT,
@@ -21,8 +27,31 @@ function create_db()
             id INTEGER PRIMARY KEY AUTOINCREMENT,
             parent_id INTEGER NOT NULL,
             save_folder TEXT,
-            save_name TEXT
+            save_file_name TEXT
         )
     """    
+end_function
 
+function insert_data_to_db(data)
+    SET sql1 = """
+        INSERT INTO menu_4 (ui_seq, real_seq, title, gubun, start_date, end_date, summary)
+        VALUES (?, ?, ?, ?, ?, ?, ?)
+    """
+    SET sql = MAKE_SQL(sql1, data)
+    DB execute sql=sql
+    DB query sql="SELECT last_insert_rowid() as pid" to_var="last_id"
+    SET pid = TO_STR( last_id[0]["pid"] )
+    SET sql2 = """
+        INSERT INTO menu_4_attaches (parent_id, save_folder, save_file_name)
+        VALUES (?, ?, ?)
+    """
+    SET file_name = PATH_BASENAME(data["download_filepath"])
+    SET data2 = {
+        "parent_id": pid,
+        "save_folder": DOWNLOAD_DIR,
+        "save_file_name": file_name
+    }
+    SET sql = MAKE_SQL(sql2, data2)
+    DB execute sql=sql
+    DB commit
 end_function

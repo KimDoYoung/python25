@@ -1,5 +1,7 @@
 from typing import List
+from lib.core.datatypes.kavana_datatype import Float, Integer, String
 from lib.core.token import Token
+from lib.core.token_util import TokenUtil
 from lib.core.variable_manager import VariableManager
 class FunctionExecutor:
     def __init__(self, func_info, global_var_manager: VariableManager, arg_values: List[Token] ):
@@ -50,13 +52,7 @@ class FunctionExecutor:
             converted_args = [arg.data for arg in self.arg_values]    
             return func(*converted_args)
         
-        converted_args = [arg.data.value for arg in self.arg_values]    
+        # converted_args = [arg.data.value for arg in self.arg_values]    
+        converted_args = [TokenUtil.token_to_python_primitive(token) for token in self.arg_values]    
         return func(*converted_args)
     
-    def argument_evaluation(self, arg):
-        from lib.core.expr_evaluator import ExprEvaluator
-        """
-        함수 인수를 평가한다.
-        """
-        argEvaluator = ExprEvaluator(self, self.global_var_manager)
-        return argEvaluator.evaluate()

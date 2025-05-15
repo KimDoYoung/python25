@@ -67,7 +67,7 @@ class HtmlManager(BaseManager):
             return TokenUtil.string_to_string_token("")
 
         if otype == "text":
-            value = element.get_text(separator="\n", strip=True)
+            value = element.get_text(strip=True)
         elif otype == "html":
             value = element.decode_contents()
         elif otype == "outer":
