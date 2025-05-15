@@ -32,7 +32,7 @@ from lib.core.datatypes.kavana_datatype import Float, Integer, String
 from lib.core.exception_registry import ExceptionRegistry
 from lib.core.exceptions.kavana_exception import BreakException, CommandExecutionError, ContinueException, KavanaException
 from lib.core.expr_evaluator import ExprEvaluator
-from lib.core.token import ArrayToken, StringToken, Token, TokenStatus
+from lib.core.token import ArrayToken, HashMapToken, StringToken, Token, TokenStatus
 from lib.core.token_type import TokenType
 from lib.core.token_util import TokenUtil
 from lib.core.variable_manager import VariableManager
@@ -382,6 +382,10 @@ class CommandExecutor:
     def reset_parse_status(self, args: list[Token]):
         """토큰의 파싱 상태를 초기화"""
         for token in args:
-            if hasattr(token, "status"):
+            # if hasattr(token, "status"):
+            #     token.status = TokenStatus.PARSED
+            if isinstance(token, ArrayToken):
                 token.status = TokenStatus.PARSED
+            elif isinstance(token, HashMapToken):
+                 token.status = TokenStatus.PARSED
         return

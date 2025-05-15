@@ -12,7 +12,8 @@ class ConstantRegistry:
         """✅ `CONST` 정의 (이미 존재하면 오류 발생)"""
         name = name.upper()
         if name in cls._constants:
-            raise KavanaValueError(f"상수 {name}은 이미 정의되어 있습니다.")
+            # raise KavanaValueError(f"상수 {name}은 이미 정의되어 있습니다.")
+            return
         cls._constants[name] = value
 
     @classmethod
