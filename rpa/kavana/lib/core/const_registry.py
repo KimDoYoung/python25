@@ -1,3 +1,5 @@
+from typing import Optional
+from lib.core.exceptions.kavana_exception import KavanaValueError
 from lib.core.token import Token
 
 
@@ -10,12 +12,11 @@ class ConstantRegistry:
         """✅ `CONST` 정의 (이미 존재하면 오류 발생)"""
         name = name.upper()
         if name in cls._constants:
-            # raise ValueError(f"상수 {name}은 이미 정의되었습니다.")
-            return
+            raise KavanaValueError(f"상수 {name}은 이미 정의되어 있습니다.")
         cls._constants[name] = value
 
     @classmethod
-    def get(cls, name: str) -> Token:
+    def get(cls, name: str) -> Optional[Token]:
         """✅ 상수 값 가져오기 (없으면 None)"""
         return cls._constants.get(name)
 

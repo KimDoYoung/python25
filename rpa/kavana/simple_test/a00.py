@@ -6,19 +6,18 @@ from lib.core.command_preprocessor import CommandPreprocessor
 script = """
 MAIN
     for i in [1,2,3]
-        set a = [i+1, i+2]
+        if i == 1
+            print "i is 1"
+        end_if
+        for j in [1,2]
+            if j == 1
+                print "j is 1"
+            end_if
+           if j == 2
+               print "j is 2"
+           end_if
+        end_for
     end_for
-    set i = 1
-    while i < 3
-        set array = [i, i+1]
-        set i = i + 1
-    end_while
-    set b =  a + array
-    set sum = 0
-    for n in b
-        set sum = sum + n
-    end_for
-    print sum
 END_MAIN
 """
 #---------------------------
