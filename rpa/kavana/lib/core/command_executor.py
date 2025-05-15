@@ -32,7 +32,7 @@ from lib.core.datatypes.kavana_datatype import Float, Integer, String
 from lib.core.exception_registry import ExceptionRegistry
 from lib.core.exceptions.kavana_exception import BreakException, CommandExecutionError, ContinueException, KavanaException
 from lib.core.expr_evaluator import ExprEvaluator
-from lib.core.token import ArrayToken, StringToken, Token
+from lib.core.token import ArrayToken, StringToken, Token, TokenStatus
 from lib.core.token_type import TokenType
 from lib.core.token_util import TokenUtil
 from lib.core.variable_manager import VariableManager
@@ -98,8 +98,8 @@ class CommandExecutor:
                 for sub_command in command["try"]:
                     if sub_command["cmd"] == "RAISE":
                         # 명시적으로 RAISE 명령어를 수동 처리
-                        args = sub_command["args"]
-                        message_token = args[0]
+                        conditions = sub_command["args"]
+                        message_token = conditions[0]
                         message = message_token.data.value
                         raise RuntimeError(message)  # 또는 custom 예외
                     self.execute(sub_command)  # 일반 명령어는 그대로 실행
@@ -166,6 +166,10 @@ class CommandExecutor:
             while self.eval_express_boolean(condition):
                 try:
                     for sub_command in command["body"][1:]:
+                        # cmd가 SET 인 경우 status를 갖는 토큰을 parsed로 처리, 안그러면 계속 처음값을 유지함.
+                        if sub_command["cmd"] == "SET":
+                            self.reset_parse_status(sub_command["args"])
+
                         self.execute(sub_command)
                 except ContinueException:
                     continue  # 다음 반복으로 이동
@@ -175,9 +179,9 @@ class CommandExecutor:
 
         # ✅ FOR 문 처리
         if cmd == "FOR_BLOCK":
-            args = command["body"][0]["args"]
-            if self.find_index(args, TokenType.TO) != -1: # for i = 1 to 10 step 2
-                loop_var, start_value, end_value, step_value = self.parse_for_args(args)
+            conditions = command["body"][0]["args"]
+            if self.find_index(conditions, TokenType.TO) != -1: # for i = 1 to 10 step 2
+                loop_var, start_value, end_value, step_value = self.parse_for_args(conditions)
                 current_value = start_value
 
                 while current_value <= end_value:
@@ -192,27 +196,20 @@ class CommandExecutor:
                     except BreakException:
                         break  # 반복문 종료
                     current_value += step_value
-            elif  self.find_index(args, TokenType.IN) != -1: # for i in range(1,10)
-                loop_var_name, iterable = self.parse_for_in_args(args)
+            elif  self.find_index(conditions, TokenType.IN) != -1: # for i in range(1,10)
+                loop_var_name, iterable = self.parse_for_in_args(conditions)
                 for t in iterable:
                     if isinstance(t, Token):
                         loop_var_token = Token(data=t.data, type=t.type)
-                    elif isinstance(t, int):
-                        loop_var_token = Token(data=Integer(t), type=TokenType.INTEGER)
-                    elif isinstance(t, str):
-                        loop_var_token = StringToken(data=String(t), type=TokenType.STRING)
-                    elif isinstance(t, float):
-                        loop_var_token = Token(data=Float(t), type=TokenType.FLOAT)
-                    elif isinstance(t, list):
-                        loop_var_token = ArrayToken(data=t, type=TokenType.ARRAY)
-                    elif isinstance(t, dict):
-                        loop_var_token = TokenUtil.dict_to_hashmap_token(t)
                     else:
                         raise CommandExecutionError(f"FOR IN 문에서 지원하지 않는 타입(Not Iterable)입니다: {type(t)}")
 
                     self.variable_manager.set_variable(loop_var_name, loop_var_token)
                     try:
                         for sub_command in command["body"][1:]:
+                            # cmd가 SET 인 경우 status를 갖는 토큰을 parsed로 처리
+                            if sub_command["cmd"] == "SET":
+                                self.reset_parse_status(sub_command["args"])
                             self.execute(sub_command)
                     except ContinueException:
                         continue  # 다음 반복으로 이동
@@ -381,3 +378,10 @@ class CommandExecutor:
     def set_db_commander(self, db_name, db_commander: DbCommander):
         """DB Commander 설정"""
         return self.variable_manager.set_db_commander(db_name, db_commander)
+    
+    def reset_parse_status(self, args: list[Token]):
+        """토큰의 파싱 상태를 초기화"""
+        for token in args:
+            if hasattr(token, "status"):
+                token.status = TokenStatus.PARSED
+        return
