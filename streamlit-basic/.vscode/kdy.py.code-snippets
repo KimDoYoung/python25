@@ -1,0 +1,33 @@
+{
+  "file comments": {
+    "prefix": "my_filecomments",
+    "body": [
+      "# $TM_FILENAME_BASE.py",
+      "\"\"\"",
+      "모듈 설명: ",
+      "\t- ${1:  설명을 넣으시오}",
+      "주요 기능:",
+      "\t- ${2:  기능을 넣으시오}",
+      "",
+      "작성자: 김도영",
+      "작성일: $CURRENT_YEAR-$CURRENT_MONTH-$CURRENT_DATE",
+      "버전: 1.0",
+      "\"\"\""
+    ]
+  },
+"command에서의 raise":{
+ 	"prefix":"raise_command",
+	"body":[
+	"executor.raise_command(f\" 실패: {str(e)} \")"
+	],
+	"description":"command에서의 raise"
+},
+"command에서의 log":{
+ 	"prefix":"log_command",
+	"body":[
+	"executor.log_command(\"ERROR\", f\"$1\")"
+	],
+	"description":"command에서의 log"
+}   
+}
+
