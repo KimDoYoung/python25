@@ -127,8 +127,8 @@ def insert_to_table(conn, dict_data, content, textonly):
     """
     # SQL 삽입 명령
     insert_sql = """
-    INSERT OR IGNORE INTO kind_ca (cd, title, company_name, date_time, chechulin, uploader, stkcode, content,textonly)
-    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
+    INSERT OR IGNORE INTO kind_ca (cd, title, company_name, date_time, chechulin, uploader, stkcode, textonly)
+    VALUES (?, ?, ?, ?, ?, ?, ?, ?)
     """
     
     try:
@@ -142,7 +142,7 @@ def insert_to_table(conn, dict_data, content, textonly):
             dict_data["chechulin"],
             dict_data["uploader"],  # 딕셔너리에서 uploader 직접 사용
             dict_data["stkcode"],    # 딕셔너리에서 stkcode 직접 사용
-            content,
+            # content,
             textonly
             
         ))

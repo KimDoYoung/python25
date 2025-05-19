@@ -24,3 +24,14 @@
 ## run_kindscrap.bat
 
 - run.sh에 해당하는 윈도우  batch
+
+## 빌드(버젼업)
+- venv 사용됨
+- setting.py에 버젼정보
+- which python
+- which pyinstaller
+- pyinstaller main.py
+
+## history
+
+- 2025-05-19 v1.1 : content를 db에서 제거함. (용량이 너무 커서)

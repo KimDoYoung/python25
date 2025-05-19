@@ -17,10 +17,10 @@ import os
 class Settings:
     def __init__(self):
         
-        self.VERSION = '1.0'
+        self.VERSION = '1.1'
 
         # PROFILE_NAME 환경변수를 읽어옴
-        self.PROFILE_NAME = os.getenv('AssetBat_Mode', 'real')
+        self.PROFILE_NAME = os.getenv('Kindscrap_Mode', 'real')
         load_dotenv(dotenv_path=f'.env.{self.PROFILE_NAME}')
         
         # DB 설정
