@@ -2,7 +2,7 @@
 cd /d %~dp0
 
 :: 실행 파일 이름
-set EXE_NAME=kindscrap_1.0.exe
+set EXE_NAME=kindscrap_1.2.exe
 
 :: 기본값 설정 (어제 날짜 구하기)
 for /f "tokens=2 delims==" %%I in ('"wmic os get localdatetime /value"') do set DATETIME=%%I

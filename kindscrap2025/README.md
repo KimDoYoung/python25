@@ -35,3 +35,5 @@
 ## history
 
 - 2025-05-19 v1.1 : content를 db에서 제거함. (용량이 너무 커서)
+- 2025-05-19 v1.2 : content를 db에서 제거함. (용량이 너무 커서), text_only도 제외, stkcode만 추출, 시간save
+                  

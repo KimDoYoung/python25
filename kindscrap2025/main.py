@@ -127,8 +127,8 @@ def insert_to_table(conn, dict_data, content, textonly):
     """
     # SQL 삽입 명령
     insert_sql = """
-    INSERT OR IGNORE INTO kind_ca (cd, title, company_name, date_time, chechulin, uploader, stkcode, textonly)
-    VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+    INSERT OR IGNORE INTO kind_ca (cd, title, company_name, date_time, chechulin, uploader, stkcode)
+    VALUES (?, ?, ?, ?, ?, ?, ?)
     """
     
     try:
@@ -143,7 +143,7 @@ def insert_to_table(conn, dict_data, content, textonly):
             dict_data["uploader"],  # 딕셔너리에서 uploader 직접 사용
             dict_data["stkcode"],    # 딕셔너리에서 stkcode 직접 사용
             # content,
-            textonly
+            # textonly
             
         ))
         conn.commit()
@@ -358,30 +358,31 @@ def fetch_iframe_content(conn, dict_data): # key, cd, title
         dict_data["stkcode"] = stkcode
 
         # Step 2: iframe 로드 대기
-        WebDriverWait(driver, 10).until(
-            EC.presence_of_element_located((By.CSS_SELECTOR, "iframe#docViewFrm"))
-        )
-        iframe = driver.find_element(By.CSS_SELECTOR, "iframe#docViewFrm")
+        # WebDriverWait(driver, 10).until(
+        #     EC.presence_of_element_located((By.CSS_SELECTOR, "iframe#docViewFrm"))
+        # )
+        # iframe = driver.find_element(By.CSS_SELECTOR, "iframe#docViewFrm")
 
         # Step 3: iframe 전환
-        driver.switch_to.frame(iframe)
+        # driver.switch_to.frame(iframe)
 
         # Step 4: iframe 내부 HTML 가져오기
-        WebDriverWait(driver, 10).until(
-            lambda d: d.execute_script("return document.readyState") == "complete"
-        )
-        iframe_content = driver.page_source
+        # WebDriverWait(driver, 10).until(
+        #     lambda d: d.execute_script("return document.readyState") == "complete"
+        # )
+        # iframe_content = driver.page_source
 
         # Step 5: 파일로 저장
-        comment = f"<!-- title: {title} -->\n"
-        comment = comment + f"<!-- company info: {company_info} -->\n"
-        iframe_content = comment + iframe_content
+        # comment = f"<!-- title: {title} -->\n"
+        # comment = comment + f"<!-- company info: {company_info} -->\n"
+        # iframe_content = comment + iframe_content
         
-        textonly = BeautifulSoup(iframe_content, 'html.parser').get_text(strip=True)
-        cleaned_text = " ".join(textonly.split())
+        # textonly = BeautifulSoup(iframe_content, 'html.parser').get_text(strip=True)
+        # cleaned_text = " ".join(textonly.split())
             
         if not is_exists_in_table(conn, cd):
-            insert_to_table(conn, dict_data, iframe_content, cleaned_text)
+            # insert_to_table(conn, dict_data, iframe_content, cleaned_text)
+            insert_to_table(conn, dict_data, None, None)
     except Exception as e:
         logger.error(f"FAIL-{key}-{cd}: iframe 내용을 가져오는 중 오류 발생 - {e}")
 
