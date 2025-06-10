@@ -56,3 +56,6 @@ def extract_amounts(text: str) -> dict:
 4. train.py 실행하여 재학습
 - 💡 이 부분은 공식 EasyOCR 레포를 clone 후, training 디렉토리에서 조정할 수 있습니다.
 - 학습에 GPU 필요.
+
+## 한줄씩 잘라내서 tesseract로 처리하는 것
+까먹어 버렸네... 어떻게 했더라...

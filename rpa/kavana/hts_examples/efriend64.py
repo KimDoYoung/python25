@@ -283,6 +283,7 @@ MAIN
     LOG_INFO "--------------------------------------------"
     JUST check_already_running_and_quit()
     RPA open_app from_var="efriend", process_name=process_name, focus=True
+    SET started = True
     RPA wait seconds=10
     RPA wait_image area=인증서영역 , from_file=인증서창_확인 after="wait:5s" timeout=60*3
     LOG_INFO "인증서창 확인됨..."
@@ -364,7 +365,7 @@ MAIN
     ON_EXCEPTION
         LOG_ERROR "예외 발생"
         LOG_ERROR f">>> {$exception_message} exit code: {$exit_code}"
-        JUST Close_efriend_hts()
+        JUST close_efriend_hts()
     END_EXCEPTION
 END_MAIN
 """
