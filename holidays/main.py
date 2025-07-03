@@ -16,7 +16,7 @@ def get_holiday_data(year, month):
         'solYear': year,
         'solMonth': f"{month:02d}"  # 월을 2자리로 포맷
     }
-    
+    # params ={'serviceKey' : API_KEY, 'solYear' : sYear, 'solMonth' : sMonth }
     try:
         response = requests.get(url, params=params)
         response.raise_for_status()
