@@ -1,5 +1,0 @@
-//가장 작은 코드
-main
-    PRINT("hello\n")
-    print("123")
-end_main

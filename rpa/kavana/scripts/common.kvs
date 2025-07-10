@@ -1,5 +1,0 @@
-// common.kvs
-CONST name = "홍길동"
-function plus(a,b)
-    c = a + b
-end_function

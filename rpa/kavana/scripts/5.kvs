@@ -1,8 +1,0 @@
-main
-    // 주석처리...
-    set startIndex = 5 - (3 + 1)  // 문장 뒤에 주석처리 1
-    set len = length("A") + 1 //2
-    set str = "K" + "DY"
-    set name = substr(str,startIndex,len)
-    PRINT "{name}"
-end_main

@@ -70,6 +70,7 @@ def split_lines(image_path, output_dir='lines'):
 base_dir = os.path.expanduser("~/Pictures/OCR_TEST")
 print(f"Base directory is set to: {base_dir}")
 image_path = os.path.join(base_dir, f"image_1.png")
+image_path = os.path.join(base_dir, f"1.png")
 output_dir = os.path.join(base_dir, "lines")
 split_lines(image_path, output_dir=output_dir)
 
