@@ -147,7 +147,7 @@ def insert_to_table(conn, dict_data, content, textonly):
             
         ))
         conn.commit()
-        logger.info(f"Inserted: {dict_data['cd']}")
+        logger.info(f"Inserted: {dict_data['cd']}:{dict_data['date_time']}, {dict_data['title']}, {dict_data['company_name']}, {dict_data['chechulin']}")
     except sqlite3.Error as e:
         logger.error(f"Error inserting data: {e}")
     
@@ -446,6 +446,7 @@ if __name__ == "__main__":
             logger.info(f"{db_name} SFTP로 전송완료")
         except Exception as e:
             logger.error(f"❌ Error: {e}")
+            exit(1)
         finally:
             if driver:
                 driver.quit()    

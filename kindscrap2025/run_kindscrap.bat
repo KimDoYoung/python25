@@ -2,7 +2,7 @@
 cd /d %~dp0
 
 :: 실행 파일 이름
-set EXE_NAME=kindscrap_1.2.exe
+set EXE_NAME=kindscrap_1.3.exe
 
 :: 기본값 설정 (어제 날짜 구하기)
 for /f "tokens=2 delims==" %%I in ('"wmic os get localdatetime /value"') do set DATETIME=%%I
@@ -23,5 +23,14 @@ if "%ARG2%"=="" set ARG2=%YESTERDAY%
 if "%ARG3%"=="" set ARG3=all
 
 :: 실행
-echo running: %EXE_NAME% %ARG1% %ARG2% %ARG3%
+echo Running: %EXE_NAME% %ARG1% %ARG2% %ARG3%
 "%EXE_NAME%" %ARG1% %ARG2% %ARG3%
+set EXIT_CODE=%ERRORLEVEL%
+
+:: 실패 시 재시도
+if not "%EXIT_CODE%"=="0" (
+    echo ❌ 작업 실패. 10초 후 재시도합니다...
+    timeout /t 10 /nobreak
+    echo 🔁 재시도 중...
+    "%EXE_NAME%" %ARG1% %ARG2% %ARG3%
+)

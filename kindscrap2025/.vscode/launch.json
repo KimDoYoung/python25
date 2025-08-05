@@ -8,12 +8,13 @@
             "program": "${file}",
             "console": "integratedTerminal",
             "env": {
+                "Kindscrap_Mode": "fedora",
                 "PYTHONPATH": "${workspaceFolder}"
             },
             "args": [
-                "2025-05-19",
-                "2025-05-19",
-                "1"
+                "2025-08-01",
+                "2025-08-01",
+                "all"
             ]
         }
     ]

@@ -17,7 +17,7 @@ import os
 class Settings:
     def __init__(self):
         
-        self.VERSION = '1.2'
+        self.VERSION = '1.3'
 
         # PROFILE_NAME 환경변수를 읽어옴
         self.PROFILE_NAME = os.getenv('Kindscrap_Mode', 'real')
