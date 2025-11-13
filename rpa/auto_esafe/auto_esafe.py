@@ -54,7 +54,7 @@ def sftp_upload_files(filenames):
     SFTP_USER = Config.SFTP_USER
     SFTP_PASS = Config.SFTP_PASS
     SFTP_REMOTE_DIR = Config.SFTP_REMOTE_DIR  # 예: "/HDD1/esafe"
-    
+    log.info(f"SFTP 서버 정보: {SFTP_HOST}:{SFTP_PORT}, 사용자: {SFTP_USER}, 원격 디렉토리: {SFTP_REMOTE_DIR}")
     try:
         # SFTP 연결 설정
         transport = Transport((SFTP_HOST, SFTP_PORT))  # 기본 SFTP 포트 22
@@ -552,7 +552,76 @@ def work_500086(is_pm:bool=False) -> str:
     log.info(f"파일 저장 경로(8): {saved_file_path}")    
     warning_and_alert_check()
     time.sleep(1)
-    return saved_file_path    
+    return saved_file_path
+
+
+def work_500874(is_pm:bool=False) -> str:
+    ''' 500874 외국 납수세액조회'''
+    log.info("화면번호 입력 500874 입력 후 엔터")
+    mouse_move_and_click(1760, 50, wait_seconds=1)
+    pyautogui.hotkey('ctrl', 'a')  # 전체 선택
+    pyautogui.write("500874")
+    pyautogui.press('enter')
+    time.sleep(5)
+    
+    # 먼저 download_combo 클릭
+    region = get_region(RegionName.LEFT_BOTTOM)
+    move_and_click(pngimg('download_combo'),  region=region, grayscale=True)
+    time.sleep(3)
+    # 펀드전체 체크
+    region = get_region(RegionName.RIGHT_TOP)
+    find_and_click(pngimg('fund_all_checkbox'), region=region, grayscale=True)
+    i = 0
+    while True:
+        r = wait_for_image(pngimg('checked_box'), region=region, timeout=3, confidence=0.9)
+        if r is not None:
+            log.info("외국 납수세액조회: 펀드전체 체크 완료")
+            break
+        log.info("펀드전체 체크 재시도")
+        pyautogui.click()
+        # find_and_click(pngimg('fund_all_checkbox'), region=region, grayscale=True)
+        i += 1
+        if i > 5:
+            log.error("외국 납수세액조회: 펀드전체 체크 실패")
+            break
+
+    # 조회 버튼 클릭
+    region = get_region(RegionName.RIGHT_TOP)
+    find_and_click(pngimg('query'), region=region, wait_seconds=5)
+    # wait_for_image(pngimg('query_finish_chong'), region=region)
+    region = get_region(RegionName.RIGHT_BOTTOM)
+    wait_for_image(pngimg('query_finish_gun'), region=(1818,955,100,30))
+    time.sleep(3)
+    region = get_region(RegionName.CENTER)
+    find_and_press_key(pngimg('alert_icon'), 'space', region=region, grayscale=True, ignoreNotFound=True, timeout=60)    
+    # 다운로드 옵션 클릭
+    region = get_region(RegionName.LEFT_BOTTOM)
+    find_and_click(pngimg('download_combo'), region=region, grayscale=True)
+    press_keys(['down','down','down', 'enter'], wait_seconds=5)    
+    
+    # Save As 파일명 입력
+    region = get_region(RegionName.LEFT)
+    file_name = wait_for_image(pngimg('file_name'), grayscale=True, region=region)
+    if not file_name:
+        raise Exception("파일 이름 입력창을 찾을 수 없습니다.")
+    
+    x, y = get_point_with_location(file_name, Direction.RIGHT, 100)
+    mouse_move_and_click(x, y, wait_seconds=1)
+    #-------- Rename file------------
+    default_filename = get_text_from_input_field()
+    screen_no = "500874"
+    if is_pm:
+        screen_no = "500874N"
+    saved_file_path = os.path.join(Config.SAVE_AS_PATH1, f"{todayYmd()}_{screen_no}.{default_filename.rsplit('.', 1)[-1]}")
+    put_keys(f'H:ctrl+a | P:delete | W:"{saved_file_path}" | P:enter')
+    time.sleep(1)
+    find_and_press_key(pngimg('alert_icon'), 'space', region=region, grayscale=True, ignoreNotFound=True, timeout=60)        
+    
+    log.info(f"파일 저장 경로(8): {saved_file_path}")    
+    warning_and_alert_check()
+    time.sleep(1)
+    return saved_file_path 
+
 
 def warning_and_alert_check():
     '''저장enter이후 경고창 또는 alert가 나오면 이를 제거한다'''
@@ -658,12 +727,12 @@ def esafe_auto_work():
     filename = work_500068_tab1()
     saved_files.append(filename)
     log.info(">>> 500068 기준가1 종료")
-    # #-------------------------기준가2
+    #-------------------------기준가2
     log.info(">>> 500068 기준가2 작업 시작")
     files = work_500068_tab2()
     saved_files.extend(files)
     log.info(">>> 500068 기준가2 작업 종료")
-    #-------------------------500038 분배금 내역통보
+    # -------------------------500038 분배금 내역통보
     log.info(">>> 500038 분배금 내역통보 작업 시작")
     tabClose = close_all_tabs_via_context_menu((460,85), pngimg('context_menu'), pngimg('all_tab_close'))
     if not tabClose:
@@ -692,7 +761,13 @@ def esafe_auto_work():
     filename = work_500086()
     saved_files.append(filename)
     log.info(">>> 500086 등록잔량서비스 종료")
-    
+    #-------------------------500087(외국 납수세액조회) 2025.11.13 추가
+    log.info(">>> 500874 외국 납수세액조회 시작")
+    close_all_tabs_via_context_menu((460,85), pngimg('context_menu'), pngimg('all_tab_close'))
+    filename = work_500874()
+    saved_files.append(filename)
+    log.info(">>> 500874 외국 납수세액조회 종료")
+
     # 프로그램 종료
     mouse_move_and_click(1901, 16, wait_seconds=1)
     time.sleep(2)

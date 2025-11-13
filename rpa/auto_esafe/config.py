@@ -19,7 +19,7 @@ load_dotenv(env_path())
 
 class Config:
     """환경 설정 및 상수 관리"""
-    VERSION = "1.1.2"
+    VERSION = "1.1.3"
 
     # 프로그램 실행 경로
     PROGRAM_PATH = os.getenv("PROGRAM_PATH")
@@ -46,7 +46,8 @@ class Config:
     SFTP_REMOTE_DIR = os.getenv("SFTP_REMOTE_DIR")
 
     #GODATA api key
-    GODATA_API_KEY = os.getenv("GODATA_API_KEY")    
+    GODATA_API_KEY = os.getenv("GODATA_API_KEY")
+    HOLIDAY_FILE = os.getenv("HOLIDAY_FILE")
 
     @classmethod
     def get_log_file_path(cls):

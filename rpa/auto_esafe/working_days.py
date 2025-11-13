@@ -1,9 +1,11 @@
 from datetime import datetime, timedelta
+import os
 import time
 import requests
 import xml.etree.ElementTree as ET
 from config import Config
-
+from logger import Logger
+log = Logger()
 GODATA_URL = 'http://apis.data.go.kr/B090041/openapi/service/SpcdeInfoService/getRestDeInfo'
 
 def get_holiday_list(year: int, month: int):
@@ -15,7 +17,14 @@ def get_holiday_list(year: int, month: int):
     response = requests.get(GODATA_URL, params=params, verify=False)
 
     if response.status_code != 200:
-        print(f"❌ OpenAPI 요청 실패: {response.status_code}")
+        print(f"❌ OpenAPI 요청 실패: {response.status_code}, {response.text}")
+        log.error(f"OpenAPI 요청 실패: {response.status_code}, {response.text}")
+        holiday_file = Config.HOLIDAY_FILE
+        if holiday_file and os.path.exists(holiday_file):
+            with open(holiday_file, 'r', encoding='utf-8') as f:
+                holidays = [line.strip() for line in f if line.strip()]
+            log.info(f"로컬 공휴일 파일에서 공휴일 목록 로드: {holiday_file}")    
+            return holidays
         return []
 
     # XML 파싱
