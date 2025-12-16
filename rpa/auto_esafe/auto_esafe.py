@@ -258,44 +258,7 @@ def work_500068_tab2() -> list:
     found_image = find_and_press_key(pngimg('error_icon'), 'space', region=region, ignoreNotFound=True, timeout=5)
     if found_image:
         log.error("기준가 tab2 조회 오류 발생")
-        return []
-    # 파일 다운로드 클릭
-    # region = get_region(RegionName.LEFT_BOTTOM)
-    # move_and_click(pngimg('download_combo'), region=region, grayscale=True)
-    # 다운로드 옵션 클릭
-    # press_keys(['down','down','enter'], wait_seconds=2)
-    # found_image = find_and_press_key(pngimg('error_icon'), 'space', region=region, ignoreNotFound=True, timeout=5)
-    # if found_image:
-    #     log.error("기준가 tab2 저장시 오류")
-    #     return []    
-    # # 파일명 입력
-    # file_name = wait_for_image(pngimg('file_name'), grayscale=True)
-    # if not file_name:
-    #     raise Exception("파일 이름 입력창을 찾을 수 없습니다.")
-    
-    # x, y = get_point_with_location(file_name, Direction.RIGHT, 100)
-    # mouse_move_and_click(x, y, wait_seconds=1)
-
-    # #-------- Rename file------------
-    # default_filename = get_text_from_input_field()
-    # screen_no = "500068_T2"
-    # saved_file_path = os.path.join(Config.SAVE_AS_PATH1, f"{todayYmd()}_{screen_no}.{default_filename.rsplit('.', 1)[-1]}")
-    # put_keys(f'H:ctrl+a | P:delete | W:"{saved_file_path}"')
-    # time.sleep(1)
-    # #--------------------------------
-    # pyautogui.press('enter')
-    # log.info(f"CSV 파일 저장 경로(기준가2) : {saved_file_path}")
-    # filenames.append(saved_file_path)
-
-    # # warning과 alert체크
-    # warning_and_alert_check()
-    # time.sleep(5)
-    # region = get_region(RegionName.CENTER)
-    # find_and_press_key(pngimg('alert_icon'), 'space', region=region, grayscale=True, ignoreNotFound=True, timeout=120)    
-    # time.sleep(3)
-    # log.info('안전장치 alert_icon.을 못 발견했었을 때를 위해서')
-    # move_and_press(800, 10, 'space', wait_seconds=1)
-    
+        return []   
 
     # excel 저장
     region = get_region(RegionName.LEFT_BOTTOM)
