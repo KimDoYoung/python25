@@ -10,7 +10,7 @@ from datetime import datetime, timedelta
 from path_utils import env_path, image_path, pngimg
 from rpa_exceptions import CertiError, HolidayError
 from rpa_misc import get_text_from_input_field
-from rpa_utils import *
+from rpa_utils import get_region, RegionName, find_and_click, mouse_move_and_click, find_and_press_key, wait_for_image, get_point_with_location, Direction, put_keys, move_and_click, move_and_press, press_keys, get_scale_factor
 from rpa_process import is_process_running, kill_process, maximize_window
 from ftplib import FTP
 from paramiko import Transport, SFTPClient
@@ -195,7 +195,7 @@ def work_500068_tab1():
     find_and_click(pngimg('query'), region=region, wait_seconds=3)
 
     # 조회 완료 확인
-    query_finish_check = wait_for_image(pngimg('query_finish_gun'), region=(1818,955,84,30), timeout=(60*10))
+    wait_for_image(pngimg('query_finish_gun'), region=(1818,955,84,30), timeout=(60*10))
     time.sleep(10)
 
     # 다운로드 옵션 클릭
@@ -252,8 +252,7 @@ def work_500068_tab2() -> list:
     region = get_region(RegionName.RIGHT_TOP)
     move_and_click(pngimg('query'), region=region, wait_seconds=3)
     # 기준가 조회 체크까지 기다림
-    # query_finish_check = wait_for_image(pngimg('query_finish_check'), region=region, timeout=120)
-    query_finish_check = wait_for_image(pngimg('query_finish_gun'), region=(1818,955,84,30), timeout=(60*10))
+    wait_for_image(pngimg('query_finish_gun'), region=(1818,955,84,30), timeout=(60*10))
     time.sleep(10)
     found_image = find_and_press_key(pngimg('error_icon'), 'space', region=region, ignoreNotFound=True, timeout=5)
     if found_image:
@@ -765,7 +764,7 @@ def work_500068_tab1_pm():
     find_and_click(pngimg('query'), region=region, wait_seconds=3)
 
     # 조회 완료 확인
-    query_finish_check = wait_for_image(pngimg('query_finish_gun'), region=(1818,955,84,30), timeout=(60*10))
+    wait_for_image(pngimg('query_finish_gun'), region=(1818,955,84,30), timeout=(60*10))
     time.sleep(10)
     move_and_press(800, 10, 'space', wait_seconds=1)
     # 다운로드 옵션 클릭
