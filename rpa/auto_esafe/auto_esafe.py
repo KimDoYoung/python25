@@ -10,13 +10,13 @@ from datetime import datetime, timedelta
 from path_utils import env_path, image_path, pngimg
 from rpa_exceptions import CertiError, HolidayError
 from rpa_misc import get_text_from_input_field
-from rpa_utils import *
+from rpa_utils import find_and_click, find_and_press_key, mouse_move_and_click, get_region, RegionName, Direction, get_point_with_location, put_keys, press_keys, move_and_click, move_and_press, wait_for_image, get_scale_factor
 from rpa_process import is_process_running, kill_process, maximize_window
 from ftplib import FTP
 from paramiko import Transport, SFTPClient
 from PIL import Image, ImageDraw, ImageFont
 
-from working_days import get_prev_working_day, get_today, isHoliday,  todayYmd
+from working_days import get_prev_working_3day, get_prev_working_day, get_today, isHoliday,  todayYmd
 from excel_utils import excel_to_csv
 
 # Logger 인스턴스 생성
@@ -367,6 +367,8 @@ def work_500038(prev_working_day: str) -> str:
 def work_800008(prev_working_day: str) -> str:
     '''800008 종목발행현황'''
     today_ymd = datetime.now().strftime("%Y%m%d")
+    # one_week_age = (datetime.now() - timedelta(days=7)).strftime("%Y%m%d")
+    log.info(f"오늘 날짜: {today_ymd}, -3 영업일  날짜: {prev_working_day}")
     
     log.info("화면번호 입력 800008 입력 후 엔터")
     mouse_move_and_click(1760, 50, wait_seconds=1)
@@ -375,18 +377,37 @@ def work_800008(prev_working_day: str) -> str:
     pyautogui.press('enter')
     time.sleep(5)
 
-    mouse_move_and_click(459, 136, wait_seconds=1)
+    # mouse_move_and_click(459, 136, wait_seconds=1)
+    mouse_move_and_click(464, 136, wait_seconds=1)
     for _ in range(10):
         pyautogui.press('up')
     pyautogui.press('down')
     pyautogui.press('down')
     pyautogui.press('enter')
-    mouse_move_and_click(951, 190, wait_seconds=1)
+    #--------------------설립일/발행일-----
+    # mouse_move_and_click(951, 190, wait_seconds=1)
+    mouse_move_and_click(980, 190, wait_seconds=1)
     pyautogui.hotkey('ctrl', 'a') # 전체 선택
-    pyautogui.write(prev_working_day)         
-    mouse_move_and_click(1065, 190, wait_seconds=1)
+    # pyautogui.write(prev_working_day)         
+    pyautogui.write(prev_working_day)
+    time.sleep(1)
+    # mouse_move_and_click(1065, 190, wait_seconds=1)
+    mouse_move_and_click(1108, 190, wait_seconds=1)
     pyautogui.hotkey('ctrl', 'a') # 전체 선택
     pyautogui.write(today_ymd)         
+    time.sleep(1)
+    #--------------------종목등록일-----
+    mouse_move_and_click(980, 211, wait_seconds=1)
+    pyautogui.hotkey('ctrl', 'a') # 전체 선택
+    pyautogui.write(prev_working_day)
+    time.sleep(1)
+    # mouse_move_and_click(1065, 190, wait_seconds=1)
+    mouse_move_and_click(1108, 211, wait_seconds=1)
+    pyautogui.hotkey('ctrl', 'a') # 전체 선택
+    pyautogui.write(today_ymd)         
+    time.sleep(1)
+
+
     # 파일 다운로드 버튼 클릭
     region = get_region(RegionName.LEFT_BOTTOM)
     find_and_click(pngimg('download_combo'), region=region, grayscale=True, wait_seconds=2)
@@ -700,16 +721,19 @@ def esafe_auto_work():
     tabClose = close_all_tabs_via_context_menu((460,85), pngimg('context_menu'), pngimg('all_tab_close'))
     if not tabClose:
         mouse_move_and_click(493, 89, wait_seconds=2)
-            
+    #-1전영업일            
     prev_working_day = get_prev_working_day(*get_today())
-    log.info("이전 영업일: " + prev_working_day)
+    #-3전영업일
+    
+    log.info("-1 영업일전: " + prev_working_day)
     filename = work_500038(prev_working_day)
     saved_files.append(filename)
     log.info(">>> 500038 분배금 내역통보 작업 종료")
     #-------------------------800008종목발행현황
     log.info(">>> 800008 종목발행현황 작업 시작")
+    prev_working_3day = get_prev_working_3day(*get_today())
     close_all_tabs_via_context_menu((460,85), pngimg('context_menu'), pngimg('all_tab_close'))
-    filename = work_800008(prev_working_day)
+    filename = work_800008(prev_working_3day)
     saved_files.append(filename)
     log.info(">>> 800008 분배금 내역통보 작업 종료")
     #-------------------------800100 일자별 일정현황

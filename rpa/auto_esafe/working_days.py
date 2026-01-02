@@ -55,6 +55,27 @@ def get_prev_working_day(year: int, month: int, day: int):
             prev_day -= timedelta(days=1)  # 하루 전으로 이동
         else:
             return prev_str  # 영업일이면 해당 날짜 반환
+        
+def get_prev_working_3day(year: int, month: int, day: int):
+    """
+    특정 날짜(year, month, day) 이전의 영업일3일 전 날짜를 찾음.
+    """
+    target_date = datetime(year, month, day)  # 지정된 날짜
+    prev_day = target_date - timedelta(days=1)  # 하루 전부터 검사 시작
+
+    # 현재 & 이전 달의 공휴일 정보 가져오기
+    listHoliday = get_holiday_list(year, month) + get_holiday_list(*get_prev_year_month(year, month))
+
+    working_day_count = 0  # 영업일 카운트
+    while True:
+        prev_str = prev_day.strftime("%Y%m%d")  # yyyymmdd 형식 변환
+        if prev_day.weekday() in [5, 6] or prev_str in listHoliday:  # 토요일, 일요일, 공휴일 체크
+            prev_day -= timedelta(days=1)  # 하루 전으로 이동
+        else:
+            working_day_count += 1  # 영업일 카운트 증가
+            if working_day_count == 3:  # 영업일 3개를 찾으면
+                return prev_str  # 3영업일 전 날짜 반환
+            prev_day -= timedelta(days=1)  # 하루 전으로 이동        
 
 def get_today():
     """현재 연도, 월, 일을 반환"""
