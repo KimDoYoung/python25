@@ -16,7 +16,7 @@ from ftplib import FTP
 from paramiko import Transport, SFTPClient
 from PIL import Image, ImageDraw, ImageFont
 
-from working_days import get_prev_working_3day, get_prev_working_day, get_today, isHoliday,  todayYmd
+from working_days import get_prev_working_3day, get_prev_working_day, get_today, isHoliday,  todayYmd, get_prev_2month_day
 from excel_utils import excel_to_csv
 
 # Logger 인스턴스 생성
@@ -364,7 +364,7 @@ def work_500038(prev_working_day: str) -> str:
     
     return saved_file_path
 
-def work_800008(prev_working_day: str) -> str:
+def work_800008(prev_working_day: str, prev_2month_day: str) -> str:
     '''800008 종목발행현황'''
     today_ymd = datetime.now().strftime("%Y%m%d")
     # one_week_age = (datetime.now() - timedelta(days=7)).strftime("%Y%m%d")
@@ -399,7 +399,8 @@ def work_800008(prev_working_day: str) -> str:
     #--------------------종목등록일-----
     mouse_move_and_click(980, 211, wait_seconds=1)
     pyautogui.hotkey('ctrl', 'a') # 전체 선택
-    pyautogui.write(prev_working_day)
+    log.info(f"오늘 날짜: {today_ymd},  -2개월 전 날짜: {prev_2month_day}")
+    pyautogui.write(prev_2month_day)
     time.sleep(1)
     # mouse_move_and_click(1065, 190, wait_seconds=1)
     mouse_move_and_click(1108, 211, wait_seconds=1)
@@ -732,8 +733,9 @@ def esafe_auto_work():
     #-------------------------800008종목발행현황
     log.info(">>> 800008 종목발행현황 작업 시작")
     prev_working_3day = get_prev_working_3day(*get_today())
+    prev_2month_day =  get_prev_2month_day(*get_today())
     close_all_tabs_via_context_menu((460,85), pngimg('context_menu'), pngimg('all_tab_close'))
-    filename = work_800008(prev_working_3day)
+    filename = work_800008(prev_working_3day, prev_2month_day)
     saved_files.append(filename)
     log.info(">>> 800008 분배금 내역통보 작업 종료")
     #-------------------------800100 일자별 일정현황

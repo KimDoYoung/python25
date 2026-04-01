@@ -55,7 +55,15 @@ def get_prev_working_day(year: int, month: int, day: int):
             prev_day -= timedelta(days=1)  # 하루 전으로 이동
         else:
             return prev_str  # 영업일이면 해당 날짜 반환
-        
+
+def get_prev_2month_day(year: int, month: int, day: int):
+    """
+    특정 날짜(year, month, day) 이전의 2개월 전 날짜를 찾음. 
+    """
+    target_date = datetime(year, month, day)  # 지정된 날짜
+    prev_month_date = target_date - timedelta(days=60)  # 약 2개월 전 날짜 계산
+    return prev_month_date.strftime("%Y%m%d")
+
 def get_prev_working_3day(year: int, month: int, day: int):
     """
     특정 날짜(year, month, day) 이전의 영업일3일 전 날짜를 찾음.
