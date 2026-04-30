@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # 1. settings.py에서 VERSION 값을 읽어오기
-VERSION=$(grep -oP "self.VERSION\s*=\s*'\K[^']+" settings.py)
+VERSION=$(grep -oP "self.VERSION\s*=\s*['\"]?\K[^'\"]*(?=['\"])" settings.py)
 
 # 2. 실행 파일 이름 설정
 EXE_NAME="kindscrap_${VERSION}.exe"

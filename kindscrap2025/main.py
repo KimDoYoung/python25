@@ -16,14 +16,17 @@ import paramiko
 from settings import config
 
 logger = None
-if config.PROFILE_NAME == 'real':
-    logger = BatchLogger(config.LOG_FOLDER_BASE + "/", use_console_handler=False).get_logger()
+if config.PROFILE_NAME == "real":
+    logger = BatchLogger(
+        config.LOG_FOLDER_BASE + "/", use_console_handler=False
+    ).get_logger()
 else:
     logger = BatchLogger(config.LOG_FOLDER_BASE + "/").get_logger()
 
 # 전역 변수로 드라이버 선언
 driver = None
 one_time_log = False
+
 
 def sftp_upload_files(filenames):
     """여러 개의 파일을 SFTP 서버에 업로드하는 함수"""
@@ -32,7 +35,7 @@ def sftp_upload_files(filenames):
     SFTP_USER = config.SFTP_USER
     SFTP_PASS = config.SFTP_PASS
     SFTP_REMOTE_DIR = config.SFTP_REMOTE_DIR  # 예: "/HDD1/esafe"
-    
+
     try:
         # SFTP 연결 설정
         transport = paramiko.Transport((SFTP_HOST, SFTP_PORT))  # 기본 SFTP 포트 22
@@ -40,7 +43,7 @@ def sftp_upload_files(filenames):
 
         # SFTP 클라이언트 생성
         sftp = paramiko.SFTPClient.from_transport(transport)
-        
+
         # 원격 디렉토리 이동
         sftp.chdir(SFTP_REMOTE_DIR)
 
@@ -55,6 +58,7 @@ def sftp_upload_files(filenames):
 
     except Exception as e:
         logger.error(f"❌ 업로드 실패: {e}")
+
 
 def create_sqlite_db(frdate, todate):
     """
@@ -92,7 +96,7 @@ def create_sqlite_db(frdate, todate):
 
     # 데이터베이스 연결
     conn = sqlite3.connect(db_name)
- 
+
     # 테이블 생성
     try:
         conn.execute(create_table_sql)
@@ -104,6 +108,7 @@ def create_sqlite_db(frdate, todate):
         conn.close()
 
     return db_name
+
 
 def is_exists_in_table(conn, cd):
     """
@@ -118,6 +123,7 @@ def is_exists_in_table(conn, cd):
     result = cursor.fetchone()
     return result is not None
 
+
 def insert_to_table(conn, dict_data, content, textonly):
     """
     kind_ca 테이블에 데이터를 삽입
@@ -130,27 +136,31 @@ def insert_to_table(conn, dict_data, content, textonly):
     INSERT OR IGNORE INTO kind_ca (cd, title, company_name, date_time, chechulin, uploader, stkcode)
     VALUES (?, ?, ?, ?, ?, ?, ?)
     """
-    
+
     try:
         # 데이터 삽입
         cursor = conn.cursor()
-        cursor.execute(insert_sql, (
-            dict_data["cd"],
-            dict_data["title"],
-            dict_data["company_name"],
-            dict_data["date_time"],
-            dict_data["chechulin"],
-            dict_data["uploader"],  # 딕셔너리에서 uploader 직접 사용
-            dict_data["stkcode"],    # 딕셔너리에서 stkcode 직접 사용
-            # content,
-            # textonly
-            
-        ))
+        cursor.execute(
+            insert_sql,
+            (
+                dict_data["cd"],
+                dict_data["title"],
+                dict_data["company_name"],
+                dict_data["date_time"],
+                dict_data["chechulin"],
+                dict_data["uploader"],  # 딕셔너리에서 uploader 직접 사용
+                dict_data["stkcode"],  # 딕셔너리에서 stkcode 직접 사용
+                # content,
+                # textonly
+            ),
+        )
         conn.commit()
-        logger.info(f"Inserted: {dict_data['cd']}:{dict_data['date_time']}, {dict_data['title']}, {dict_data['company_name']}, {dict_data['chechulin']}")
+        logger.info(
+            f"Inserted: {dict_data['cd']}:{dict_data['date_time']}, {dict_data['title']}, {dict_data['company_name']}, {dict_data['chechulin']}"
+        )
     except sqlite3.Error as e:
         logger.error(f"Error inserting data: {e}")
-    
+
 
 def get_uploader_stkcode(company_info):
     """
@@ -159,8 +169,10 @@ def get_uploader_stkcode(company_info):
     :return: (uploader, stkcode)
     """
     # 정규식을 사용하여 괄호 안의 6자리 숫자를 추출
-    match = re.match(r"^(.*?)(?:\s*\((\d{6})\))?$", company_info)
-    
+    # match = re.match(r"^(.*?)(?:\s*\((\d{6})\))?$", company_info)
+    # ( ) 안에 있는 것을 모두 빼내라고 정규식을 수정
+    match = re.match(r"^(.*?)\s*\(([^)]+)\)$", company_info)
+
     if match:
         uploader = match.group(1).strip()  # 괄호 앞부분 (필수)
         stkcode = match.group(2)  # 괄호 안 숫자 (없으면 None)
@@ -168,7 +180,7 @@ def get_uploader_stkcode(company_info):
     else:
         # company_info가 형식에 맞지 않는 경우
         return company_info, None
-    
+
 
 def get_driver():
     """
@@ -181,8 +193,11 @@ def get_driver():
         options.add_argument("--no-sandbox")
         options.add_argument("--disable-dev-shm-usage")
         options.add_argument("--disable-gpu")  # GPU 렌더링 비활성화
-        driver = webdriver.Chrome(service=Service(ChromeDriverManager().install()), options=options)
+        driver = webdriver.Chrome(
+            service=Service(ChromeDriverManager().install()), options=options
+        )
     return driver
+
 
 def getGoSiList(frDate, toDate, pageIndex):
     global one_time_log
@@ -192,63 +207,63 @@ def getGoSiList(frDate, toDate, pageIndex):
         "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/90.0.4430.212 Safari/537.36",
         "Content-Type": "application/x-www-form-urlencoded",
     }
-    
+
     # POST 데이터
     data = {
-    "method": "searchDetailsSub",
-    "currentPageSize": 100,
-    "pageIndex": pageIndex,
-    "orderMode": 1,
-    "orderStat": "D",
-    "forward": "details_sub",
-    "disclosureType01": "",
-    "disclosureType02": "",
-    "disclosureType03": "",
-    "disclosureType04": "",
-    "disclosureType05": "",
-    "disclosureType06": "",
-    "disclosureType07": "",
-    "disclosureType08": "",
-    "disclosureType09": "",
-    "disclosureType10": "",
-    "disclosureType11": "",
-    "disclosureType13": "",
-    "disclosureType14": "",
-    "disclosureType20": "",
-    "pDisclosureType01": "",
-    "pDisclosureType02": "",
-    "pDisclosureType03": "",
-    "pDisclosureType04": "",
-    "pDisclosureType05": "",
-    "pDisclosureType06": "",
-    "pDisclosureType07": "",
-    "pDisclosureType08": "",
-    "pDisclosureType09": "",
-    "pDisclosureType10": "",
-    "pDisclosureType11": "",
-    "pDisclosureType13": "",
-    "pDisclosureType14": "",
-    "pDisclosureType20": "",
-    "searchCodeType": "",
-    "repIsuSrtCd": "",
-    "allRepIsuSrtCd": "",
-    "oldSearchCorpName": "",
-    "disclosureType": "",
-    "disTypevalue": "",
-    "reportNm": "",
-    "reportCd": "",
-    "searchCorpName": "",
-    "business": "",
-    "marketType": "",
-    "settlementMonth": "",
-    "securities": "",
-    "submitOblgNm": "",
-    "enterprise": "",
-    "fromDate": frDate,
-    "toDate": toDate,
-    "reportNmTemp": "",
-    "reportNmPop": "",
-    "bfrDsclsType": "on",
+        "method": "searchDetailsSub",
+        "currentPageSize": 100,
+        "pageIndex": pageIndex,
+        "orderMode": 1,
+        "orderStat": "D",
+        "forward": "details_sub",
+        "disclosureType01": "",
+        "disclosureType02": "",
+        "disclosureType03": "",
+        "disclosureType04": "",
+        "disclosureType05": "",
+        "disclosureType06": "",
+        "disclosureType07": "",
+        "disclosureType08": "",
+        "disclosureType09": "",
+        "disclosureType10": "",
+        "disclosureType11": "",
+        "disclosureType13": "",
+        "disclosureType14": "",
+        "disclosureType20": "",
+        "pDisclosureType01": "",
+        "pDisclosureType02": "",
+        "pDisclosureType03": "",
+        "pDisclosureType04": "",
+        "pDisclosureType05": "",
+        "pDisclosureType06": "",
+        "pDisclosureType07": "",
+        "pDisclosureType08": "",
+        "pDisclosureType09": "",
+        "pDisclosureType10": "",
+        "pDisclosureType11": "",
+        "pDisclosureType13": "",
+        "pDisclosureType14": "",
+        "pDisclosureType20": "",
+        "searchCodeType": "",
+        "repIsuSrtCd": "",
+        "allRepIsuSrtCd": "",
+        "oldSearchCorpName": "",
+        "disclosureType": "",
+        "disTypevalue": "",
+        "reportNm": "",
+        "reportCd": "",
+        "searchCorpName": "",
+        "business": "",
+        "marketType": "",
+        "settlementMonth": "",
+        "securities": "",
+        "submitOblgNm": "",
+        "enterprise": "",
+        "fromDate": frDate,
+        "toDate": toDate,
+        "reportNmTemp": "",
+        "reportNmPop": "",
+        "bfrDsclsType": "on",
     }
 
     # POST 요청 보내기
@@ -298,8 +313,17 @@ def getGoSiList(frDate, toDate, pageIndex):
 
         chechulin_td = tr.find_all("td")[4]  # <td>태그 중 5번째 (인덱스 4) 선택
         chechulin = chechulin_td.get_text(strip=True)
-                # 리스트에 추가
-        result_list.append({"key": key, "title": title, "cd": cd, "company_name": company_name, "date_time": date_time, "chechulin": chechulin})
+        # 리스트에 추가
+        result_list.append(
+            {
+                "key": key,
+                "title": title,
+                "cd": cd,
+                "company_name": company_name,
+                "date_time": date_time,
+                "chechulin": chechulin,
+            }
+        )
 
     # 전체 건수와 페이지 수 추출
     total_count = 0
@@ -313,6 +337,7 @@ def getGoSiList(frDate, toDate, pageIndex):
 
         # 전체 페이지 수 추출 (텍스트에서 '/' 뒤의 숫자)
         import re
+
         match = re.search(r"/\s*(\d+)", info_div.get_text())
         total_page_count = int(match.group(1)) if match else 0
 
@@ -320,7 +345,7 @@ def getGoSiList(frDate, toDate, pageIndex):
     if one_time_log == False:
         logger.info(f"전체 건수: {total_count}, 전체 페이지 수: {total_page_count}")
         one_time_log = True
-        
+
     return {
         "total_count": total_count,
         "total_page_count": total_page_count,
@@ -328,7 +353,7 @@ def getGoSiList(frDate, toDate, pageIndex):
     }
 
 
-def fetch_iframe_content(conn, dict_data): # key, cd, title
+def fetch_iframe_content(conn, dict_data):  # key, cd, title
     """
     Selenium을 사용하여 iframe 내용을 저장
     """
@@ -337,7 +362,7 @@ def fetch_iframe_content(conn, dict_data): # key, cd, title
     title = dict_data["title"]
     # 브라우저 실행
     driver = get_driver()
-    
+
     try:
         # Step 1: 메인 페이지 로드
         search_url = f"https://kind.krx.co.kr/common/disclsviewer.do?method=search&acptno={cd}&docno=&viewerhost=&viewerport="
@@ -352,7 +377,7 @@ def fetch_iframe_content(conn, dict_data): # key, cd, title
         h1_element = driver.find_element(By.CSS_SELECTOR, "h1.ttl.type-99.fleft")
         company_info = h1_element.text
         uploader, stkcode = get_uploader_stkcode(company_info)
-        #print(f"Extracted H1 Text: {company_info}")
+        # print(f"Extracted H1 Text: {company_info}")
         # dict_data에 uploader와 stkcode 추가
         dict_data["uploader"] = uploader
         dict_data["stkcode"] = stkcode
@@ -376,10 +401,10 @@ def fetch_iframe_content(conn, dict_data): # key, cd, title
         # comment = f"<!-- title: {title} -->\n"
         # comment = comment + f"<!-- company info: {company_info} -->\n"
         # iframe_content = comment + iframe_content
-        
+
         # textonly = BeautifulSoup(iframe_content, 'html.parser').get_text(strip=True)
         # cleaned_text = " ".join(textonly.split())
-            
+
         if not is_exists_in_table(conn, cd):
             # insert_to_table(conn, dict_data, iframe_content, cleaned_text)
             insert_to_table(conn, dict_data, None, None)
@@ -391,7 +416,7 @@ def main(frdate, todate, page_index):
     """메인 함수"""
     db_name = create_sqlite_db(frdate, todate)
     conn = sqlite3.connect(db_name)
-    
+
     timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
     if page_index == "all":
         page_index = 1
@@ -419,12 +444,13 @@ def main(frdate, todate, page_index):
         for item in data["list"]:
             if not is_exists_in_table(conn, item["cd"]):
                 fetch_iframe_content(conn, item)
-       
+
     if conn:
         conn.close()
         logger.info("Closing DB connection")
 
-    return db_name    
+    return db_name
+
 
 if __name__ == "__main__":
     driver = None  # driver 선언 (예외 처리 대비)
@@ -436,7 +462,7 @@ if __name__ == "__main__":
         frdate, todate, page_index = sys.argv[1], sys.argv[2], sys.argv[3]
         try:
             # os.makedirs("tmp", exist_ok=True)
-            
+
             logger.info("--------------------------------------------------")
             logger.info("Kind Scrap Start")
             logger.info("--------------------------------------------------")
@@ -449,7 +475,7 @@ if __name__ == "__main__":
             exit(1)
         finally:
             if driver:
-                driver.quit()    
+                driver.quit()
                 logger.info("Closing WebDriver")
             # stdout 복원 및 파일 닫기
             logger.info("--------------------------------------------------")
