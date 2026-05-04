@@ -203,6 +203,7 @@ def getGoSiList(frDate, toDate, pageIndex):
     global one_time_log
     # 요청 URL 및 헤더 설정
     url = "https://kind.krx.co.kr/disclosure/details.do"
+    # url = "https://kind.krx.co.kr/disclosure/details.do?method=searchDetailsMain#viewer"
     headers = {
         "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/90.0.4430.212 Safari/537.36",
         "Content-Type": "application/x-www-form-urlencoded",
@@ -462,7 +463,6 @@ if __name__ == "__main__":
         frdate, todate, page_index = sys.argv[1], sys.argv[2], sys.argv[3]
         try:
             # os.makedirs("tmp", exist_ok=True)
-
             logger.info("--------------------------------------------------")
             logger.info("Kind Scrap Start")
             logger.info("--------------------------------------------------")
@@ -472,7 +472,7 @@ if __name__ == "__main__":
             logger.info(f"{db_name} SFTP로 전송완료")
         except Exception as e:
             logger.error(f"❌ Error: {e}")
-            exit(1)
+            sys.exit(1)
         finally:
             if driver:
                 driver.quit()
