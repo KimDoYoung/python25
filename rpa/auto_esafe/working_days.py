@@ -10,15 +10,30 @@ GODATA_URL = 'http://apis.data.go.kr/B090041/openapi/service/SpcdeInfoService/ge
 
 def get_holiday_list(year: int, month: int):
     """특정 연도와 월의 공휴일 목록을 OpenAPI에서 가져와 리스트로 반환"""
-    time.sleep(1)  # OpenAPI 요청 제한 방지를 위한 대기 시간
+    time.sleep(1)
     API_KEY = Config.GODATA_API_KEY
     params = {'serviceKey': API_KEY, 'solYear': year, 'solMonth': f"{month:02d}"}
 
-    response = requests.get(GODATA_URL, params=params, verify=False)
+    try:
+        response = requests.get(GODATA_URL, params=params, verify=False, timeout=10)
+        
+        # 200 OK가 아니면 에러로 처리
+        if response.status_code != 200:
+            raise requests.RequestException(f"HTTP {response.status_code}")
 
-    if response.status_code != 200:
-        print(f"❌ OpenAPI 요청 실패: {response.status_code}, {response.text}")
-        log.error(f"OpenAPI 요청 실패: {response.status_code}, {response.text}")
+        # XML 파싱
+        root = ET.fromstring(response.text)
+        return [
+            item.find("locdate").text 
+            for item in root.findall(".//item") 
+            if item.find("isHoliday") is not None and item.find("isHoliday").text == "Y"
+        ]
+
+    except Exception as e:
+        # 타임아웃, 네트워크 오류, XML 파싱 에러 등 모든 예외 상황 처리
+        print(f"❌ OpenAPI 요청/파싱 실패: {e}")
+        log.error(f"OpenAPI 요청/파싱 실패: {e}")
+        
         holiday_file = Config.HOLIDAY_FILE
         if holiday_file and os.path.exists(holiday_file):
             with open(holiday_file, 'r', encoding='utf-8') as f:
@@ -27,11 +42,30 @@ def get_holiday_list(year: int, month: int):
             return holidays
         return []
 
-    # XML 파싱
-    root = ET.fromstring(response.text)
-    holidays = [item.find("locdate").text for item in root.findall(".//item") if item.find("isHoliday").text == "Y"]
+# def get_holiday_list(year: int, month: int):
+#     """특정 연도와 월의 공휴일 목록을 OpenAPI에서 가져와 리스트로 반환"""
+#     time.sleep(1)  # OpenAPI 요청 제한 방지를 위한 대기 시간
+#     API_KEY = Config.GODATA_API_KEY
+#     params = {'serviceKey': API_KEY, 'solYear': year, 'solMonth': f"{month:02d}"}
 
-    return holidays
+#     response = requests.get(GODATA_URL, params=params, verify=False, timeout=10)
+
+#     if response.status_code != 200:
+#         print(f"❌ OpenAPI 요청 실패: {response.status_code}, {response.text}")
+#         log.error(f"OpenAPI 요청 실패: {response.status_code}, {response.text}")
+#         holiday_file = Config.HOLIDAY_FILE
+#         if holiday_file and os.path.exists(holiday_file):
+#             with open(holiday_file, 'r', encoding='utf-8') as f:
+#                 holidays = [line.strip() for line in f if line.strip()]
+#             log.info(f"로컬 공휴일 파일에서 공휴일 목록 로드: {holiday_file}")    
+#             return holidays
+#         return []
+
+#     # XML 파싱
+#     root = ET.fromstring(response.text)
+#     holidays = [item.find("locdate").text for item in root.findall(".//item") if item.find("isHoliday").text == "Y"]
+
+#     return holidays
 
 def get_prev_year_month(year: int, month: int):
     """주어진 연도와 월의 이전 달을 반환 (예: 2024, 12)"""
