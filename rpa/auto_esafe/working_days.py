@@ -6,7 +6,7 @@ import xml.etree.ElementTree as ET
 from config import Config
 from logger import Logger
 log = Logger()
-GODATA_URL = 'http://apis.data.go.kr/B090041/openapi/service/SpcdeInfoService/getRestDeInfo'
+GODATA_URL = 'https://apis.data.go.kr/B090041/openapi/service/SpcdeInfoService/getRestDeInfo'
 
 def get_holiday_list(year: int, month: int):
     """특정 연도와 월의 공휴일 목록을 OpenAPI에서 가져와 리스트로 반환"""
