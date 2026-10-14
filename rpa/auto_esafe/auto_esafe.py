@@ -419,7 +419,7 @@ def work_800008(prev_working_day: str, prev_2month_day: str) -> str:
 
     # 조회 완료 확인
     region = get_region(RegionName.CENTER)
-    find_and_press_key(pngimg('alert_icon'), 'space', region=region, grayscale=True)
+    find_and_press_key(pngimg('alert_icon'), 'space', region=region, grayscale=True, timeout=120)
     # 다운로드 옵션 클릭
     region = get_region(RegionName.LEFT_BOTTOM)
     find_and_click(pngimg('download_combo'), region=region, grayscale=True)
@@ -900,40 +900,356 @@ def esafe_auto_work_pm():
     return saved_files
 
 
+# ============================================================================
+# 화면 작업 정의 및 매핑
+# ============================================================================
+
+# 화면 ID와 작업 함수 매핑
+SCREEN_TASKS = {
+    '500068_T1': {
+        'name': '기준가1',
+        'func': work_500068_tab1,
+        'mode': ['am']
+    },
+    '500068_T2': {
+        'name': '기준가2',
+        'func': work_500068_tab2,
+        'mode': ['am']
+    },
+    '500038': {
+        'name': '분배금 내역통보',
+        'func': work_500038,
+        'mode': ['am'],
+        'args': lambda: {'prev_working_day': get_prev_working_day(*get_today())}
+    },
+    '800100': {
+        'name': '일자별 일정현황',
+        'func': work_800100,
+        'mode': ['am']
+    },
+    '500086': {
+        'name': '등록잔량서비스',
+        'func': work_500086,
+        'mode': ['am']
+    },
+    '500874': {
+        'name': '외국 납부세액조회',
+        'func': work_500874,
+        'mode': ['am']
+    },
+    '800008': {
+        'name': '종목발행현황',
+        'func': work_800008,
+        'mode': ['am'],
+        'args': lambda: {
+            'prev_working_day': get_prev_working_3day(*get_today()),
+            'prev_2month_day': get_prev_2month_day(*get_today())
+        }
+    },
+    '500068_T1N': {
+        'name': '기준가 신규등록 T1',
+        'func': work_500068_tab1_pm,
+        'mode': ['pm']
+    },
+    '500068_T2N': {
+        'name': '기준가 신규등록 T2',
+        'func': work_500068_tab1_pm,  # T2는 T1 함수 내부에서 처리
+        'mode': ['pm'],
+        'skip': True  # T1에서 함께 처리되므로 개별 실행 안 함
+    },
+    '500086N': {
+        'name': '등록잔량서비스 오후',
+        'func': work_500086,
+        'mode': ['pm'],
+        'args': lambda: {'is_pm': True}
+    }
+}
+
+
+def get_available_screens():
+    """현재 사용 가능한 화면 ID 목록 반환"""
+    am_screens = []
+    pm_screens = []
+
+    for screen_id, task_info in SCREEN_TASKS.items():
+        if task_info.get('skip', False):
+            continue
+        if 'am' in task_info['mode']:
+            am_screens.append(screen_id)
+        if 'pm' in task_info['mode']:
+            pm_screens.append(screen_id)
+
+    return am_screens, pm_screens
+
+
+def parse_arguments():
+    """커맨드라인 인자 파싱"""
+    import argparse
+    import textwrap
+
+    # 사용 가능한 화면 목록
+    am_screens, pm_screens = get_available_screens()
+
+    # 상세한 설명
+    version = Config.VERSION
+    description = textwrap.dedent(f'''
+    eSAFE2019 자동화 RPA 프로그램 v{version}
+
+    이 프로그램은 eSAFE2019에서 데이터를 자동으로 다운로드하고 SFTP로 업로드합니다.
+    실패한 화면이 있어도 성공한 화면의 데이터는 업로드됩니다.
+    ''')
+
+    epilog = textwrap.dedent(f'''
+    사용 가능한 화면 ID:
+      [AM 모드]
+        {', '.join(am_screens)}
+
+      [PM 모드]
+        {', '.join(pm_screens)}
+
+    사용 예시:
+      auto_esafe.exe am                           # 오전 작업 전체 실행
+      auto_esafe.exe pm                           # 오후 작업 전체 실행
+      auto_esafe.exe am --only 800008,500068_T1   # 특정 화면만 실행
+      auto_esafe.exe am --exclude 800008          # 특정 화면 제외
+      auto_esafe.exe --help                       # 도움말 표시
+    ''')
+
+    parser = argparse.ArgumentParser(
+        description=description,
+        epilog=epilog,
+        formatter_class=argparse.RawDescriptionHelpFormatter
+    )
+
+    parser.add_argument('mode', nargs='?', default='am',
+                       choices=['am', 'pm'],
+                       help='실행 모드 (기본값: am)')
+
+    parser.add_argument('--only', type=str, metavar='SCREENS',
+                       help='실행할 화면 ID (쉼표로 구분)')
+
+    parser.add_argument('--exclude', type=str, metavar='SCREENS',
+                       help='제외할 화면 ID (쉼표로 구분)')
+
+    parser.add_argument('--list-screens', action='store_true',
+                       help='사용 가능한 화면 ID 목록 표시 후 종료')
+
+    # sys.argv에서 'pm' 처리 (하위 호환성)
+    if 'pm' in sys.argv and '--help' not in sys.argv and '-h' not in sys.argv:
+        args = parser.parse_args(['pm'])
+    else:
+        args = parser.parse_args()
+
+    # --list-screens 옵션 처리
+    if args.list_screens:
+        print("\n사용 가능한 화면 ID 목록:\n")
+        print("[AM 모드]")
+        for screen_id in am_screens:
+            task_info = SCREEN_TASKS[screen_id]
+            print(f"  {screen_id:15s} - {task_info['name']}")
+        print("\n[PM 모드]")
+        for screen_id in pm_screens:
+            task_info = SCREEN_TASKS[screen_id]
+            print(f"  {screen_id:15s} - {task_info['name']}")
+        print()
+        sys.exit(0)
+
+    # only와 exclude를 리스트로 변환
+    only_screens = args.only.split(',') if args.only else None
+    exclude_screens = args.exclude.split(',') if args.exclude else None
+
+    # 유효성 검사
+    if only_screens:
+        valid_screens = am_screens if args.mode == 'am' else pm_screens
+        for screen in only_screens:
+            if screen not in valid_screens:
+                parser.error(f"유효하지 않은 화면 ID: {screen}\n"
+                           f"사용 가능한 화면: {', '.join(valid_screens)}")
+
+    if exclude_screens:
+        valid_screens = am_screens if args.mode == 'am' else pm_screens
+        for screen in exclude_screens:
+            if screen not in valid_screens:
+                parser.error(f"유효하지 않은 화면 ID: {screen}\n"
+                           f"사용 가능한 화면: {', '.join(valid_screens)}")
+
+    return args.mode, only_screens, exclude_screens
+
+
+def execute_screen_task(screen_id, task_info):
+    """
+    개별 화면 작업 실행
+
+    Returns:
+        (success: bool, files: list, error: str)
+    """
+    try:
+        log.info(f">>> {task_info['name']} ({screen_id}) 작업 시작")
+
+        # 탭 닫기 (첫 화면 제외)
+        if screen_id != '500068_T1' and screen_id != '500068_T1N':
+            close_all_tabs_via_context_menu(
+                (460, 85),
+                pngimg('context_menu'),
+                pngimg('all_tab_close')
+            )
+
+        # 함수 인자 준비
+        kwargs = {}
+        if 'args' in task_info:
+            kwargs = task_info['args']()
+
+        # 작업 실행
+        result = task_info['func'](**kwargs)
+
+        # 결과 처리
+        files = []
+        if isinstance(result, list):
+            files = result
+        elif isinstance(result, str):
+            files = [result]
+
+        log.info(f">>> {task_info['name']} ({screen_id}) 작업 성공")
+        return True, files, None
+
+    except Exception as e:
+        error_msg = f"{task_info['name']} ({screen_id}) 실패: {str(e)}"
+        log.error(error_msg)
+        exception_handler(error_msg)
+        return False, [], str(e)
+
+
+def esafe_auto_work_new(mode='am', only_screens=None, exclude_screens=None):
+    """
+    개선된 eSAFE 자동화 작업
+
+    Args:
+        mode: 'am' 또는 'pm'
+        only_screens: 실행할 화면 ID 리스트 (None이면 전체)
+        exclude_screens: 제외할 화면 ID 리스트 (None이면 없음)
+
+    Returns:
+        성공한 파일 리스트
+    """
+    global hts_process
+    hts_process = None
+
+    # 결과 추적
+    results = {}  # {screen_id: {'success': bool, 'files': [], 'error': str}}
+    all_files = []
+
+    # 실행할 화면 결정
+    screens_to_run = []
+    for screen_id, task_info in SCREEN_TASKS.items():
+        # skip 플래그 확인
+        if task_info.get('skip', False):
+            continue
+
+        # 모드 확인
+        if mode not in task_info['mode']:
+            continue
+
+        # only 필터
+        if only_screens and screen_id not in only_screens:
+            continue
+
+        # exclude 필터
+        if exclude_screens and screen_id in exclude_screens:
+            log.info(f"⏭️ {screen_id} 제외됨 (--exclude)")
+            continue
+
+        screens_to_run.append((screen_id, task_info))
+
+    log.info(f"📋 실행 예정 화면: {[s[0] for s in screens_to_run]}")
+
+    # 프로세스 종료 및 시작
+    process_name = Config.PROCESS_NAME
+    if is_process_running(process_name):
+        kill_process(process_name)
+        log.info(f"{process_name} 프로세스 종료")
+
+    log.info(">>> eSAFE 실행 및 로그인 시작")
+    work_start_main()
+    log.info(">>> eSAFE 실행 및 로그인 완료")
+
+    # 각 화면 작업 실행
+    for screen_id, task_info in screens_to_run:
+        success, files, error = execute_screen_task(screen_id, task_info)
+
+        results[screen_id] = {
+            'success': success,
+            'files': files,
+            'error': error
+        }
+
+        if success:
+            all_files.extend(files)
+
+    # 프로그램 종료
+    log.info(">>> eSAFE 종료")
+    mouse_move_and_click(1901, 16, wait_seconds=1)
+    time.sleep(2)
+    pyautogui.press('space')
+
+    # 결과 요약 로그
+    success_count = sum(1 for r in results.values() if r['success'])
+    total_count = len(results)
+    failure_count = total_count - success_count
+
+    log.info("=" * 60)
+    log.info(f"📊 작업 결과 요약: {success_count}/{total_count} 성공")
+    log.info("=" * 60)
+
+    for screen_id, result in results.items():
+        status = "✅ 성공" if result['success'] else "❌ 실패"
+        log.info(f"  {status} - {screen_id}")
+        if not result['success']:
+            log.info(f"    오류: {result['error']}")
+
+    log.info("=" * 60)
+
+    # 실패가 1개라도 있으면 ERROR 로그 남김 (모니터링용)
+    if failure_count > 0:
+        log.error(f"❌ 작업 실패: {failure_count}개 화면 실패 (성공: {success_count}/{total_count})")
+        for screen_id, result in results.items():
+            if not result['success']:
+                log.error(f"  실패 화면: {screen_id} - {result['error']}")
+
+    return all_files
+
+
 if __name__ == "__main__":
-    mode = "am"
-    if "pm" in sys.argv:
-        mode = "pm"
+    # 커맨드라인 인자 파싱
+    mode, only_screens, exclude_screens = parse_arguments()
 
     version = Config.VERSION
     log.info("------------------------------------------------------")
     log.info(f"auto_esafe 프로그램 시작 ver : {version} mode: {mode}")
+    if only_screens:
+        log.info(f"🎯 실행 대상: {', '.join(only_screens)}")
+    if exclude_screens:
+        log.info(f"⏭️ 제외 대상: {', '.join(exclude_screens)}")
     log.info("------------------------------------------------------")
 
-    # exit(1)
     pre_check()
-    # 이름문자를 이미지로 만들어서 저장한다.
     create_user_name_imge()
     time.sleep(3)
-    
+
     try:
-        # 오늘이 휴일이면 그냥 종료한다.
+        # 휴일 체크
         today_ymd = datetime.now().strftime("%Y%m%d")
         if isHoliday(today_ymd):
             raise HolidayError(f"오늘({today_ymd})은 공휴일입니다.")
-        
-        # 이미 오늘의 파일이 존재하면 삭제한다
+
+        # 기존 파일 삭제
         deleteTodayFiles(today_ymd, mode)
 
-        # esafe화면작업
-        if mode == "am":
-            filenames = esafe_auto_work()
-        else:
-            filenames = esafe_auto_work_pm()
-    
+        # 새로운 방식으로 작업 실행
+        filenames = esafe_auto_work_new(mode, only_screens, exclude_screens)
+
+        # CSV 변환
         log.info(">>> CSV 변환 시작")
         for idx, filename in enumerate(filenames, start=1):
-            # 확장자가 xls인 파일을 csv로 변환
             if filename.endswith('.xls') or filename.endswith('.xlsx'):
                 csv_file = filename + ".csv"
                 excel_to_csv(filename, csv_file)
@@ -941,25 +1257,36 @@ if __name__ == "__main__":
                 log.info(f"{idx}. CSV 변환 완료: {csv_file}")
             else:
                 log.info(f"{idx}. 저장된 파일 경로: {filename}")
-        log.info(">>> CSV 변환 시작") 
-        # FTP 업로드
-        log.info(">>> SFTP 업로드 시작")
-        sftp_upload_files(filenames)
-        log.info(">>> SFTP 업로드 종료")
+        log.info(">>> CSV 변환 완료")
+
+        # SFTP 업로드 (성공한 파일만)
+        if filenames:
+            log.info(f">>> SFTP 업로드 시작 (파일 수: {len(filenames)})")
+            sftp_upload_files(filenames)
+            log.info(">>> SFTP 업로드 완료")
+        else:
+            log.warning("⚠️ 업로드할 파일이 없습니다 (모든 작업 실패)")
+
+        # esafe가 계속 살아있다면 종료한다.
+        process_name = Config.PROCESS_NAME
+        if is_process_running(process_name):
+            log.warning(f"{process_name} 프로세스가 아직 살아있습니다. 강제 종료 시도...")
+            kill_process(process_name)
+            log.info(f"{process_name} 프로세스 종료")
+
     except HolidayError as e:
-        log.info(f"에러메세지: {e}")    
+        log.info(f"에러메세지: {e}")
     except Exception as e:
         exception_handler(str(e))
         process_name = Config.PROCESS_NAME
         if is_process_running(process_name):
             kill_process(process_name)
-            log.info(f"{process_name} 프로세스 강제 종료시킴")        
+            log.info(f"{process_name} 프로세스 강제 종료")
     finally:
-        # 프로그램이 실행 중이라면 종료
         if 'hts_process' in globals() and hts_process:
             log.info("프로그램 종료 중...")
             hts_process.terminate()
-    
+
     log.info("------------------------------------------------------")
-    log.info("auto_esafe  프로그램 종료")
+    log.info("auto_esafe 프로그램 종료")
     log.info("------------------------------------------------------")

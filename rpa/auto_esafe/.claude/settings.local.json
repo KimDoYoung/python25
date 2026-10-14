@@ -1,0 +1,8 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(python auto_esafe.py:*)",
+      "Bash(python:*)"
+    ]
+  }
+}

@@ -37,7 +37,7 @@ exe = EXE(
     a.zipfiles,
     a.datas,  # ✅ datas 포함
     exclude_binaries=False,  # ✅ False로 변경 (필수)
-    name='auto_esafe_1.1.7',
+    name='auto_esafe_1.1.8',
     debug=False,
     bootloader_ignore_signals=False,
     strip=False,
