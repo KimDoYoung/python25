@@ -730,14 +730,6 @@ def esafe_auto_work():
     filename = work_500038(prev_working_day)
     saved_files.append(filename)
     log.info(">>> 500038 분배금 내역통보 작업 종료")
-    #-------------------------800008종목발행현황
-    log.info(">>> 800008 종목발행현황 작업 시작")
-    prev_working_3day = get_prev_working_3day(*get_today())
-    prev_2month_day =  get_prev_2month_day(*get_today())
-    close_all_tabs_via_context_menu((460,85), pngimg('context_menu'), pngimg('all_tab_close'))
-    filename = work_800008(prev_working_3day, prev_2month_day)
-    saved_files.append(filename)
-    log.info(">>> 800008 분배금 내역통보 작업 종료")
     #-------------------------800100 일자별 일정현황
     log.info(">>> 800100 일자별 일정현황 시작")
     close_all_tabs_via_context_menu((460,85), pngimg('context_menu'), pngimg('all_tab_close'))
@@ -756,6 +748,15 @@ def esafe_auto_work():
     filename = work_500874()
     saved_files.append(filename)
     log.info(">>> 500874 외국 납수세액조회 종료")
+
+    #-------------------------800008종목발행현황
+    log.info(">>> 800008 종목발행현황 작업 시작")
+    prev_working_3day = get_prev_working_3day(*get_today())
+    prev_2month_day =  get_prev_2month_day(*get_today())
+    close_all_tabs_via_context_menu((460,85), pngimg('context_menu'), pngimg('all_tab_close'))
+    filename = work_800008(prev_working_3day, prev_2month_day)
+    saved_files.append(filename)
+    log.info(">>> 800008 분배금 내역통보 작업 종료")
 
     # 프로그램 종료
     mouse_move_and_click(1901, 16, wait_seconds=1)
